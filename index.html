@@ -48,11 +48,11 @@
             background-color: #0c0e14;
             position: relative;
         }
-        .map-canvas-wrapper {
-            position: relative;
-            width: 1200px;  
-            height: 1200px; 
-        }
+.map-canvas-wrapper {
+    position: relative;
+    width: min(90vw, 1000px);
+    aspect-ratio: 1 / 1;
+}
     </style>
 </head>
 <body class="min-h-screen flex flex-col selection:bg-[#d4af37] selection:text-black">
@@ -808,7 +808,7 @@ console.log("Realtime Sync Started");
             setTimeout(resizeCanvas, 100);
         }
         function getCanvasMousePos(e) { const rect = canvas.getBoundingClientRect(); return [((e.clientX - rect.left) / rect.width) * canvas.width, ((e.clientY - rect.top) / rect.height) * canvas.height]; }
-        function resizeCanvas() { if(canvas) { canvas.width = 1200; canvas.height = 1200; redrawCanvasPaths(); } }
+        function resizeCanvas() { if(canvas) { canvas.width = 900; canvas.height = 900; redrawCanvasPaths(); } }
         function clearDrawing() { drawingPaths = []; redrawCanvasPaths(); }
         function undoDrawing() { drawingPaths.splice(-25); redrawCanvasPaths(); }
         function redrawCanvasPaths() { if(!ctx) return; ctx.clearRect(0, 0, canvas.width, canvas.height); drawingPaths.forEach(p => { ctx.beginPath(); ctx.strokeStyle = p.color; ctx.lineWidth = brushSize; ctx.lineCap = 'round'; ctx.moveTo(p.x1, p.y1); ctx.lineTo(p.x2, p.y2); ctx.stroke(); }); }
@@ -1341,6 +1341,7 @@ function renderRewardsTab() {
         `;
     });
 }
+        
 function copyRewardEligibleNames() {        
  if (!checkAdminAccess()) {
         alert('เฉพาะ Admin เท่านั้น');
