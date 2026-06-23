@@ -1298,11 +1298,23 @@ function spinRewardWheel(pool) {
 
     }, 100);
 }
-        function renderRewardsTab() {
+function renderRewardsTab() {
     const tbody = document.getElementById('reward-quota-table-body');
     if (!tbody) return;
 
     tbody.innerHTML = '';
+
+    const totalMembers = players.length;
+    const activeMembers = players.filter(p => p.hasQuota === true && p.status !== 'ขาด').length;
+    const inactiveMembers = totalMembers - activeMembers;
+
+    const totalEl = document.getElementById('reward-total-members');
+    const activeEl = document.getElementById('reward-active-members');
+    const inactiveEl = document.getElementById('reward-inactive-members');
+
+    if (totalEl) totalEl.innerText = totalMembers;
+    if (activeEl) activeEl.innerText = activeMembers;
+    if (inactiveEl) inactiveEl.innerText = inactiveMembers;
 
     players.forEach(p => {
         tbody.innerHTML += `
@@ -1310,7 +1322,7 @@ function spinRewardWheel(pool) {
                 <td class="p-3 font-bold text-white">${p.name || '-'}</td>
                 <td class="p-3">${p.rewardName || 'ยังไม่ระบุ'}</td>
                 <td class="p-3 text-center">
-                    ${p.hasQuota 
+                    ${p.hasQuota && p.status !== 'ขาด'
                         ? '<span class="text-green-400 font-bold">เปิดสิทธิ์</span>' 
                         : '<span class="text-red-400 font-bold">ปิดสิทธิ์</span>'}
                 </td>
@@ -1322,6 +1334,25 @@ function spinRewardWheel(pool) {
             </tr>
         `;
     });
+}
+        function toggleRewardQuota(playerId) {
+    if (!checkAdminAccess()) {
+        alert('เฉพาะ Admin เท่านั้น');
+        return;
+    }
+
+    const p = players.find(x => String(x.id) === String(playerId));
+    if (!p) return;
+
+    p.hasQuota = !p.hasQuota;
+
+    saveToLocalStorage();
+
+    if (typeof window.savePlayersToFirebaseSafe === "function") {
+        window.savePlayersToFirebaseSafe();
+    }
+
+    renderAll();
 }
     </script>
 </body>
