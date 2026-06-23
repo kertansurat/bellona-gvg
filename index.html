@@ -1113,21 +1113,7 @@ function renderAll() {
     if (typeof renderStatsTab === "function") renderStatsTab();
     if (typeof renderMarkers === "function") renderMarkers();
     if (typeof renderMarkersSettingList === "function") renderMarkersSettingList();
-
-    if (typeof applyRolePermissions === "function") applyRolePermissions();
-}        
-        function renderAll() {
-            populateDynamicJobSelectors();
-            renderWaitingList();
-            renderParties();
-            renderMemberManagerTab();
-            renderRewardsTab();
-            renderStatsTab();
-
-            if (typeof renderMarkers === "function") renderMarkers();
-            if (typeof renderMarkersSettingList === "function") renderMarkersSettingList();
-            applyRolePermissions();
-        }
+}
 
         function bulkSetAttendanceStatus(status) {
     if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
@@ -1222,7 +1208,29 @@ function resetPlayerRewardClaim(playerId) {
     if (typeof window.savePlayersToFirebaseSafe === 'function') window.savePlayersToFirebaseSafe();
     renderAll();
 }
-        </script>
+       function populateDynamicJobSelectors() {
+    const manualJob = document.getElementById('manual-add-job');
+    const searchJob = document.getElementById('search-job-dropdown');
+
+    if (manualJob) {
+        const oldValue = manualJob.value;
+        manualJob.innerHTML = '';
+        availableJobsList.forEach(job => {
+            manualJob.innerHTML += `<option value="${job}">${job}</option>`;
+        });
+        if (oldValue) manualJob.value = oldValue;
+    }
+
+    if (searchJob) {
+        const oldValue = searchJob.value;
+        searchJob.innerHTML = '<option value="all">🔍 แสดงสายอาชีพทั้งหมด</option>';
+        availableJobsList.forEach(job => {
+            searchJob.innerHTML += `<option value="${job}">${job}</option>`;
+        });
+        if (oldValue) searchJob.value = oldValue;
+    }
+}
+    </script>
 </body>
     
     <script type="module">
