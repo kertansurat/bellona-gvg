@@ -533,18 +533,33 @@ let userRole = 'guest';
         function logoutSession() { sessionStorage.clear(); location.reload(); }
         function checkAdminAccess() { return userRole === 'admin'; }
 
-        function applyRolePermissions() {
-            document.getElementById('login-overlay-screen').classList.add('hidden');
-            const badge = document.getElementById('role-status-badge');
-            if (userRole === 'admin') {
-                badge.className = "px-3.5 py-1.5 rounded text-[11px] font-extrabold text-[#d4af37] border border-[#d4af37]/30 bg-[#232c3f]";
-                badge.innerHTML = `<i class="fa-solid fa-lock-open"></i> ADMIN MODE`;
-                document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('opacity-40', 'pointer-events-none'));
-            } else {
-                badge.className = "px-3.5 py-1.5 rounded text-[11px] font-extrabold text-gray-400 border border-[#2d3748] bg-[#181f2d]";
-                badge.innerHTML = `<i class="fa-solid fa-lock"></i> GUEST MODE`;
-                document.querySelectorAll('.admin-only').forEach(el => el.classList.add('opacity-40', 'pointer-events-none'));
-            }
+function applyRolePermissions() {
+    const badge = document.getElementById('role-status-badge');
+    if (!badge) return;
+
+    if (userRole === 'admin') {
+        badge.className = "px-3.5 py-1.5 rounded text-[11px] font-extrabold text-[#d4af37] border border-[#d4af37]/30 bg-[#232c3f]";
+        badge.innerHTML = `<i class="fa-solid fa-lock-open"></i> ADMIN MODE`;
+
+        document.querySelectorAll('.admin-only').forEach(el => {
+            el.classList.remove('opacity-40', 'pointer-events-none');
+        });
+    } else {
+        badge.className = "px-3.5 py-1.5 rounded text-[11px] font-extrabold text-gray-400 border border-[#2d3748] bg-[#181f2d]";
+        badge.innerHTML = `<i class="fa-solid fa-lock"></i> GUEST MODE`;
+
+        document.querySelectorAll('.admin-only').forEach(el => {
+            el.classList.add('opacity-40', 'pointer-events-none');
+        });
+    }
+
+    renderAll();
+
+    setTimeout(() => {
+        updateMapDropdownOptions();
+        displayGlobalMap('vigrid');
+    }, 300);
+}
         }
 
         function loadFromLocalStorage() {
