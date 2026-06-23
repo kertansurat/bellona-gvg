@@ -527,7 +527,7 @@ let userRole = 'guest';
             if (userInp === 'admin-bellona' && passInp === '5000') { 
                 userRole = 'admin'; sessionStorage.setItem('bellona_role', 'admin'); sessionStorage.setItem('bellona_is_logged_in', 'true');
                 applyRolePermissions(); renderAll();
-            } else { alert('รหัสผ่านไม่ถูกต้อง'); }
+            } else { alert('รหัสผ่านไม่ถูกต้อง');
         }
 function bypassAsGuest() {
     userRole = 'guest';
