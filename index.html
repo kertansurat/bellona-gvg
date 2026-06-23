@@ -469,7 +469,44 @@
 
         function saveToLocalStorageManual() { saveToLocalStorage(); alert('💾 บันทึกฐานข้อมูลกิลด์สำเร็จ!'); }
         async function importPlayersFromFirebaseSafe() {
-    async function savePlayersToFirebaseSafe() {
+async function importPlayersFromFirebaseSafe() {
+    if (!window.bellonaDB) {
+        alert("Firebase ยังไม่พร้อม");
+        return;
+    }
+
+    try {
+        const { collection, getDocs } = await import(
+            "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js"
+        );
+
+        const snap = await getDocs(collection(window.bellonaDB, "players"));
+
+        players = snap.docs.map(doc => ({
+            id: doc.id,
+            name: doc.data().name || "ไม่ระบุชื่อ",
+            job: doc.data().job || "ไม่ระบุอาชีพ",
+            status: doc.data().status || "มา",
+            partyId: doc.data().partyId ?? null,
+            slotIndex: doc.data().slotIndex ?? null,
+            presentCount: doc.data().presentCount || 0,
+            leaveCount: doc.data().leaveCount || 0,
+            absentCount: doc.data().absentCount || 0,
+            hasQuota: doc.data().hasQuota ?? true,
+            rewardName: doc.data().rewardName || "",
+            rewardClaimed: doc.data().rewardClaimed || false
+        }));
+
+        saveToLocalStorage();
+        renderAll();
+
+        alert("นำเข้ารายชื่อจาก Firebase สำเร็จ: " + players.length + " คน");
+    } catch (err) {
+        alert("Firebase Import Error: " + err.message);
+    }
+}
+
+window.savePlayersToFirebaseSafe = async function() {
     if (!window.bellonaDB) {
         alert("Firebase ยังไม่พร้อม");
         return;
@@ -508,38 +545,7 @@
     } catch (err) {
         alert("Firebase Save Error: " + err.message);
     }
-}
-    try {
-        const { collection, getDocs } = await import(
-            "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js"
-        );
-
-        const snap = await getDocs(collection(window.bellonaDB, "players"));
-
-        players = snap.docs.map(doc => ({
-            id: doc.id,
-            name: doc.data().name || "ไม่ระบุชื่อ",
-            job: doc.data().job || "ไม่ระบุอาชีพ",
-            status: doc.data().status || "มา",
-            partyId: doc.data().partyId ?? null,
-            slotIndex: doc.data().slotIndex ?? null,
-            presentCount: doc.data().presentCount || 0,
-            leaveCount: doc.data().leaveCount || 0,
-            absentCount: doc.data().absentCount || 0,
-            hasQuota: doc.data().hasQuota ?? true
-        }));
-
-        saveToLocalStorage();
-        renderAll();
-        renderWaitingList();
-        renderMemberManagerTab();
-
-        alert("นำเข้ารายชื่อจาก Firebase สำเร็จ: " + players.length + " คน");
-    } catch (err) {
-        alert("Firebase Import Error: " + err.message);
-    }
-}
-
+};
         /* ================= ⚡ ระบบเพิ่มแผนที่ผ่าน ลิงก์ URL รูปภาพหน้าเว็บ ================= */
         function addMapViaUrlManual() {
             if (!checkAdminAccess()) return;
