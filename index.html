@@ -866,7 +866,11 @@ console.log("Realtime Sync Started");
         function manualAddMemberSubmit() {
             const name = document.getElementById('manual-add-name').value.trim(); const job = document.getElementById('manual-add-job').value; const status = document.getElementById('manual-add-status').value; if (!name) return;
             players.push({ id: String(Date.now()), name: name, job: job, status: status, presentCount: 1, leaveCount: 0, absentCount: 0, hasQuota: false, rewardName: '', rewardClaimed: false, partyId: null, slotIndex: null });
-            document.getElementById('manual-add-name').value = ''; saveToLocalStorage(); renderAll();
+            document.getElementById('manual-add-name').value = ''; saveToLocalStorage();if (typeof window.savePlayersToFirebaseSafe === "function") {
+    window.savePlayersToFirebaseSafe();
+}
+
+renderAll(); renderAll();
         }
         function toggleSelectAllMembers(master) { document.querySelectorAll('.member-select-chk').forEach(c => c.checked = master.checked); }
         function deleteSelectedPlayers() {
