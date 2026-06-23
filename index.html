@@ -864,13 +864,47 @@ console.log("Realtime Sync Started");
 
         /* ================= ระบบการจัดปาร์ตี้ และ การจัดการหน้าต่างสมาชิก ================= */
         function manualAddMemberSubmit() {
-            const name = document.getElementById('manual-add-name').value.trim(); const job = document.getElementById('manual-add-job').value; const status = document.getElementById('manual-add-status').value; if (!name) return;
-            players.push({ id: String(Date.now()), name: name, job: job, status: status, presentCount: 1, leaveCount: 0, absentCount: 0, hasQuota: false, rewardName: '', rewardClaimed: false, partyId: null, slotIndex: null });
-            document.getElementById('manual-add-name').value = ''; saveToLocalStorage();if (typeof window.savePlayersToFirebaseSafe === "function") {
-    window.savePlayersToFirebaseSafe();
-}
+           function manualAddMemberSubmit() {
+    if (!checkAdminAccess()) return;
 
-renderAll(); renderAll();
+    const name = document.getElementById('manual-add-name').value.trim();
+    const job = document.getElementById('manual-add-job').value;
+    const status = document.getElementById('manual-add-status').value;
+
+    if (!name) {
+        alert('กรุณาใส่ชื่อตัวละคร');
+        return;
+    }
+
+    players.push({
+        id: String(Date.now()),
+        name: name,
+        job: job,
+        status: status,
+        presentCount: status === 'มา' ? 1 : 0,
+        leaveCount: status === 'ลา' ? 1 : 0,
+        absentCount: status === 'ขาด' ? 1 : 0,
+        hasQuota: true,
+        rewardName: '',
+        rewardClaimed: false,
+        partyId: null,
+        slotIndex: null,
+        discordId: ''
+    });
+
+    document.getElementById('manual-add-name').value = '';
+
+    saveToLocalStorage();
+
+    if (typeof window.savePlayersToFirebaseSafe === "function") {
+        window.savePlayersToFirebaseSafe();
+    }
+
+    renderAll();
+
+    alert('เพิ่มสมาชิกและบันทึก Firebase แล้ว');
+}
+    renderAll();
         }
         function toggleSelectAllMembers(master) { document.querySelectorAll('.member-select-chk').forEach(c => c.checked = master.checked); }
         function deleteSelectedPlayers() {
