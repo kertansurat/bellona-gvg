@@ -1251,9 +1251,8 @@ function resetAllRewardQuota() {
         function spinEligibleReward() {
 
     const pool = players.filter(
-        p => p.hasQuota === true && p.status !== 'ขาด'
-    );
-
+        const pool = players.filter(p => p.hasQuota !== false && p.status === 'มา'
+);
     spinRewardWheel(pool);
 }
 
@@ -1311,7 +1310,7 @@ function renderRewardsTab() {
     tbody.innerHTML = '';
 
     const totalMembers = players.length;
-    const activeMembers = players.filter(p => p.hasQuota === true && p.status !== 'ขาด').length;
+    const activeMembers = players.filter(p => p.hasQuota !== false && p.status === 'มา').length;
     const inactiveMembers = totalMembers - activeMembers;
 
     const totalEl = document.getElementById('reward-total-members');
@@ -1343,10 +1342,10 @@ function renderRewardsTab() {
 }
         
 function copyRewardEligibleNames() {
-
     const names = players
-        .filter(p => p.hasQuota === true && p.status !== 'ขาด')
+        .filter(p => p.hasQuota !== false && p.status === 'มา')
         .map(p => p.name)
+        .filter(Boolean)
         .join('\n');
 
     if (!names) {
@@ -1355,7 +1354,6 @@ function copyRewardEligibleNames() {
     }
 
     navigator.clipboard.writeText(names);
-
     alert('คัดลอกรายชื่อคนมีสิทธิ์แล้ว');
 }
 
