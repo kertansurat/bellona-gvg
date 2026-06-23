@@ -353,26 +353,76 @@
 
             <!-- 4. แท็บหน้าโควตาสุ่มของรางวัล -->
             <div id="tab-content-rewards" class="hidden space-y-5">
-                <div class="grid grid-cols-1 2xl:grid-cols-3 gap-6">
-                    <div class="lg:col-span-1 bg-[#111520] p-6 rounded-xl border border-[#1f2838] flex flex-col items-center justify-between min-h-[420px] shadow-2xl">
-                        <div class="text-center w-full">
-                            <h2 class="text-base font-bold text-[#d4af37] uppercase tracking-widest"><i class="fa-solid fa-gift text-lg"></i> แท่นสุ่มรางวัลนำโชค BELLONA</h2>
-                        </div>
-                        <div class="relative w-48 h-48 flex items-center justify-center my-4">
-                            <div id="raffle-glow" class="absolute inset-0 rounded-full border-4 border-dashed border-[#d4af37]/40"></div>
-                            <div class="absolute inset-4 rounded-full bg-[#0c0e14] border flex flex-col items-center justify-center p-3 text-center">
-                                <div id="lucky-winner-name" class="text-xl font-bold text-white py-1.5 truncate max-w-full">???</div>
-                                <div id="lucky-winner-job" class="text-xs text-[#d4af37] italic">พร้อมรับรางวัล</div>
-                            </div>
-                        </div>
-                        <button onclick="spinLuckyRaffle()" class="admin-only w-full bg-[#d4af37] hover:bg-yellow-500 text-black font-extrabold py-3 px-4 rounded-lg text-sm"><i class="fa-solid fa-dice"></i> เริ่มหมุนวงล้อสุ่มรางวัล</button>
-                    </div>
-                    <div class="2xl:col-span-2 bg-[#111520] p-6 rounded-xl border border-[#1f2838] space-y-5 shadow-2xl">
-                        <h3 class="text-sm font-bold text-gray-200">รายชื่อผู้มีสิทธิ์โควตาสุ่มรางวัล</h3>
-                        <div class="overflow-x-auto"><table class="w-full text-left text-sm border-collapse"><thead><tr class="bg-[#1c2331] text-gray-300"><th class="p-3 font-bold">ชื่อตัวละคร</th><th class="p-3 font-bold">ของรางวัลที่ลุ้นได้</th><th class="p-3 font-bold">สถานะของรางวัล</th></tr></thead><tbody id="reward-quota-table-body" class="divide-y divide-[#1c2331]"></tbody></table></div>
-                    </div>
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+
+        <div class="bg-[#111520] p-6 rounded-xl border border-[#1f2838] flex flex-col items-center justify-between min-h-[420px] shadow-2xl">
+            <div class="text-center w-full space-y-1">
+                <h2 class="text-base font-bold text-[#d4af37] uppercase tracking-widest">
+                    <i class="fa-solid fa-gift"></i> แท่นสุ่มรางวัล BELLONA
+                </h2>
+                <p class="text-[11px] text-gray-500">เลือกโหมดสุ่มตามสิทธิ์รางวัลของสมาชิก</p>
+            </div>
+
+            <div class="relative w-52 h-52 flex items-center justify-center my-5">
+                <div class="absolute inset-0 rounded-full border-4 border-dashed border-[#d4af37]/40 animate-pulse"></div>
+                <div class="absolute inset-5 rounded-full bg-[#0c0e14] border border-[#2a3448] flex flex-col items-center justify-center p-4 text-center shadow-inner">
+                    <div id="lucky-winner-name" class="text-2xl font-extrabold text-white py-1 truncate max-w-full">???</div>
+                    <div id="lucky-winner-job" class="text-xs text-[#d4af37] italic">รอเริ่มสุ่ม</div>
                 </div>
             </div>
+
+            <div class="w-full space-y-2">
+                <button onclick="spinEligibleRaffle()" class="admin-only w-full bg-[#d4af37] hover:bg-yellow-500 text-black font-extrabold py-3 px-4 rounded-lg text-sm">
+                    <i class="fa-solid fa-dice"></i> สุ่มเฉพาะคนมีสิทธิ์
+                </button>
+
+                <button onclick="spinAllPlayersRaffle()" class="admin-only w-full bg-[#1c2331] hover:bg-[#263249] text-cyan-300 border border-cyan-900/50 font-bold py-3 px-4 rounded-lg text-sm">
+                    <i class="fa-solid fa-users"></i> สุ่มจากรายชื่อทั้งหมด
+                </button>
+
+                <button onclick="resetRaffleDisplay()" class="admin-only w-full bg-red-950/30 text-red-400 border border-red-900/40 font-bold py-2.5 px-4 rounded-lg text-xs">
+                    <i class="fa-solid fa-rotate-left"></i> รีเซ็ตผลสุ่ม
+                </button>
+            </div>
+        </div>
+
+        <div class="xl:col-span-2 bg-[#111520] p-6 rounded-xl border border-[#1f2838] space-y-5 shadow-2xl">
+            <div class="flex flex-wrap justify-between items-center gap-3 border-b border-[#1f2838] pb-3">
+                <div>
+                    <h3 class="text-sm font-bold text-gray-200">
+                        <i class="fa-solid fa-list-check text-[#d4af37]"></i> รายชื่อและสิทธิ์สุ่มรางวัล
+                    </h3>
+                    <p class="text-[11px] text-gray-500 mt-1">เปิด/ปิดสิทธิ์ และดูว่าใครได้รับรางวัลแล้ว</p>
+                </div>
+
+                <div class="flex gap-2 text-xs">
+                    <span class="px-3 py-1.5 rounded-lg bg-[#0c0e14] border border-[#1f2838] text-green-400 font-bold">
+                        มีสิทธิ์: <span id="reward-eligible-count">0</span>
+                    </span>
+                    <span class="px-3 py-1.5 rounded-lg bg-[#0c0e14] border border-[#1f2838] text-red-400 font-bold">
+                        รับแล้ว: <span id="reward-claimed-count">0</span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm border-collapse">
+                    <thead>
+                        <tr class="bg-[#1c2331] text-gray-300">
+                            <th class="p-3 font-bold">ชื่อตัวละคร</th>
+                            <th class="p-3 font-bold">อาชีพ</th>
+                            <th class="p-3 font-bold text-center">สิทธิ์สุ่ม</th>
+                            <th class="p-3 font-bold text-center">สถานะรางวัล</th>
+                            <th class="p-3 font-bold text-right">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reward-quota-table-body" class="divide-y divide-[#1c2331]"></tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
 
             <!-- 5. แท็บหน้าวิเคราะห์ข้อมูลประวัติการมาวอร์สะสม -->
             <div id="tab-content-stats" class="hidden space-y-5">
@@ -951,9 +1001,52 @@ await setDoc(doc(window.bellonaDB, "players", playerId), {
             players.forEach(p => { tbody.innerHTML += `<tr class="border-b border-[#1c2331] text-xs"><td class="p-3 text-center"><input type="checkbox" value="${p.id}" class="member-select-chk accent-[#d4af37]"></td><td class="p-3 font-bold text-white">${p.name} <span class="text-xs text-gray-500">(ID: ${p.id})</span></td><td class="p-3">${p.job}</td><td class="p-3">${p.status}</td><td class="p-3 text-center">${p.hasQuota?'เปิด':'ปิด'}</td><td class="p-3 text-right"><button onclick="releasePlayer('${p.id}')" class="text-gray-400 hover:text-white bg-[#1c2331] px-2 py-1 rounded">ปลดล็อก</button></td></tr>`; });
         }
         function renderRewardsTab() {
-            const tbody = document.getElementById('reward-quota-table-body'); if(!tbody) return; tbody.innerHTML = '';
-            players.filter(p => p.hasQuota).forEach(p => { tbody.innerHTML += `<tr><td class="p-3 font-bold text-white">${p.name}</td><td class="p-3 text-gray-300">${p.rewardName || 'รางวัล'}</td><td class="p-3">${p.rewardClaimed ? '🟢 ได้รับแล้ว':'🔴 ยังไม่ได้'}</td></tr>`; });
-        }
+           function renderRewardsTab() {
+    const tbody = document.getElementById('reward-quota-table-body');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+
+    const eligibleCount = players.filter(p => p.hasQuota === true && p.rewardClaimed !== true).length;
+    const claimedCount = players.filter(p => p.rewardClaimed === true).length;
+
+    const eligibleEl = document.getElementById('reward-eligible-count');
+    const claimedEl = document.getElementById('reward-claimed-count');
+
+    if (eligibleEl) eligibleEl.innerText = eligibleCount;
+    if (claimedEl) claimedEl.innerText = claimedCount;
+
+    players.forEach(p => {
+        tbody.innerHTML += `
+            <tr class="text-xs hover:bg-[#151b28]">
+                <td class="p-3 font-bold text-white">${p.name || '-'}</td>
+                <td class="p-3 text-gray-300">${p.job || '-'}</td>
+
+                <td class="p-3 text-center">
+                    ${p.hasQuota 
+                        ? '<span class="text-green-400 font-bold">เปิด</span>' 
+                        : '<span class="text-red-400 font-bold">ปิด</span>'}
+                </td>
+
+                <td class="p-3 text-center">
+                    ${p.rewardClaimed 
+                        ? '<span class="text-[#d4af37] font-bold">ได้รางวัลแล้ว</span>' 
+                        : '<span class="text-gray-400">ยังไม่ได้</span>'}
+                </td>
+
+                <td class="p-3 text-right space-x-1">
+                    <button onclick="toggleRewardQuota('${p.id}')" class="admin-only bg-[#1c2331] text-cyan-300 px-2 py-1 rounded text-[10px] font-bold">
+                        เปิด/ปิดสิทธิ์
+                    </button>
+
+                    <button onclick="resetPlayerRewardClaim('${p.id}')" class="admin-only bg-amber-950/40 text-amber-400 px-2 py-1 rounded text-[10px] font-bold">
+                        คืนสิทธิ์
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+}
         function renderStatsTab() {
             const tbody = document.getElementById('stats-table-body'); if(!tbody) return; tbody.innerHTML = ''; let totalP = 0, totalL = 0, totalA = 0;
             players.forEach(p => { totalP += p.presentCount; totalL += p.leaveCount; totalA += p.absentCount; tbody.innerHTML += `<tr><td class="p-3 font-bold">${p.name}</td><td class="p-3 text-gray-400">${p.job}</td><td class="p-3 text-center text-green-400">${p.presentCount}</td><td class="p-3 text-center text-amber-400">${p.leaveCount}</td><td class="p-3 text-center text-red-400">${p.absentCount}</td></tr>`; });
@@ -1031,6 +1124,117 @@ function bulkSetAttendanceStatus(status) {
     renderAll();
 
     alert('อัปเดตสถานะ ' + status + ' สำเร็จ');
+}
+        function getRewardEligiblePlayers() {
+    return players.filter(p => p.hasQuota === true && p.rewardClaimed !== true);
+}
+
+function spinEligibleRaffle() {
+    if (!checkAdminAccess()) {
+        alert('เฉพาะ Admin เท่านั้น');
+        return;
+    }
+
+    const pool = getRewardEligiblePlayers();
+
+    if (pool.length === 0) {
+        alert('ไม่มีสมาชิกที่เหลือสิทธิ์สุ่ม');
+        return;
+    }
+
+    const winner = pool[Math.floor(Math.random() * pool.length)];
+    showRaffleWinner(winner);
+
+    winner.rewardClaimed = true;
+    winner.hasQuota = false;
+
+    saveToLocalStorage();
+
+    if (typeof window.savePlayersToFirebaseSafe === 'function') {
+        window.savePlayersToFirebaseSafe();
+    }
+
+    renderAll();
+}
+
+function spinAllPlayersRaffle() {
+    if (!checkAdminAccess()) {
+        alert('เฉพาะ Admin เท่านั้น');
+        return;
+    }
+
+    if (!players || players.length === 0) {
+        alert('ยังไม่มีรายชื่อสมาชิก');
+        return;
+    }
+
+    const winner = players[Math.floor(Math.random() * players.length)];
+    showRaffleWinner(winner);
+
+    saveToLocalStorage();
+
+    if (typeof window.savePlayersToFirebaseSafe === 'function') {
+        window.savePlayersToFirebaseSafe();
+    }
+
+    renderAll();
+}
+
+function showRaffleWinner(winner) {
+    const nameEl = document.getElementById('lucky-winner-name');
+    const jobEl = document.getElementById('lucky-winner-job');
+
+    if (nameEl) nameEl.innerText = winner.name || 'ไม่ระบุชื่อ';
+    if (jobEl) jobEl.innerText = winner.job || 'ไม่ระบุอาชีพ';
+}
+
+function resetRaffleDisplay() {
+    const nameEl = document.getElementById('lucky-winner-name');
+    const jobEl = document.getElementById('lucky-winner-job');
+
+    if (nameEl) nameEl.innerText = '???';
+    if (jobEl) jobEl.innerText = 'รอเริ่มสุ่ม';
+}
+
+function toggleRewardQuota(playerId) {
+    if (!checkAdminAccess()) {
+        alert('เฉพาะ Admin เท่านั้น');
+        return;
+    }
+
+    const p = players.find(x => String(x.id) === String(playerId));
+    if (!p) return;
+
+    p.hasQuota = !p.hasQuota;
+
+    saveToLocalStorage();
+
+    if (typeof window.savePlayersToFirebaseSafe === 'function') {
+        window.savePlayersToFirebaseSafe();
+    }
+
+    renderAll();
+}
+
+function resetPlayerRewardClaim(playerId) {
+    if (!checkAdminAccess()) {
+        alert('เฉพาะ Admin เท่านั้น');
+        return;
+    }
+
+    const p = players.find(x => String(x.id) === String(playerId));
+    if (!p) return;
+
+    p.rewardClaimed = false;
+    p.hasQuota = true;
+
+    saveToLocalStorage();
+
+    if (typeof window.savePlayersToFirebaseSafe === 'function') {
+        window.savePlayersToFirebaseSafe();
+    }
+
+    renderAll();
 }
 </script>
 </body>
