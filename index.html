@@ -603,12 +603,13 @@ window.savePlayersToFirebaseSafe = async function() {
             renderAll();
 
             console.log("Realtime players synced:", players.length);
-        });
+});
 
-        alert("เปิด Realtime Sync แล้ว");
-    } catch (err) {
-        alert("Realtime Sync Error: " + err.message);
-    }
+console.log("Realtime Sync Started");
+
+} catch (err) {
+    alert("Realtime Sync Error: " + err.message);
+}
 };
         
         /* ================= ⚡ ระบบเพิ่มแผนที่ผ่าน ลิงก์ URL รูปภาพหน้าเว็บ ================= */
