@@ -533,20 +533,26 @@ window.savePlayersToFirebaseSafe = async function() {
         for (const p of players) {
             const playerId = String(p.id || p.name || Date.now());
 
-            await setDoc(doc(window.bellonaDB, "players", playerId), {
-                name: p.name || "",
-                job: p.job || "",
-                status: p.status || "มา",
-                partyId: p.partyId ?? null,
-                slotIndex: p.slotIndex ?? null,
-                presentCount: p.presentCount || 0,
-                leaveCount: p.leaveCount || 0,
-                absentCount: p.absentCount || 0,
-                hasQuota: p.hasQuota ?? true,
-                rewardName: p.rewardName || "",
-                rewardClaimed: p.rewardClaimed || false,
-                updatedAt: new Date().toISOString()
-            }, { merge: true });
+await setDoc(doc(window.bellonaDB, "players", playerId), {
+    name: p.name || "",
+    job: p.job || "",
+    status: p.status || "มา",
+
+    presentCount: p.presentCount || 0,
+    leaveCount: p.leaveCount || 0,
+    absentCount: p.absentCount || 0,
+
+    hasQuota: p.hasQuota ?? true,
+    rewardName: p.rewardName || "",
+    rewardClaimed: p.rewardClaimed || false,
+
+    discordId: p.discordId || "",
+
+    partyId: p.partyId ?? null,
+    slotIndex: p.slotIndex ?? null,
+
+    updatedAt: new Date().toISOString()
+}, { merge: true });
         }
 
         alert("บันทึกข้อมูลขึ้น Firebase สำเร็จ: " + players.length + " คน");
