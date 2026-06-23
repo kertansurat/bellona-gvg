@@ -394,7 +394,7 @@ lass="admin-only bg-cyan-950/40 text-cyan-400 border border-cyan-900/40 px-3 py-
 </button>
                 <button onclick="copyRewardAllNames()"
 class="admin-only bg-indigo-950/40 text-indigo-400 border border-indigo-900/40 px-3 py-2 rounded-lg font-bold text-xs">
-    👥 Copy ทั้งหมด
+    👥 Copy มาวอร์
 </button>
             </div>
 
@@ -1342,8 +1342,12 @@ function renderRewardsTab() {
 }
         
 function copyRewardEligibleNames() {
+
     const names = players
-        .filter(p => p.hasQuota !== false && p.status === 'มา')
+        .filter(p =>
+            p.status === 'มา' &&
+            p.hasQuota !== false
+        )
         .map(p => p.name)
         .filter(Boolean)
         .join('\n');
@@ -1354,23 +1358,26 @@ function copyRewardEligibleNames() {
     }
 
     navigator.clipboard.writeText(names);
+
     alert('คัดลอกรายชื่อคนมีสิทธิ์แล้ว');
 }
 
 function copyRewardAllNames() {
 
     const names = players
+        .filter(p => p.status === 'มา')
         .map(p => p.name)
+        .filter(Boolean)
         .join('\n');
 
     if (!names) {
-        alert('ไม่มีรายชื่อสมาชิก');
+        alert('ไม่มีรายชื่อมาวอร์');
         return;
     }
 
     navigator.clipboard.writeText(names);
 
-    alert('คัดลอกรายชื่อทั้งหมดแล้ว');
+    alert('คัดลอกรายชื่อมาวอร์ทั้งหมดแล้ว');
 }
     </script>
 </body>
