@@ -329,8 +329,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- 4. แท็บหน้าโควตาสุ่มของรางวัล -->
             <!-- 4. แท็บหน้าโควตาสุ่มของรางวัล -->
 <div id="tab-content-rewards" class="hidden space-y-5">
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -390,6 +388,14 @@
                 <button onclick="resetAllRewardQuota()" class="admin-only bg-[#1c2331] text-[#d4af37] border border-[#2d3748] px-3 py-2 rounded-lg font-bold">
                     รีเซ็ตสิทธิ์ทั้งหมด
                 </button>
+                <button onclick="copyRewardEligibleNames()"
+lass="admin-only bg-cyan-950/40 text-cyan-400 border border-cyan-900/40 px-3 py-2 rounded-lg font-bold text-xs">
+    📋 Copy คนมีสิทธิ์
+</button>
+                <button onclick="copyRewardAllNames()"
+class="admin-only bg-indigo-950/40 text-indigo-400 border border-indigo-900/40 px-3 py-2 rounded-lg font-bold text-xs">
+    👥 Copy ทั้งหมด
+</button>
             </div>
 
             <div class="overflow-x-auto">
@@ -1334,6 +1340,7 @@ function renderRewardsTab() {
             </tr>
         `;
     });
+    
 }
         function toggleRewardQuota(playerId) {
     if (!checkAdminAccess()) {
@@ -1353,6 +1360,16 @@ function renderRewardsTab() {
     }
 
     renderAll();
+}
+function copyRewardEligibleNamesComma() {
+    const names = players
+        .filter(p => p.hasQuota === true && p.status !== 'ขาด')
+        .map(p => p.name)
+        .join(',');
+
+    navigator.clipboard.writeText(names);
+
+    alert('Copy รายชื่อสำหรับเว็บวิ่งเป็ดแล้ว');
 }
     </script>
 </body>
