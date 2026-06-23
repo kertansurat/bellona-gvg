@@ -950,7 +950,27 @@ console.log("Realtime Sync Started");
                 if(p){ p.partyId = partyId; p.slotIndex = slotIndex; selectedPlayerId = null; saveToLocalStorage(); renderAll(); }
             }
         }
-        function releasePlayer(id) { const p = players.find(pl => pl.id === id); if(p){ p.partyId = null; p.slotIndex = null; saveToLocalStorage(); renderAll(); } }
+        function releasePlayer(id) {
+    if (!checkAdminAccess()) {
+        alert('เฉพาะ Admin เท่านั้น');
+        return;
+    }
+
+    const p = players.find(pl => String(pl.id) === String(id));
+
+    if (p) {
+        p.partyId = null;
+        p.slotIndex = null;
+
+        saveToLocalStorage();
+
+        if (typeof window.savePlayersToFirebaseSafe === "function") {
+            window.savePlayersToFirebaseSafe();
+        }
+
+        renderAll();
+    }
+}
         function autoAssign() {
             players.forEach(p => { p.partyId = null; p.slotIndex = null; }); let partyIdx = 1, slotIdx = 0;
             players.filter(p => p.status === 'มา').forEach((p) => {
@@ -960,33 +980,60 @@ console.log("Realtime Sync Started");
         function triggerClearPartiesConfirmation() { players.forEach(p => { p.partyId = null; p.slotIndex = null; }); saveToLocalStorage(); renderAll(); }
 
         function renderMemberManagerTab() {
-            const tbody = document.getElementById('member-manager-table-body'); if(!tbody) return; tbody.innerHTML = '';
-            players.forEach(p => { tbody.innerHTML += `<tr class="border-b border-[#1c2331] text-xs"><td class="p-3 text-center"><input type="checkbox" value="${p.id}" class="member-select-chk accent-[#d4af37]"></td><td class="p-3 font-bold text-white">${p.name} <span class="text-xs text-gray-500">(ID: ${p.id})</span></td><td class="p-3">${p.job}</td><td class="p-3">${p.status}</td><td class="p-3 text-center">${p.hasQuota?'เปิด':'ปิด'}</td><td class="p-3 text-right"><button onclick="releasePlayer('${p.id}')" class="text-gray-400 hover:text-white bg-[#1c2331] px-2 py-1 rounded">ปลดล็อก</button></td></tr>`; });
-        }
-        function renderRewardsTab() {
-    const tbody = document.getElementById('reward-quota-table-body');
+            const tbody = document.getElementById('member-manager-table-body');
     if (!tbody) return;
 
     tbody.innerHTML = '';
 
     players.forEach(p => {
         tbody.innerHTML += `
-            <tr class="text-xs border-b border-[#1c2331]">
-                <td class="p-3 font-bold text-white">${p.name || '-'}</td>
-                <td class="p-3">${p.rewardName || 'ยังไม่ระบุ'}</td>
-                <td class="p-3">
-                    ${p.hasQuota 
-                        ? '<span class="text-green-400 font-bold">เปิดสิทธิ์</span>' 
-                        : '<span class="text-red-400 font-bold">ปิดสิทธิ์</span>'}
+            <tr class="border-b border-[#1c2331] text-xs">
+                <td class="p-3 text-center">
+                    <input type="checkbox" value="${p.id}" class="member-select-chk accent-[#d4af37]">
                 </td>
+
+                <td class="p-3 font-bold text-white">
+                    ${p.name}
+                    <span class="text-xs text-gray-500">(ID: ${p.id})</span>
+                </td>
+
+                <td class="p-3">${p.job}</td>
+
+                <td class="p-3">${p.status || '-'}</td>
+
+                <td class="p-3 text-center">
+                    <button onclick="toggleRewardQuota('${p.id}')" class="admin-only ${p.hasQuota ? 'bg-green-950/40 text-green-400 border-green-900/40' : 'bg-red-950/40 text-red-400 border-red-900/40'} border px-3 py-1.5 rounded-lg text-xs font-bold">
+                        ${p.hasQuota ? 'เปิด' : 'ปิด'}
+                    </button>
+                </td>
+
                 <td class="p-3 text-right">
-                    <button onclick="toggleRewardQuota('${p.id}')" class="admin-only bg-[#1c2331] text-[#d4af37] border border-[#2d3748] px-3 py-1.5 rounded-lg text-xs font-bold">
-                        เปิด/ปิดสิทธิ์
+                    <button onclick="releasePlayer('${p.id}')" class="admin-only text-gray-400 hover:text-white bg-[#1c2331] px-2 py-1 rounded">
+                        ปลดล็อก
                     </button>
                 </td>
             </tr>
         `;
     });
+}
+        function toggleRewardQuota(playerId) {
+    if (!checkAdminAccess()) {
+        alert('เฉพาะ Admin เท่านั้น');
+        return;
+    }
+
+    const p = players.find(x => String(x.id) === String(playerId));
+    if (!p) return;
+
+    p.hasQuota = !p.hasQuota;
+
+    saveToLocalStorage();
+
+    if (typeof window.savePlayersToFirebaseSafe === "function") {
+        window.savePlayersToFirebaseSafe();
+    }
+
+    renderAll();
 }
         function renderStatsTab() {
             const tbody = document.getElementById('stats-table-body'); if(!tbody) return; tbody.innerHTML = ''; let totalP = 0, totalL = 0, totalA = 0;
