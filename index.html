@@ -260,8 +260,23 @@
                             <div>
                                 <h2 class="text-base font-bold text-gray-200 flex items-center gap-2"><i class="fa-solid fa-users-gear text-[#d4af37]"></i> ทะเบียนและสิทธิ์จัดการสมาชิกกิลด์</h2>
                             </div>
-                            <button onclick="deleteSelectedPlayers()" class="admin-only bg-red-950/40 text-red-400 border border-red-900/40 px-4 py-2.5 rounded-lg transition shadow-md"><i class="fa-solid fa-trash-can"></i> ลบสมาชิกที่ติ๊กเลือก</button>
-                        </div>
+                            <div class="flex flex-wrap items-center gap-2">
+    <button onclick="bulkSetAttendanceStatus('มา')" class="admin-only bg-green-950/40 text-green-400 border border-green-900/40 px-3 py-2 rounded-lg text-xs font-bold">
+        <i class="fa-solid fa-circle-check"></i> มาวอร์
+    </button>
+
+    <button onclick="bulkSetAttendanceStatus('ลา')" class="admin-only bg-amber-950/40 text-amber-400 border border-amber-900/40 px-3 py-2 rounded-lg text-xs font-bold">
+        <i class="fa-solid fa-clock"></i> ลา
+    </button>
+
+    <button onclick="bulkSetAttendanceStatus('ขาด')" class="admin-only bg-red-950/40 text-red-400 border border-red-900/40 px-3 py-2 rounded-lg text-xs font-bold">
+        <i class="fa-solid fa-circle-xmark"></i> ขาด
+    </button>
+
+    <button onclick="deleteSelectedPlayers()" class="admin-only bg-red-950/40 text-red-400 border border-red-900/40 px-4 py-2.5 rounded-lg transition shadow-md text-xs font-bold">
+        <i class="fa-solid fa-trash-can"></i> ลบสมาชิกที่ติ๊กเลือก
+    </button>
+</div>
                         <div class="overflow-x-auto">
                             <table class="w-full text-left text-sm border-collapse">
                                 <thead>
@@ -959,6 +974,46 @@ await setDoc(doc(window.bellonaDB, "players", playerId), {
     }
 }
     </script>
+function renderAll() {
+    ...
+}
+
+function bulkSetAttendanceStatus(status) {
+    if (!checkAdminAccess()) {
+        alert('เฉพาะ Admin เท่านั้น');
+        return;
+    }
+
+    const checked = document.querySelectorAll('.member-select-chk:checked');
+
+    if (checked.length === 0) {
+        alert('กรุณาติ๊กเลือกสมาชิกก่อน');
+        return;
+    }
+
+    checked.forEach(chk => {
+        const p = players.find(x => String(x.id) === String(chk.value));
+        if (!p) return;
+
+        p.status = status;
+
+        if (status === 'มา') p.presentCount = (p.presentCount || 0) + 1;
+        if (status === 'ลา') p.leaveCount = (p.leaveCount || 0) + 1;
+        if (status === 'ขาด') p.absentCount = (p.absentCount || 0) + 1;
+    });
+
+    saveToLocalStorage();
+
+    if (typeof window.savePlayersToFirebaseSafe === 'function') {
+        window.savePlayersToFirebaseSafe();
+    }
+
+    renderAll();
+
+    alert('อัปเดตสถานะ ' + status + ' สำเร็จ');
+}
+
+</script>
 </body>
     
     <script type="module">
