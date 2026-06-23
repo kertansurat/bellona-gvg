@@ -485,20 +485,25 @@ async function importPlayersFromFirebaseSafe() {
 
         const snap = await getDocs(collection(window.bellonaDB, "players"));
 
-        players = snap.docs.map(doc => ({
+      players = snap.docs.map(doc => ({
             id: doc.id,
             name: doc.data().name || "ไม่ระบุชื่อ",
             job: doc.data().job || "ไม่ระบุอาชีพ",
             status: doc.data().status || "มา",
-            partyId: doc.data().partyId ?? null,
-            slotIndex: doc.data().slotIndex ?? null,
+
             presentCount: doc.data().presentCount || 0,
             leaveCount: doc.data().leaveCount || 0,
             absentCount: doc.data().absentCount || 0,
+
             hasQuota: doc.data().hasQuota ?? true,
             rewardName: doc.data().rewardName || "",
-            rewardClaimed: doc.data().rewardClaimed || false
-        }));
+            rewardClaimed: doc.data().rewardClaimed || false,
+
+            discordId: doc.data().discordId || "",
+
+            partyId: doc.data().partyId ?? null,
+            slotIndex: doc.data().slotIndex ?? null
+}));
 
         saveToLocalStorage();
         renderAll();
