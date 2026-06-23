@@ -122,6 +122,9 @@
         <button onclick="switchTab('tactical')" id="tab-btn-tactical" class="tab-btn px-6 py-4 text-sm font-bold flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-map-location-dot"></i> กระดานวางแผน (Tactical Board)</button>
         <button onclick="switchTab('members')" id="tab-btn-members" class="tab-btn px-6 py-4 text-sm font-bold flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-user-gear text-[#d4af37]"></i> จัดการสมาชิก & เช็คชื่อกิลด์</button>
         <button onclick="switchTab('rewards')" id="tab-btn-rewards" class="tab-btn px-6 py-4 text-sm font-bold flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-gift text-amber-400"></i> โควตาสุ่มของรางวัล</button>
+        <button onclick="switchTab('duck')" id="tab-btn-duck" class="tab-btn px-6 py-4 text-sm font-bold flex items-center gap-2 whitespace-nowrap">
+    <i class="fa-solid fa-duck text-yellow-300"></i> สุ่มเป็ด
+</button>
         <button onclick="switchTab('stats')" id="tab-btn-stats" class="tab-btn px-6 py-4 text-sm font-bold flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-chart-line text-emerald-400"></i> สถิติ ขาด ลา มาวอร์</button>
     </nav>
 
@@ -329,8 +332,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- 4. แท็บหน้าโควตาสุ่มของรางวัล -->
             <!-- 4. แท็บหน้าโควตาสุ่มของรางวัล -->
 <div id="tab-content-rewards" class="hidden space-y-5">
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -409,8 +410,53 @@
 
     </div>
 </div>
-
             <!-- 5. แท็บหน้าวิเคราะห์ข้อมูลประวัติการมาวอร์สะสม -->
+<div id="tab-content-duck" class="hidden space-y-5">
+    <div class="bg-[#111520] p-6 rounded-xl border border-[#1f2838] space-y-4 shadow-2xl">
+
+        <div class="flex flex-wrap justify-between items-center gap-3 border-b border-[#1f2838] pb-3">
+            <h2 class="text-base font-bold text-[#d4af37]">
+                🦆 รายชื่อสุ่มเป็ด BELLONA
+            </h2>
+
+            <div class="flex flex-wrap gap-2 text-xs">
+                <button onclick="copyDuckEligibleNames()" class="admin-only bg-[#d4af37] text-black px-3 py-2 rounded-lg font-bold">Copy คนมีสิทธิ์</button>
+                <button onclick="copyDuckAllNames()" class="admin-only bg-[#1c2331] text-cyan-300 px-3 py-2 rounded-lg font-bold">Copy ทั้งหมด</button>
+                <button onclick="resetDuckQuota()" class="admin-only bg-red-950/40 text-red-400 px-3 py-2 rounded-lg font-bold">รีเซ็ตทั้งหมด</button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+            <div class="bg-[#0c0e14] border border-[#1f2838] rounded-lg p-3">
+                👥 ทั้งหมด <b id="duck-total-count" class="text-white">0</b>
+            </div>
+            <div class="bg-[#0c0e14] border border-[#1f2838] rounded-lg p-3">
+                ✅ มีสิทธิ์ <b id="duck-eligible-count" class="text-green-400">0</b>
+            </div>
+            <div class="bg-[#0c0e14] border border-[#1f2838] rounded-lg p-3">
+                🎁 ได้รางวัลแล้ว <b id="duck-claimed-count" class="text-[#d4af37]">0</b>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm border-collapse">
+                <thead>
+                    <tr class="bg-[#1c2331] text-gray-300">
+                        <th class="p-3">ชื่อ</th>
+                        <th class="p-3">อาชีพ</th>
+                        <th class="p-3 text-center">สถานะวอ</th>
+                        <th class="p-3 text-center">สิทธิ์สุ่มเป็ด</th>
+                        <th class="p-3 text-center">รางวัล</th>
+                        <th class="p-3 text-right">จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody id="duck-table-body" class="divide-y divide-[#1c2331]"></tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+            <!-- 6. แท็บหน้าวิเคราะห์ข้อมูลประวัติการมาวอร์สะสม -->
             <div id="tab-content-stats" class="hidden space-y-5">
                 <div class="bg-[#111520] p-6 rounded-xl border border-[#1f2838] space-y-5 shadow-2xl">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -478,6 +524,7 @@
     loadFromLocalStorage();
     initPartiesGrid();
     initDrawingCanvas();
+    renderDuckTab();
     renderAll();
 
     setTimeout(() => {
@@ -1346,6 +1393,92 @@ function renderRewardsTab() {
 
     p.hasQuota = !p.hasQuota;
 
+    saveToLocalStorage();
+
+    if (typeof window.savePlayersToFirebaseSafe === "function") {
+        window.savePlayersToFirebaseSafe();
+    }
+
+    renderAll();
+}
+        function renderDuckTab() {
+    const tbody = document.getElementById('duck-table-body');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+
+    const eligible = players.filter(p => p.status === 'มา' && p.hasDuckQuota !== false && p.duckClaimed !== true);
+    const claimed = players.filter(p => p.duckClaimed === true);
+
+    document.getElementById('duck-total-count').innerText = players.length;
+    document.getElementById('duck-eligible-count').innerText = eligible.length;
+    document.getElementById('duck-claimed-count').innerText = claimed.length;
+
+    players.forEach(p => {
+        const hasDuckQuota = p.hasDuckQuota !== false;
+        const duckClaimed = p.duckClaimed === true;
+
+        tbody.innerHTML += `
+            <tr class="text-xs border-b border-[#1c2331]">
+                <td class="p-3 font-bold text-white">${p.name || '-'}</td>
+                <td class="p-3">${p.job || '-'}</td>
+                <td class="p-3 text-center">${p.status || '-'}</td>
+                <td class="p-3 text-center">
+                    ${hasDuckQuota && p.status === 'มา'
+                        ? '<span class="text-green-400 font-bold">มีสิทธิ์</span>'
+                        : '<span class="text-red-400 font-bold">ไม่มีสิทธิ์</span>'}
+                </td>
+                <td class="p-3 text-center">
+                    ${duckClaimed ? '<span class="text-[#d4af37] font-bold">ได้แล้ว</span>' : '<span class="text-gray-400">ยังไม่ได้</span>'}
+                </td>
+                <td class="p-3 text-right">
+                    <button onclick="toggleDuckQuota('${p.id}')" class="admin-only bg-[#1c2331] text-[#d4af37] px-3 py-1.5 rounded-lg text-xs font-bold">เปิด/ปิด</button>
+                    <button onclick="toggleDuckClaimed('${p.id}')" class="admin-only bg-[#1c2331] text-cyan-300 px-3 py-1.5 rounded-lg text-xs font-bold">ได้/ยังไม่ได้</button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+function toggleDuckQuota(id) {
+    const p = players.find(x => String(x.id) === String(id));
+    if (!p) return;
+    p.hasDuckQuota = !(p.hasDuckQuota !== false);
+    saveDuckAndRender();
+}
+
+function toggleDuckClaimed(id) {
+    const p = players.find(x => String(x.id) === String(id));
+    if (!p) return;
+    p.duckClaimed = !p.duckClaimed;
+    saveDuckAndRender();
+}
+
+function resetDuckQuota() {
+    players.forEach(p => {
+        p.hasDuckQuota = p.status === 'มา';
+        p.duckClaimed = false;
+    });
+    saveDuckAndRender();
+}
+
+function copyDuckEligibleNames() {
+    const names = players
+        .filter(p => p.status === 'มา' && p.hasDuckQuota !== false && p.duckClaimed !== true)
+        .map(p => p.name)
+        .join('\n');
+
+    navigator.clipboard.writeText(names);
+    alert('Copy รายชื่อคนมีสิทธิ์สุ่มเป็ดแล้ว');
+}
+
+function copyDuckAllNames() {
+    const names = players.map(p => p.name).join('\n');
+    navigator.clipboard.writeText(names);
+    alert('Copy รายชื่อทั้งหมดแล้ว');
+}
+
+function saveDuckAndRender() {
     saveToLocalStorage();
 
     if (typeof window.savePlayersToFirebaseSafe === "function") {
