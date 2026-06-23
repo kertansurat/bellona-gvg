@@ -1125,35 +1125,7 @@ function bulkSetAttendanceStatus(status) {
 
     alert('อัปเดตสถานะ ' + status + ' สำเร็จ');
 }
-        function getRewardEligiblePlayers() {
-    return players.filter(p => p.hasQuota === true && p.rewardClaimed !== true);
-}
-
-function spinEligibleRaffle() {
-    if (!checkAdminAccess()) {
-        alert('เฉพาะ Admin เท่านั้น');
-        return;
-    }
-
-    const pool = getRewardEligiblePlayers();
-
-    if (pool.length === 0) {
-        alert('ไม่มีสมาชิกที่เหลือสิทธิ์สุ่ม');
-        return;
-    }
-
-    const winner = pool[Math.floor(Math.random() * pool.length)];
-    showRaffleWinner(winner);
-
-    winner.rewardClaimed = true;
-    winner.hasQuota = false;
-
-    saveToLocalStorage();
-
-    if (typeof window.savePlayersToFirebaseSafe === 'function') {
-        window.savePlayersToFirebaseSafe();
-    }
-
+            
     renderAll();
 }
 
