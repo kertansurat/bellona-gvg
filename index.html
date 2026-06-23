@@ -950,7 +950,7 @@ console.log("Realtime Sync Started");
                 if(p){ p.partyId = partyId; p.slotIndex = slotIndex; selectedPlayerId = null; saveToLocalStorage(); renderAll(); }
             }
         }
-        function releasePlayer(id) {
+function releasePlayer(id) {
     if (!checkAdminAccess()) {
         alert('เฉพาะ Admin เท่านั้น');
         return;
