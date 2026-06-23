@@ -424,13 +424,11 @@
             renderAll();
         };
 
-  function checkLoginSession() {
+function checkLoginSession() {
     userRole = 'guest';
-
     sessionStorage.clear();
 
     const loginOverlay = document.getElementById('login-overlay-screen');
-
     if (loginOverlay) {
         loginOverlay.classList.remove('hidden');
     }
@@ -441,29 +439,24 @@ function attemptAdminLogin() {
     const passInp = document.getElementById('login-password').value.trim();
 
     if (userInp === 'admin-bellona' && passInp === '5000') {
-
         userRole = 'admin';
 
         const loginOverlay = document.getElementById('login-overlay-screen');
-
         if (loginOverlay) {
             loginOverlay.classList.add('hidden');
         }
 
         applyRolePermissions();
         renderAll();
-
     } else {
         alert('รหัสผ่านไม่ถูกต้อง');
     }
 }
 
 function bypassAsGuest() {
-
     userRole = 'guest';
 
     const loginOverlay = document.getElementById('login-overlay-screen');
-
     if (loginOverlay) {
         loginOverlay.classList.add('hidden');
     }
@@ -473,34 +466,35 @@ function bypassAsGuest() {
 }
 
 function logoutSession() {
-
     userRole = 'guest';
-
     sessionStorage.clear();
 
     const loginOverlay = document.getElementById('login-overlay-screen');
-
     if (loginOverlay) {
         loginOverlay.classList.remove('hidden');
     }
+
+    applyRolePermissions();
 }
 
 function checkAdminAccess() {
     return userRole === 'admin';
+}
 
-        function applyRolePermissions() {
-            const badge = document.getElementById('role-status-badge');
-            if (userRole === 'admin') {
-                badge.className = "px-3.5 py-1.5 rounded text-[11px] font-extrabold text-[#d4af37] border border-[#d4af37]/30 bg-[#232c3f]";
-                badge.innerHTML = `<i class="fa-solid fa-lock-open"></i> ADMIN MODE`;
-                document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('opacity-40', 'pointer-events-none'));
-            } else {
-                badge.className = "px-3.5 py-1.5 rounded text-[11px] font-extrabold text-gray-400 border border-[#2d3748] bg-[#181f2d]";
-                badge.innerHTML = `<i class="fa-solid fa-lock"></i> GUEST MODE`;
-                document.querySelectorAll('.admin-only').forEach(el => el.classList.add('opacity-40', 'pointer-events-none'));
-            }
-        }
+function applyRolePermissions() {
+    const badge = document.getElementById('role-status-badge');
+    if (!badge) return;
 
+    if (userRole === 'admin') {
+        badge.className = "px-3.5 py-1.5 rounded text-[11px] font-extrabold text-[#d4af37] border border-[#d4af37]/30 bg-[#232c3f]";
+        badge.innerHTML = `<i class="fa-solid fa-lock-open"></i> ADMIN MODE`;
+        document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('opacity-40', 'pointer-events-none'));
+    } else {
+        badge.className = "px-3.5 py-1.5 rounded text-[11px] font-extrabold text-gray-400 border border-[#2d3748] bg-[#181f2d]";
+        badge.innerHTML = `<i class="fa-solid fa-lock"></i> GUEST MODE`;
+        document.querySelectorAll('.admin-only').forEach(el => el.classList.add('opacity-40', 'pointer-events-none'));
+    }
+}
         function loadFromLocalStorage() {
             const rawData = localStorage.getItem('bellona_gvg_v13_final');
             if (rawData) {
