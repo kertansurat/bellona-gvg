@@ -39,19 +39,23 @@
         }
         
         /* กระดานแผนที่ขนาดใหญ่ 1:1 Scrollable */
-        .map-scroll-container {
-            width: 100%;
-            height: 85vh;
-            overflow: auto;
-            border: 2px solid #1f2838;
-            border-radius: 12px;
-            background-color: #0c0e14;
-            position: relative;
-        }
+       .map-scroll-container {
+    width: 100%;
+    height: 78vh;
+    overflow: auto;
+    border: 2px solid #1f2838;
+    border-radius: 12px;
+    background-color: #0c0e14;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
 .map-canvas-wrapper {
     position: relative;
-    width: min(90vw, 1000px);
+    width: min(72vh, 100%);
     aspect-ratio: 1 / 1;
+    margin: 0 auto;
 }
     </style>
 </head>
@@ -487,10 +491,10 @@ class="admin-only bg-indigo-950/40 text-indigo-400 border border-indigo-900/40 p
     renderAll();
 
     setTimeout(() => {
-        if (typeof window.startPlayersRealtimeSync === "function") {
-            window.startPlayersRealtimeSync();
-        }
-    }, 1500);
+    if (typeof window.loadGuildConfigFromFirebaseSafe === "function") {
+        window.loadGuildConfigFromFirebaseSafe();
+    }
+}, 1800);
 };
 
         function checkLoginSession() {
@@ -686,9 +690,15 @@ console.log("Realtime Sync Started");
             if (!mapName || mapName.trim() === "") return;
 
             const newMap = { id: 'map_' + Date.now(), name: mapName.trim().substring(0, 15), image: url };
-            globalMaps.push(newMap); selectedGlobalMapId = newMap.id;
-            urlInput.value = '';
-            saveToLocalStorage(); updateMapDropdownOptions(); changeBattleMap(newMap.id);
+           globalMaps.push(newMap);
+selectedGlobalMapId = newMap.id;
+
+saveToLocalStorage();
+
+window.saveGuildConfigToFirebaseSafe();
+
+updateMapDropdownOptions();
+changeBattleMap(newMap.id);
         }
 
         function updateMapDropdownOptions() {
@@ -720,7 +730,9 @@ console.log("Realtime Sync Started");
             const newName = prompt('ระบุชื่อแผนที่ใหม่:', map.name);
             if (newName && newName.trim() !== "") {
                 map.name = newName.trim().substring(0, 15);
-                saveToLocalStorage(); updateMapDropdownOptions();
+                saveToLocalStorage(); 
+                window.saveGuildConfigToFirebaseSafe(); 
+                updateMapDropdownOptions();
                 if (selectedGlobalMapId === id) document.getElementById('map-selector').value = id;
             }
         }
@@ -737,7 +749,10 @@ console.log("Realtime Sync Started");
 
         function deleteGlobalMap(id) {
             globalMaps = globalMaps.filter(m => m.id !== id); if (selectedGlobalMapId === id) selectedGlobalMapId = null;
-            saveToLocalStorage(); updateMapDropdownOptions(); changeBattleMap('default');
+            saveToLocalStorage(); 
+            window.saveGuildConfigToFirebaseSafe();
+            updateMapDropdownOptions(); 
+            changeBattleMap('default');
         }
 
         function changeBattleMap(val) {
@@ -764,7 +779,14 @@ console.log("Realtime Sync Started");
         function updateJobIconViaUrlManual(jobName, inputId) {
             const url = document.getElementById(inputId).value.trim();
             if (!url) return;
-            jobIcons[jobName] = url; saveToLocalStorage(); renderAll(); renderJobIconSettingsList();
+            jobIcons[jobName] = url;
+
+saveToLocalStorage();
+
+window.saveGuildConfigToFirebaseSafe();
+
+renderAll();
+renderJobIconSettingsList();
             alert(`🎨 อัปเดตไอคอนพรีเมียมอาชีพ ${jobName} เรียบร้อยแล้ว!`);
         }
 
@@ -797,7 +819,8 @@ console.log("Realtime Sync Started");
         function removeJobFromGuild(jobName) {
             if (!checkAdminAccess()) return; if (confirm(`ลบอาชีพ ${jobName}?`)) { availableJobsList = availableJobsList.filter(j => j !== jobName); saveToLocalStorage(); renderAll(); renderJobIconSettingsList(); }
         }
-        function resetAllJobSettings() { jobIcons = {}; availableJobsList = [...defaultJobsList]; saveToLocalStorage(); renderAll(); renderJobIconSettingsList(); }
+        function resetAllJobSettings() { jobIcons = {}; availableJobsList = [...defaultJobsList]; saveToLocalStorage();window.saveGuildConfigToFirebaseSafe();
+                                        renderAll(); renderJobIconSettingsList(); }
 
         /* ================= 🎨 ดึงระบบวาดเขียน (Drawing Engine) ดั้งเดิมกลับมาทำงานแม่นยำพรีเมียม ================= */
         function initDrawingCanvas() {
@@ -1394,8 +1417,7 @@ function copyRewardAllNames() {
     
     <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
-
+import { getFirestore, collection, getDocs, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 const firebaseConfig = {
   apiKey: "AIzaSyBv_QQ_O8SE88WFTwro2hJJYGDRA4Jdds8",
   authDomain: "bellona-gvg.firebaseapp.com",
@@ -1410,7 +1432,64 @@ const db = getFirestore(app);
 
 window.bellonaFirebaseReady = true;
 window.bellonaDB = db;
+window.saveGuildConfigToFirebaseSafe = async function() {
+  try {
+    await setDoc(doc(db, "settings", "global"), {
+      globalMaps: window.globalMaps || globalMaps || [],
+      selectedGlobalMapId: window.selectedGlobalMapId || selectedGlobalMapId || null,
+      jobIcons: window.jobIcons || jobIcons || {},
+      availableJobsList: window.availableJobsList || availableJobsList || []
+    }, { merge: true });
 
+    console.log("Guild config saved ✅");
+  } catch (err) {
+    console.error("Save guild config error:", err);
+  }
+};
+
+window.loadGuildConfigFromFirebaseSafe = async function() {
+  try {
+    const snap = await getDoc(doc(db, "settings", "global"));
+    if (!snap.exists()) return;
+
+    const data = snap.data();
+
+    if (Array.isArray(data.globalMaps)) {
+      globalMaps = data.globalMaps;
+      window.globalMaps = globalMaps;
+    }
+
+    if (data.selectedGlobalMapId) {
+      selectedGlobalMapId = data.selectedGlobalMapId;
+      window.selectedGlobalMapId = selectedGlobalMapId;
+    }
+
+    if (data.jobIcons) {
+      jobIcons = data.jobIcons;
+      window.jobIcons = jobIcons;
+    }
+
+    if (Array.isArray(data.availableJobsList)) {
+      availableJobsList = data.availableJobsList;
+      window.availableJobsList = availableJobsList;
+    }
+
+    saveToLocalStorage();
+    updateMapDropdownOptions();
+    renderJobIconSettingsList();
+    renderAll();
+
+    if (selectedGlobalMapId) {
+      setTimeout(() => {
+        displayGlobalMap(selectedGlobalMapId);
+      }, 300);
+    }
+
+    console.log("Guild config loaded ✅");
+  } catch (err) {
+    console.error("Load guild config error:", err);
+  }
+};
 async function testFirebaseConnection() {
   try {
     const snap = await getDocs(collection(db, "players"));
