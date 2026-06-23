@@ -425,11 +425,11 @@
         };
 
         function checkLoginSession() {
-            const savedRole = sessionStorage.getItem('bellona_role');
-            if (sessionStorage.getItem('bellona_is_logged_in') === 'true' && savedRole) {
-                userRole = savedRole; document.getElementById('login-overlay-screen').classList.add('hidden'); applyRolePermissions();
-            }
-        }
+    userRole = 'guest';
+    sessionStorage.removeItem('bellona_role');
+    sessionStorage.removeItem('bellona_is_logged_in');
+    document.getElementById('login-overlay-screen').classList.remove('hidden');
+}
 
         function attemptAdminLogin() {
             const userInp = document.getElementById('login-username').value.trim();
