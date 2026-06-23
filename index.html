@@ -478,7 +478,9 @@ class="admin-only bg-indigo-950/40 text-indigo-400 border border-indigo-900/40 p
         let players = [];
 let markers = [];
 let availableJobsList = [...defaultJobsList];
-let jobIcons = {};
+let jobIcons = {
+    "LordKnight": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/jobs/lordknight.png"
+};
 let globalMaps = [
     {
         id: 'vigrid',
@@ -499,6 +501,11 @@ let userRole = 'guest';
     initPartiesGrid();
     initDrawingCanvas();
     renderAll();
+        
+    setTimeout(() => {
+    updateMapDropdownOptions();
+    displayGlobalMap('vigrid');
+}, 500);    
 
     setTimeout(() => {
         if (typeof window.startPlayersRealtimeSync === "function") {
@@ -1438,6 +1445,6 @@ async function testFirebaseConnection() {
   }
 }
 
-testFirebaseConnection();
+testFirebaseConnection();  
 </script>
 </html>
