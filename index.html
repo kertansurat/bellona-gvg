@@ -1194,6 +1194,110 @@ function releasePlayer(id) {
 
     renderAll();
 }
+        function toggleRewardQuota(playerId) {
+    const p = players.find(x => String(x.id) === String(playerId));
+    if (!p) return;
+
+    p.hasQuota = !p.hasQuota;
+
+    saveToLocalStorage();
+
+    if (typeof window.savePlayersToFirebaseSafe === "function") {
+        window.savePlayersToFirebaseSafe();
+    }
+
+    renderAll();
+}
+
+function setAllRewardQuota(value) {
+    players.forEach(p => {
+        p.hasQuota = value;
+    });
+
+    saveToLocalStorage();
+
+    if (typeof window.savePlayersToFirebaseSafe === "function") {
+        window.savePlayersToFirebaseSafe();
+    }
+
+    renderAll();
+}
+
+function resetAllRewardQuota() {
+    players.forEach(p => {
+
+        if (p.status === 'ขาด') {
+            p.hasQuota = false;
+        } else {
+            p.hasQuota = true;
+        }
+
+    });
+
+    saveToLocalStorage();
+
+    if (typeof window.savePlayersToFirebaseSafe === "function") {
+        window.savePlayersToFirebaseSafe();
+    }
+
+    renderAll();
+}
+        function spinEligibleReward() {
+
+    const pool = players.filter(
+        p => p.hasQuota === true && p.status !== 'ขาด'
+    );
+
+    spinRewardWheel(pool);
+}
+
+function spinAllReward() {
+
+    spinRewardWheel(players);
+}
+        let rewardSpinLock = false;
+
+function spinRewardWheel(pool) {
+
+    if (rewardSpinLock) return;
+
+    if (!pool || pool.length === 0) {
+        alert('ไม่มีรายชื่อสำหรับสุ่ม');
+        return;
+    }
+
+    const winnerName = document.getElementById('lucky-winner-name');
+    const winnerJob = document.getElementById('lucky-winner-job');
+
+    rewardSpinLock = true;
+
+    let elapsed = 0;
+
+    const timer = setInterval(() => {
+
+        const current =
+            pool[Math.floor(Math.random() * pool.length)];
+
+        winnerName.innerText = current.name;
+        winnerJob.innerText = current.job || '-';
+
+        elapsed += 100;
+
+        if (elapsed >= 10000) {
+
+            clearInterval(timer);
+
+            const winner =
+                pool[Math.floor(Math.random() * pool.length)];
+
+            winnerName.innerText = winner.name;
+            winnerJob.innerText = "🎉 ผู้ชนะ";
+
+            rewardSpinLock = false;
+        }
+
+    }, 100);
+}
         function renderRewardsTab() {
     const tbody = document.getElementById('reward-quota-table-body');
     if (!tbody) return;
