@@ -479,7 +479,20 @@ class="admin-only bg-indigo-950/40 text-indigo-400 border border-indigo-900/40 p
 
     <script>
         const defaultJobsList = ['Lord Knight', 'Paladin', 'High Priest', 'High Wizard', 'Sniper', 'Assassin Cross', 'Mastersmith', 'Summoner', 'Clown', 'Gypsy'];
-        let players = []; let markers = []; let availableJobsList = [...defaultJobsList]; let jobIcons = {}; let globalMaps = []; let selectedGlobalMapId = null; let selectedMap = 'default'; let googleSheetUrl = ''; let userRole = 'guest';
+        let players = []; let markers = []; let availableJobsList = [...defaultJobsList]; 
+        let jobIcons = {
+    "Lord Knight": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/jobs/lordknight.png",
+    "High Priest": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/jobs/highpriest.png"
+}; 
+        let globalMaps = [
+{
+    id: 'vigrid',
+    name: 'Vigrid Avenger',
+    image: 'https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/maps/vigrid.png'
+}
+];
+
+let selectedGlobalMapId = 'vigrid'; let selectedGlobalMapId = null; let selectedMap = 'default'; let googleSheetUrl = ''; let userRole = 'guest';
 
         let canvas, ctx; let isDrawing = false; let lastX = 0, lastY = 0; let drawMode = 'move'; let drawColor = '#ff4d4d'; let brushSize = 4; let drawingPaths = [];
 
