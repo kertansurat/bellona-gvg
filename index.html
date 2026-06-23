@@ -423,6 +423,13 @@
                 <button onclick="copyDuckEligibleNames()" class="admin-only bg-[#d4af37] text-black px-3 py-2 rounded-lg font-bold">Copy คนมีสิทธิ์</button>
                 <button onclick="copyDuckAllNames()" class="admin-only bg-[#1c2331] text-cyan-300 px-3 py-2 rounded-lg font-bold">Copy ทั้งหมด</button>
                 <button onclick="resetDuckQuota()" class="admin-only bg-red-950/40 text-red-400 px-3 py-2 rounded-lg font-bold">รีเซ็ตทั้งหมด</button>
+                <button onclick="selectAllDuckQuota()" class="admin-only bg-green-950/40 text-green-400 px-3 py-2 rounded-lg font-bold">
+    เลือกรายชื่อทั้งหมด
+</button>
+
+                <button onclick="clearAllDuckQuota()" class="admin-only bg-red-950/40 text-red-400 px-3 py-2 rounded-lg font-bold">
+    รีเซ็ตรายชื่อ
+</button>
             </div>
         </div>
 
@@ -1401,81 +1408,57 @@ function renderRewardsTab() {
 
     renderAll();
 }
-        function renderDuckTab() {
-    const tbody = document.getElementById('duck-table-body');
-    if (!tbody) return;
+       function toggleDuckQuota(id) {
+    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
 
-    tbody.innerHTML = '';
-
-    const eligible = players.filter(p => p.status === 'มา' && p.hasDuckQuota !== false && p.duckClaimed !== true);
-    const claimed = players.filter(p => p.duckClaimed === true);
-
-    document.getElementById('duck-total-count').innerText = players.length;
-    document.getElementById('duck-eligible-count').innerText = eligible.length;
-    document.getElementById('duck-claimed-count').innerText = claimed.length;
-
-    players.forEach(p => {
-        const hasDuckQuota = p.hasDuckQuota !== false;
-        const duckClaimed = p.duckClaimed === true;
-
-        tbody.innerHTML += `
-            <tr class="text-xs border-b border-[#1c2331]">
-                <td class="p-3 font-bold text-white">${p.name || '-'}</td>
-                <td class="p-3">${p.job || '-'}</td>
-                <td class="p-3 text-center">${p.status || '-'}</td>
-                <td class="p-3 text-center">
-                    ${hasDuckQuota && p.status === 'มา'
-                        ? '<span class="text-green-400 font-bold">มีสิทธิ์</span>'
-                        : '<span class="text-red-400 font-bold">ไม่มีสิทธิ์</span>'}
-                </td>
-                <td class="p-3 text-center">
-                    ${duckClaimed ? '<span class="text-[#d4af37] font-bold">ได้แล้ว</span>' : '<span class="text-gray-400">ยังไม่ได้</span>'}
-                </td>
-                <td class="p-3 text-right">
-                    <button onclick="toggleDuckQuota('${p.id}')" class="admin-only bg-[#1c2331] text-[#d4af37] px-3 py-1.5 rounded-lg text-xs font-bold">เปิด/ปิด</button>
-                    <button onclick="toggleDuckClaimed('${p.id}')" class="admin-only bg-[#1c2331] text-cyan-300 px-3 py-1.5 rounded-lg text-xs font-bold">ได้/ยังไม่ได้</button>
-                </td>
-            </tr>
-        `;
-    });
-}
-
-function toggleDuckQuota(id) {
     const p = players.find(x => String(x.id) === String(id));
-    if (!p) return;
-    p.hasDuckQuota = !(p.hasDuckQuota !== false);
+    if (!p) return alert('ไม่พบสมาชิก');
+
+    p.hasDuckQuota = !(p.hasDuckQuota === true);
     saveDuckAndRender();
 }
 
 function toggleDuckClaimed(id) {
+    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
+
     const p = players.find(x => String(x.id) === String(id));
-    if (!p) return;
-    p.duckClaimed = !p.duckClaimed;
+    if (!p) return alert('ไม่พบสมาชิก');
+
+    p.duckClaimed = !(p.duckClaimed === true);
+    saveDuckAndRender();
+}
+
+function selectAllDuckQuota() {
+    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
+
+    players.forEach(p => {
+        if (p.status === 'มา') {
+            p.hasDuckQuota = true;
+        }
+    });
+
+    saveDuckAndRender();
+}
+
+function clearAllDuckQuota() {
+    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
+
+    players.forEach(p => {
+        p.hasDuckQuota = false;
+    });
+
     saveDuckAndRender();
 }
 
 function resetDuckQuota() {
+    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
+
     players.forEach(p => {
         p.hasDuckQuota = p.status === 'มา';
         p.duckClaimed = false;
     });
+
     saveDuckAndRender();
-}
-
-function copyDuckEligibleNames() {
-    const names = players
-        .filter(p => p.status === 'มา' && p.hasDuckQuota !== false && p.duckClaimed !== true)
-        .map(p => p.name)
-        .join('\n');
-
-    navigator.clipboard.writeText(names);
-    alert('Copy รายชื่อคนมีสิทธิ์สุ่มเป็ดแล้ว');
-}
-
-function copyDuckAllNames() {
-    const names = players.map(p => p.name).join('\n');
-    navigator.clipboard.writeText(names);
-    alert('Copy รายชื่อทั้งหมดแล้ว');
 }
 
 function saveDuckAndRender() {
@@ -1485,6 +1468,8 @@ function saveDuckAndRender() {
         window.savePlayersToFirebaseSafe();
     }
 
+    renderAll();
+}
     renderAll();
 }
     </script>
