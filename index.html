@@ -331,6 +331,18 @@
             </div>
 
             <!-- 4. แท็บหน้าโควตาสุ่มของรางวัล -->
+            <div class="grid grid-cols-1 gap-2 w-full text-xs">
+    <div class="bg-[#0c0e14] border border-[#1f2838] rounded-lg px-3 py-2 text-gray-300">
+        👥 สมาชิกทั้งหมด : <span id="reward-total-members" class="font-bold text-white">0</span> คน
+    </div>
+
+    <div class="bg-[#0c0e14] border border-[#1f2838] rounded-lg px-3 py-2 text-gray-300">
+        ✅ มีสิทธิ์สุ่ม : <span id="reward-active-members" class="font-bold text-green-400">0</span> คน
+    </div>
+
+    <div class="bg-[#0c0e14] border border-[#1f2838] rounded-lg px-3 py-2 text-gray-300">
+        ❌ ถูกตัดสิทธิ์ : <span id="reward-inactive-members" class="font-bold text-red-400">0</span> คน
+    </div>
             <div id="tab-content-rewards" class="hidden space-y-5">
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="lg:col-span-1 bg-[#111520] p-6 rounded-xl border border-[#1f2838] flex flex-col items-center justify-between min-h-[420px] shadow-2xl">
@@ -378,19 +390,7 @@
                     <div class="overflow-x-auto"><table class="w-full text-left text-sm border-collapse"><thead><tr class="bg-[#1c2331] text-gray-300"><th class="p-3 font-bold">ชื่อตัวละคร</th><th class="p-3 font-bold">อาชีพ</th><th class="p-3 text-center font-bold">มา (ครั้ง)</th><th class="p-3 text-center font-bold">ลา (ครั้ง)</th><th class="p-3 text-center font-bold">ขาด (ครั้ง)</th></tr></thead><tbody id="stats-table-body" class="divide-y divide-[#1c2331]"></tbody></table></div>
                 </div>
             </div>
-            <div class="grid grid-cols-1 gap-2 w-full text-xs">
-    <div class="bg-[#0c0e14] border border-[#1f2838] rounded-lg px-3 py-2 text-gray-300">
-        👥 สมาชิกทั้งหมด : <span id="reward-total-members" class="font-bold text-white">0</span> คน
-    </div>
-
-    <div class="bg-[#0c0e14] border border-[#1f2838] rounded-lg px-3 py-2 text-gray-300">
-        ✅ มีสิทธิ์สุ่ม : <span id="reward-active-members" class="font-bold text-green-400">0</span> คน
-    </div>
-
-    <div class="bg-[#0c0e14] border border-[#1f2838] rounded-lg px-3 py-2 text-gray-300">
-        ❌ ถูกตัดสิทธิ์ : <span id="reward-inactive-members" class="font-bold text-red-400">0</span> คน
-    </div>
-</div>
+        </div>
         </section>
     </main>
 
