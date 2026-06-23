@@ -103,6 +103,9 @@
             <button onclick="openGuildSettingsModal()" class="admin-only bg-[#141a24] text-[#d4af37] border border-[#2b3543] px-4 py-2.5 rounded-lg text-sm font-bold"><i class="fa-solid fa-gear"></i> ตั้งค่าระบบกิลด์</button>
             <button onclick="autoAssign()" class="admin-only bg-[#d4af37] text-black font-bold px-4 py-2.5 rounded-lg text-sm"><i class="fa-solid fa-wand-magic-sparkles"></i> จัดปาร์ตี้ออโต้</button>
             <button onclick="saveToLocalStorageManual()" class="admin-only bg-[#071911] text-emerald-400 border border-[#0d3f25] px-4 py-2.5 rounded-lg text-sm font-bold"><i class="fa-solid fa-floppy-disk"></i> เซฟข้อมูล</button>
+            <button onclick="importPlayersFromFirebaseSafe()" class="admin-only bg-[#111827] text-cyan-400 border border-cyan-900/60 px-4 py-2.5 rounded-lg text-sm font-bold">
+    <i class="fa-solid fa-cloud-arrow-down"></i> ดึง Firebase
+</button>
             <button onclick="logoutSession()" class="bg-[#1c1212] text-rose-400 border border-rose-950/60 px-4 py-2.5 rounded-lg text-sm font-bold"><i class="fa-solid fa-right-from-bracket"></i> ออกจากระบบ</button>
         </div>
     </header>
@@ -462,6 +465,40 @@
         }
 
         function saveToLocalStorageManual() { saveToLocalStorage(); alert('💾 บันทึกฐานข้อมูลกิลด์สำเร็จ!'); }
+        async function importPlayersFromFirebaseSafe() {
+    if (!window.bellonaDB) {
+        alert("Firebase ยังไม่พร้อม");
+        return;
+    }
+
+    try {
+        const { collection, getDocs } = await import(
+            "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js"
+        );
+
+        const snap = await getDocs(collection(window.bellonaDB, "players"));
+
+        players = snap.docs.map(doc => ({
+            id: doc.id,
+            name: doc.data().name || "ไม่ระบุชื่อ",
+            job: doc.data().job || "ไม่ระบุอาชีพ",
+            status: doc.data().status || "มา",
+            partyId: null,
+            slotIndex: null,
+            presentCount: doc.data().presentCount || 0,
+            leaveCount: doc.data().leaveCount || 0,
+            absentCount: doc.data().absentCount || 0,
+            hasQuota: doc.data().hasQuota ?? true
+        }));
+
+        saveToLocalStorage();
+        renderAll();
+
+        alert("นำเข้ารายชื่อจาก Firebase สำเร็จ: " + players.length + " คน");
+    } catch (err) {
+        alert("Firebase Import Error: " + err.message);
+    }
+}
 
         /* ================= ⚡ ระบบเพิ่มแผนที่ผ่าน ลิงก์ URL รูปภาพหน้าเว็บ ================= */
         function addMapViaUrlManual() {
@@ -808,6 +845,7 @@
         function renderAll() { populateDynamicJobSelectors(); renderWaitingList(); renderParties(); renderMemberManagerTab(); renderRewardsTab(); renderStatsTab(); renderMarkers(); renderMarkersSettingList(); }
     </script>
 </body>
+    
     <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
 import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
