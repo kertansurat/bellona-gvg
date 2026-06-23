@@ -1011,27 +1011,61 @@ await setDoc(doc(window.bellonaDB, "players", playerId), {
             document.getElementById('stat-avg-present').innerText = totalP + " ครั้ง"; document.getElementById('stat-avg-leave').innerText = totalL + " ครั้ง"; document.getElementById('stat-avg-absent').innerText = totalA + " ครั้ง";
         }
 
-        function spinLuckyRaffle() { spinEligibleRaffle(); }
+        function spinEligibleRaffle() {
 
-        function switchTab(t) {
-            ['party', 'tactical', 'members', 'rewards', 'stats'].forEach(tab => { const el = document.getElementById(`tab-content-${tab}`); if (el) el.classList.add('hidden'); });
-            const content = document.getElementById(`tab-content-${t}`); if (content) content.classList.remove('hidden');
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            const btn = document.getElementById(`tab-btn-${t}`); if (btn) btn.classList.add('active');
-            if (t === 'tactical') setTimeout(resizeCanvas, 50);
+    if (!checkAdminAccess()) {
+        return alert('เฉพาะ Admin เท่านั้น');
+    }
+
+    const pool = players.filter(
+        p => p.hasQuota === true && p.rewardClaimed !== true
+    );
+
+    if (pool.length === 0) {
+        return alert('ไม่มีสมาชิกที่เหลือสิทธิ์สุ่ม');
+    }
+
+    const nameEl = document.getElementById('lucky-winner-name');
+    const jobEl = document.getElementById('lucky-winner-job');
+
+    let count = 0;
+
+    const spinInterval = setInterval(() => {
+
+        const randomPlayer =
+            pool[Math.floor(Math.random() * pool.length)];
+
+        nameEl.innerText = randomPlayer.name;
+        jobEl.innerText = randomPlayer.job;
+
+        count++;
+
+    }, 100);
+
+    setTimeout(() => {
+
+        clearInterval(spinInterval);
+
+        const winner =
+            pool[Math.floor(Math.random() * pool.length)];
+
+        showRaffleWinner(winner);
+
+        winner.rewardClaimed = true;
+        winner.hasQuota = false;
+
+        saveToLocalStorage();
+
+        if (typeof window.savePlayersToFirebaseSafe === 'function') {
+            window.savePlayersToFirebaseSafe();
         }
-        function populateDynamicJobSelectors() {
-            const dropdown = document.getElementById('search-job-dropdown'); const addSel = document.getElementById('manual-add-job');
-            if(dropdown) { dropdown.innerHTML = '<option value="all">🔍 แสดงสายอาชีพทั้งหมด</option>'; availableJobsList.forEach(job => dropdown.innerHTML += `<option value="${job}">${job}</option>`); }
-            if(addSel) { addSel.innerHTML = ''; availableJobsList.forEach(job => addSel.innerHTML += `<option value="${job}">${job}</option>`); }
-        }
-        function openGuildSettingsModal() { document.getElementById('guild-settings-modal').classList.remove('hidden'); renderJobIconSettingsList(); }
-        function closeGuildSettingsModal() { document.getElementById('guild-settings-modal').classList.add('hidden'); }
-        function filterPlayers() { renderWaitingList(); }
-        function addNewMarker() {
-            const name = prompt('ระบุชื่อสัญลักษณ์หมุดปักใหม่:', 'หมากรบ');
-            if(name && name.trim() !== "") { markers.push({ id: 'm_' + Date.now(), name: name.trim(), posX: 15, posY: 15 }); renderMarkers(); renderMarkersSettingList(); saveToLocalStorage(); }
-        }
+
+        renderAll();
+
+        alert('🎉 ผู้ชนะคือ ' + winner.name);
+
+    }, 10000);
+}
 
         function renderAll() {
             populateDynamicJobSelectors();
