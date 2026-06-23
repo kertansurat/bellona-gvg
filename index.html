@@ -489,7 +489,6 @@ function checkAdminAccess() {
     return userRole === 'admin';
 
         function applyRolePermissions() {
-            document.getElementById('login-overlay-screen').classList.add('hidden');
             const badge = document.getElementById('role-status-badge');
             if (userRole === 'admin') {
                 badge.className = "px-3.5 py-1.5 rounded text-[11px] font-extrabold text-[#d4af37] border border-[#d4af37]/30 bg-[#232c3f]";
