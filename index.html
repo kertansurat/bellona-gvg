@@ -1248,6 +1248,8 @@ function resetAllRewardQuota() {
 
     renderAll();
 }
+let rewardSpinLock = false;
+        
 function spinEligibleReward() {
 
     const pool = players.filter(
@@ -1266,7 +1268,6 @@ function spinAllReward() {
 
     spinRewardWheel(pool);
 }
-    let rewardSpinLock = false;
         
 function spinRewardWheel(pool) {
     if (rewardSpinLock) return;
