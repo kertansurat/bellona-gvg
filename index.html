@@ -1340,36 +1340,37 @@ function renderRewardsTab() {
             </tr>
         `;
     });
-    
-}
-        function toggleRewardQuota(playerId) {
-    if (!checkAdminAccess()) {
-        alert('เฉพาะ Admin เท่านั้น');
-        return;
-    }
+function copyRewardEligibleNames() {
 
-    const p = players.find(x => String(x.id) === String(playerId));
-    if (!p) return;
-
-    p.hasQuota = !p.hasQuota;
-
-    saveToLocalStorage();
-
-    if (typeof window.savePlayersToFirebaseSafe === "function") {
-        window.savePlayersToFirebaseSafe();
-    }
-
-    renderAll();
-}
-function copyRewardEligibleNamesComma() {
     const names = players
         .filter(p => p.hasQuota === true && p.status !== 'ขาด')
         .map(p => p.name)
-        .join(',');
+        .join('\n');
+
+    if (!names) {
+        alert('ไม่มีรายชื่อคนมีสิทธิ์');
+        return;
+    }
 
     navigator.clipboard.writeText(names);
 
-    alert('Copy รายชื่อสำหรับเว็บวิ่งเป็ดแล้ว');
+    alert('คัดลอกรายชื่อคนมีสิทธิ์แล้ว');
+}
+
+function copyRewardAllNames() {
+
+    const names = players
+        .map(p => p.name)
+        .join('\n');
+
+    if (!names) {
+        alert('ไม่มีรายชื่อสมาชิก');
+        return;
+    }
+
+    navigator.clipboard.writeText(names);
+
+    alert('คัดลอกรายชื่อทั้งหมดแล้ว');
 }
     </script>
 </body>
