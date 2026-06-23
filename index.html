@@ -424,24 +424,69 @@
             renderAll();
         };
 
-        function checkLoginSession() {
+  function checkLoginSession() {
     userRole = 'guest';
-    sessionStorage.removeItem('bellona_role');
-    sessionStorage.removeItem('bellona_is_logged_in');
-    document.getElementById('login-overlay-screen').classList.remove('hidden');
+
+    sessionStorage.clear();
+
+    const loginOverlay = document.getElementById('login-overlay-screen');
+
+    if (loginOverlay) {
+        loginOverlay.classList.remove('hidden');
+    }
 }
 
-        function attemptAdminLogin() {
-            const userInp = document.getElementById('login-username').value.trim();
-            const passInp = document.getElementById('login-password').value.trim();
-            if (userInp === 'admin-bellona' && passInp === '5000') { 
-                userRole = 'admin'; sessionStorage.setItem('bellona_role', 'admin'); sessionStorage.setItem('bellona_is_logged_in', 'true');
-                applyRolePermissions(); renderAll();
-            } else { alert('รหัสผ่านไม่ถูกต้อง'); }
+function attemptAdminLogin() {
+    const userInp = document.getElementById('login-username').value.trim();
+    const passInp = document.getElementById('login-password').value.trim();
+
+    if (userInp === 'admin-bellona' && passInp === '5000') {
+
+        userRole = 'admin';
+
+        const loginOverlay = document.getElementById('login-overlay-screen');
+
+        if (loginOverlay) {
+            loginOverlay.classList.add('hidden');
         }
-        function bypassAsGuest() { userRole = 'guest'; sessionStorage.setItem('bellona_role', 'guest'); sessionStorage.setItem('bellona_is_logged_in', 'true'); applyRolePermissions(); renderAll(); }
-        function logoutSession() { sessionStorage.clear(); location.reload(); }
-        function checkAdminAccess() { return userRole === 'admin'; }
+
+        applyRolePermissions();
+        renderAll();
+
+    } else {
+        alert('รหัสผ่านไม่ถูกต้อง');
+    }
+}
+
+function bypassAsGuest() {
+
+    userRole = 'guest';
+
+    const loginOverlay = document.getElementById('login-overlay-screen');
+
+    if (loginOverlay) {
+        loginOverlay.classList.add('hidden');
+    }
+
+    applyRolePermissions();
+    renderAll();
+}
+
+function logoutSession() {
+
+    userRole = 'guest';
+
+    sessionStorage.clear();
+
+    const loginOverlay = document.getElementById('login-overlay-screen');
+
+    if (loginOverlay) {
+        loginOverlay.classList.remove('hidden');
+    }
+}
+
+function checkAdminAccess() {
+    return userRole === 'admin';
 
         function applyRolePermissions() {
             document.getElementById('login-overlay-screen').classList.add('hidden');
