@@ -1066,7 +1066,56 @@ await setDoc(doc(window.bellonaDB, "players", playerId), {
 
     }, 10000);
 }
+function switchTab(tabName) {
+    document.querySelectorAll('[id^="tab-content-"]').forEach(el => {
+        el.classList.add('hidden');
+    });
 
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+
+    const content = document.getElementById('tab-content-' + tabName);
+    const btn = document.getElementById('tab-btn-' + tabName);
+
+    if (content) content.classList.remove('hidden');
+    if (btn) btn.classList.add('active');
+}
+function populateDynamicJobSelectors() {
+    const selectors = [
+        document.getElementById('manual-add-job'),
+        document.getElementById('search-job-dropdown')
+    ];
+
+    selectors.forEach(sel => {
+        if (!sel) return;
+
+        const currentValue = sel.value;
+        sel.innerHTML = '';
+
+        if (sel.id === 'search-job-dropdown') {
+            sel.innerHTML += `<option value="all">🔍 แสดงสายอาชีพทั้งหมด</option>`;
+        }
+
+        availableJobsList.forEach(job => {
+            sel.innerHTML += `<option value="${job}">${job}</option>`;
+        });
+
+        if (currentValue) sel.value = currentValue;
+    });
+}        
+function renderAll() {
+    if (typeof populateDynamicJobSelectors === "function") populateDynamicJobSelectors();
+    if (typeof renderWaitingList === "function") renderWaitingList();
+    if (typeof renderParties === "function") renderParties();
+    if (typeof renderMemberManagerTab === "function") renderMemberManagerTab();
+    if (typeof renderRewardsTab === "function") renderRewardsTab();
+    if (typeof renderStatsTab === "function") renderStatsTab();
+    if (typeof renderMarkers === "function") renderMarkers();
+    if (typeof renderMarkersSettingList === "function") renderMarkersSettingList();
+
+    if (typeof applyRolePermissions === "function") applyRolePermissions();
+}        
         function renderAll() {
             populateDynamicJobSelectors();
             renderWaitingList();
