@@ -529,7 +529,15 @@ let userRole = 'guest';
                 applyRolePermissions(); renderAll();
             } else { alert('รหัสผ่านไม่ถูกต้อง'); }
         }
-        function bypassAsGuest() { userRole = 'guest'; sessionStorage.setItem('bellona_role', 'guest'); sessionStorage.setItem('bellona_is_logged_in', 'true'); applyRolePermissions(); renderAll(); }
+        function bypassAsGuest() {
+    userRole = 'guest';
+    sessionStorage.setItem('bellona_role', 'guest');
+    sessionStorage.setItem('bellona_is_logged_in', 'true');
+
+    document.getElementById('login-overlay-screen').classList.add('hidden');
+
+    applyRolePermissions();
+}
         function logoutSession() { sessionStorage.clear(); location.reload(); }
         function checkAdminAccess() { return userRole === 'admin'; }
 
