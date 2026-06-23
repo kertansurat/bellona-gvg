@@ -344,7 +344,21 @@
                                 <div id="lucky-winner-job" class="text-xs text-[#d4af37] italic">พร้อมรับรางวัล</div>
                             </div>
                         </div>
-                        <button onclick="spinLuckyRaffle()" class="admin-only w-full bg-[#d4af37] hover:bg-yellow-500 text-black font-extrabold py-3 px-4 rounded-lg text-sm"><i class="fa-solid fa-dice"></i> เริ่มหมุนวงล้อสุ่มรางวัล</button>
+                        <div class="w-full space-y-2">
+    <button onclick="spinEligibleReward()" class="admin-only w-full bg-[#d4af37] hover:bg-yellow-500 text-black font-extrabold py-3 px-4 rounded-lg text-sm">
+        <i class="fa-solid fa-dice"></i> สุ่มจากคนมีสิทธิ์
+    </button>
+
+    <button onclick="spinAllReward()" class="admin-only w-full bg-[#1c2331] hover:bg-[#263249] text-cyan-300 border border-cyan-900/50 font-bold py-3 px-4 rounded-lg text-sm">
+        <i class="fa-solid fa-users"></i> สุ่มจากรายชื่อทั้งหมด
+    </button>
+
+    <div class="text-center text-xs text-gray-400 pt-2">
+        มีสิทธิ์: <b id="reward-eligible-count" class="text-green-400">0</b>
+        /
+        ทั้งหมด: <b id="reward-total-count" class="text-white">0</b>
+    </div>
+</div>
                     </div>
                     <div class="lg:col-span-2 bg-[#111520] p-6 rounded-xl border border-[#1f2838] space-y-5 shadow-2xl">
                         <h3 class="text-sm font-bold text-gray-200">รายชื่อผู้มีสิทธิ์โควตาสุ่มรางวัล</h3>
@@ -1137,17 +1151,26 @@ function releasePlayer(id) {
 
     renderAll();
 }
-        function renderRewardsTab() {
+function renderRewardsTab() {
     const tbody = document.getElementById('reward-quota-table-body');
     if (!tbody) return;
 
     tbody.innerHTML = '';
 
+    const eligibleCount = players.filter(p => p.hasQuota === true).length;
+    const totalCount = players.length;
+
+    const eligibleEl = document.getElementById('reward-eligible-count');
+    const totalEl = document.getElementById('reward-total-count');
+
+    if (eligibleEl) eligibleEl.innerText = eligibleCount;
+    if (totalEl) totalEl.innerText = totalCount;
+
     players.forEach(p => {
         tbody.innerHTML += `
             <tr class="text-xs border-b border-[#1c2331]">
                 <td class="p-3 font-bold text-white">${p.name || '-'}</td>
-                <td class="p-3">${p.rewardName || 'ยังไม่ระบุ'}</td>
+                <td class="p-3">${p.job || '-'}</td>
                 <td class="p-3 text-center">
                     ${p.hasQuota 
                         ? '<span class="text-green-400 font-bold">เปิดสิทธิ์</span>' 
@@ -1161,6 +1184,39 @@ function releasePlayer(id) {
             </tr>
         `;
     });
+}
+        function spinEligibleReward() {
+    if (!checkAdminAccess()) {
+        alert('เฉพาะ Admin เท่านั้น');
+        return;
+    }
+
+    const pool = players.filter(p => p.hasQuota === true);
+
+    if (pool.length === 0) {
+        alert('ไม่มีสมาชิกที่มีสิทธิ์สุ่ม');
+        return;
+    }
+
+    const winner = pool[Math.floor(Math.random() * pool.length)];
+
+    alert('🎉 ผู้ชนะจากคนมีสิทธิ์คือ: ' + winner.name);
+}
+
+function spinAllReward() {
+    if (!checkAdminAccess()) {
+        alert('เฉพาะ Admin เท่านั้น');
+        return;
+    }
+
+    if (!players || players.length === 0) {
+        alert('ยังไม่มีรายชื่อสมาชิก');
+        return;
+    }
+
+    const winner = players[Math.floor(Math.random() * players.length)];
+
+    alert('🎉 ผู้ชนะจากรายชื่อทั้งหมดคือ: ' + winner.name);
 }
     </script>
 </body>
