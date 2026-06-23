@@ -1248,22 +1248,26 @@ function resetAllRewardQuota() {
 
     renderAll();
 }
-        function spinEligibleReward() {
+function spinEligibleReward() {
 
     const pool = players.filter(
-        const pool = players.filter(p => p.hasQuota !== false && p.status === 'มา'
-);
+        p => p.status === 'มา' &&
+             p.hasQuota !== false
+    );
+
     spinRewardWheel(pool);
 }
 
 function spinAllReward() {
 
-    spinRewardWheel(players);
+    const pool = players.filter(
+        p => p.status === 'มา'
+    );
+
+    spinRewardWheel(pool);
 }
-        let rewardSpinLock = false;
 
 function spinRewardWheel(pool) {
-
     if (rewardSpinLock) return;
 
     if (!pool || pool.length === 0) {
@@ -1279,9 +1283,7 @@ function spinRewardWheel(pool) {
     let elapsed = 0;
 
     const timer = setInterval(() => {
-
-        const current =
-            pool[Math.floor(Math.random() * pool.length)];
+        const current = pool[Math.floor(Math.random() * pool.length)];
 
         winnerName.innerText = current.name;
         winnerJob.innerText = current.job || '-';
@@ -1289,18 +1291,15 @@ function spinRewardWheel(pool) {
         elapsed += 100;
 
         if (elapsed >= 10000) {
-
             clearInterval(timer);
 
-            const winner =
-                pool[Math.floor(Math.random() * pool.length)];
+            const winner = pool[Math.floor(Math.random() * pool.length)];
 
             winnerName.innerText = winner.name;
             winnerJob.innerText = "🎉 ผู้ชนะ";
 
             rewardSpinLock = false;
         }
-
     }, 100);
 }
 function renderRewardsTab() {
