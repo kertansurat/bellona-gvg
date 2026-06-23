@@ -1342,7 +1342,10 @@ function renderRewardsTab() {
     });
 }
         
-function copyRewardEligibleNames() {
+ if (!checkAdminAccess()) {
+        alert('เฉพาะ Admin เท่านั้น');
+        return;
+    }
 
     const names = players
         .filter(p =>
@@ -1364,6 +1367,11 @@ function copyRewardEligibleNames() {
 }
 
 function copyRewardAllNames() {
+
+    if (!checkAdminAccess()) {
+        alert('เฉพาะ Admin เท่านั้น');
+        return;
+    }
 
     const names = players
         .filter(p => p.status === 'มา')
