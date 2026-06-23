@@ -1047,82 +1047,98 @@ await setDoc(doc(window.bellonaDB, "players", playerId), {
         }
 
         function bulkSetAttendanceStatus(status) {
-            if (!checkAdminAccess()) { alert('เฉพาะ Admin เท่านั้น'); return; }
-            const checked = document.querySelectorAll('.member-select-chk:checked');
-            if (checked.length === 0) { alert('กรุณาติ๊กเลือกสมาชิกก่อน'); return; }
-            checked.forEach(chk => {
-                const p = players.find(x => String(x.id) === String(chk.value));
-                if (!p) return;
-                p.status = status;
-                if (status === 'มา') p.presentCount = (p.presentCount || 0) + 1;
-                if (status === 'ลา') p.leaveCount = (p.leaveCount || 0) + 1;
-                if (status === 'ขาด') p.absentCount = (p.absentCount || 0) + 1;
-            });
-            saveToLocalStorage();
-            if (typeof window.savePlayersToFirebaseSafe === 'function') window.savePlayersToFirebaseSafe();
-            renderAll();
-            alert('อัปเดตสถานะ ' + status + ' สำเร็จ');
-        }
+    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
 
-        function getRewardEligiblePlayers() {
-            return players.filter(p => p.hasQuota === true && p.rewardClaimed !== true);
-        }
+    const checked = document.querySelectorAll('.member-select-chk:checked');
+    if (checked.length === 0) return alert('กรุณาติ๊กเลือกสมาชิกก่อน');
 
-        function spinEligibleRaffle() {
-            if (!checkAdminAccess()) { alert('เฉพาะ Admin เท่านั้น'); return; }
-            const pool = getRewardEligiblePlayers();
-            if (pool.length === 0) { alert('ไม่มีสมาชิกที่เหลือสิทธิ์สุ่ม'); return; }
-            const winner = pool[Math.floor(Math.random() * pool.length)];
-            showRaffleWinner(winner);
-            winner.rewardClaimed = true;
-            winner.hasQuota = false;
-            saveToLocalStorage();
-            if (typeof window.savePlayersToFirebaseSafe === 'function') window.savePlayersToFirebaseSafe();
-            renderAll();
-        }
+    checked.forEach(chk => {
+        const p = players.find(x => String(x.id) === String(chk.value));
+        if (!p) return;
 
-        function spinAllPlayersRaffle() {
-            if (!checkAdminAccess()) { alert('เฉพาะ Admin เท่านั้น'); return; }
-            if (!players || players.length === 0) { alert('ยังไม่มีรายชื่อสมาชิก'); return; }
-            const winner = players[Math.floor(Math.random() * players.length)];
-            showRaffleWinner(winner);
-        }
+        p.status = status;
+        if (status === 'มา') p.presentCount = (p.presentCount || 0) + 1;
+        if (status === 'ลา') p.leaveCount = (p.leaveCount || 0) + 1;
+        if (status === 'ขาด') p.absentCount = (p.absentCount || 0) + 1;
+    });
 
-        function showRaffleWinner(winner) {
-            const nameEl = document.getElementById('lucky-winner-name');
-            const jobEl = document.getElementById('lucky-winner-job');
-            if (nameEl) nameEl.innerText = winner.name || 'ไม่ระบุชื่อ';
-            if (jobEl) jobEl.innerText = winner.job || 'ไม่ระบุอาชีพ';
-        }
+    saveToLocalStorage();
+    if (typeof window.savePlayersToFirebaseSafe === 'function') window.savePlayersToFirebaseSafe();
+    renderAll();
+    alert('อัปเดตสถานะ ' + status + ' สำเร็จ');
+}
 
-        function resetRaffleDisplay() {
-            const nameEl = document.getElementById('lucky-winner-name');
-            const jobEl = document.getElementById('lucky-winner-job');
-            if (nameEl) nameEl.innerText = '???';
-            if (jobEl) jobEl.innerText = 'รอเริ่มสุ่ม';
-        }
+function spinEligibleRaffle() {
+    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
 
-        function toggleRewardQuota(playerId) {
-            if (!checkAdminAccess()) { alert('เฉพาะ Admin เท่านั้น'); return; }
-            const p = players.find(x => String(x.id) === String(playerId));
-            if (!p) return;
-            p.hasQuota = !p.hasQuota;
-            saveToLocalStorage();
-            if (typeof window.savePlayersToFirebaseSafe === 'function') window.savePlayersToFirebaseSafe();
-            renderAll();
-        }
+    const pool = players.filter(p => p.hasQuota === true && p.rewardClaimed !== true);
+    if (pool.length === 0) return alert('ไม่มีสมาชิกที่เหลือสิทธิ์สุ่ม');
 
-        function resetPlayerRewardClaim(playerId) {
-            if (!checkAdminAccess()) { alert('เฉพาะ Admin เท่านั้น'); return; }
-            const p = players.find(x => String(x.id) === String(playerId));
-            if (!p) return;
-            p.rewardClaimed = false;
-            p.hasQuota = true;
-            saveToLocalStorage();
-            if (typeof window.savePlayersToFirebaseSafe === 'function') window.savePlayersToFirebaseSafe();
-            renderAll();
-        }
+    const winner = pool[Math.floor(Math.random() * pool.length)];
+    showRaffleWinner(winner);
 
+    winner.rewardClaimed = true;
+    winner.hasQuota = false;
+
+    saveToLocalStorage();
+    if (typeof window.savePlayersToFirebaseSafe === 'function') window.savePlayersToFirebaseSafe();
+    renderAll();
+}
+
+function spinAllPlayersRaffle() {
+    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
+    if (!players || players.length === 0) return alert('ยังไม่มีรายชื่อสมาชิก');
+
+    const winner = players[Math.floor(Math.random() * players.length)];
+    showRaffleWinner(winner);
+
+    saveToLocalStorage();
+    if (typeof window.savePlayersToFirebaseSafe === 'function') window.savePlayersToFirebaseSafe();
+    renderAll();
+}
+
+function showRaffleWinner(winner) {
+    const nameEl = document.getElementById('lucky-winner-name');
+    const jobEl = document.getElementById('lucky-winner-job');
+
+    if (nameEl) nameEl.innerText = winner.name || 'ไม่ระบุชื่อ';
+    if (jobEl) jobEl.innerText = winner.job || 'ไม่ระบุอาชีพ';
+}
+
+function resetRaffleDisplay() {
+    const nameEl = document.getElementById('lucky-winner-name');
+    const jobEl = document.getElementById('lucky-winner-job');
+
+    if (nameEl) nameEl.innerText = '???';
+    if (jobEl) jobEl.innerText = 'รอเริ่มสุ่ม';
+}
+
+function toggleRewardQuota(playerId) {
+    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
+
+    const p = players.find(x => String(x.id) === String(playerId));
+    if (!p) return;
+
+    p.hasQuota = !p.hasQuota;
+
+    saveToLocalStorage();
+    if (typeof window.savePlayersToFirebaseSafe === 'function') window.savePlayersToFirebaseSafe();
+    renderAll();
+}
+
+function resetPlayerRewardClaim(playerId) {
+    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
+
+    const p = players.find(x => String(x.id) === String(playerId));
+    if (!p) return;
+
+    p.rewardClaimed = false;
+    p.hasQuota = true;
+
+    saveToLocalStorage();
+    if (typeof window.savePlayersToFirebaseSafe === 'function') window.savePlayersToFirebaseSafe();
+    renderAll();
+}
         </script>
 </body>
     
