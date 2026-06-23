@@ -1168,28 +1168,18 @@ function renderRewardsTab() {
     const tbody = document.getElementById('reward-quota-table-body');
     if (!tbody) return;
 
-tbody.innerHTML = '';
+    tbody.innerHTML = '';
 
-const eligiblePlayers = players.filter(p => p.hasQuota === true && p.status !== 'ขาด');
-const eligibleCount = eligiblePlayers.length;
-const totalCount = players.length;
+    const eligibleCount = players.filter(p => p.hasQuota === true).length;
+    const totalCount = players.length;
 
-const eligibleEl = document.getElementById('reward-eligible-count');
-const totalEl = document.getElementById('reward-total-count');
-const eligibleNamesEl = document.getElementById('reward-eligible-names');
+    const eligibleEl = document.getElementById('reward-eligible-count');
+    const totalEl = document.getElementById('reward-total-count');
 
-const eligibleNames = eligiblePlayers
-    .map(p => p.name)
-    .join(', ');
+    if (eligibleEl) eligibleEl.innerText = eligibleCount;
+    if (totalEl) totalEl.innerText = totalCount;
 
-if (eligibleNamesEl) {
-    eligibleNamesEl.innerText = eligibleNames || 'ไม่มีรายชื่อที่มีสิทธิ์สุ่ม';
-}
-
-if (eligibleEl) eligibleEl.innerText = eligibleCount;
-if (totalEl) totalEl.innerText = totalCount;
-
-players.forEach(p => {
+    players.forEach(p => {
         tbody.innerHTML += `
             <tr class="text-xs border-b border-[#1c2331]">
                 <td class="p-3 font-bold text-white">${p.name || '-'}</td>
@@ -1214,7 +1204,7 @@ players.forEach(p => {
         return;
     }
 
-   const pool = players.filter(p => p.hasQuota === true && p.status !== 'ขาด');
+    const pool = players.filter(p => p.hasQuota === true);
 
     if (pool.length === 0) {
         alert('ไม่มีสมาชิกที่มีสิทธิ์สุ่ม');
