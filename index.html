@@ -331,27 +331,84 @@
             </div>
 
             <!-- 4. แท็บหน้าโควตาสุ่มของรางวัล -->
-            <div id="tab-content-rewards" class="hidden space-y-5">
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-1 bg-[#111520] p-6 rounded-xl border border-[#1f2838] flex flex-col items-center justify-between min-h-[420px] shadow-2xl">
-                        <div class="text-center w-full">
-                            <h2 class="text-base font-bold text-[#d4af37] uppercase tracking-widest"><i class="fa-solid fa-gift text-lg"></i> แท่นสุ่มรางวัลนำโชค BELLONA</h2>
-                        </div>
-                        <div class="relative w-48 h-48 flex items-center justify-center my-4">
-                            <div id="raffle-glow" class="absolute inset-0 rounded-full border-4 border-dashed border-[#d4af37]/40"></div>
-                            <div class="absolute inset-4 rounded-full bg-[#0c0e14] border flex flex-col items-center justify-center p-3 text-center">
-                                <div id="lucky-winner-name" class="text-xl font-bold text-white py-1.5 truncate max-w-full">???</div>
-                                <div id="lucky-winner-job" class="text-xs text-[#d4af37] italic">พร้อมรับรางวัล</div>
-                            </div>
-                        </div>
-                        <button onclick="spinLuckyRaffle()" class="admin-only w-full bg-[#d4af37] hover:bg-yellow-500 text-black font-extrabold py-3 px-4 rounded-lg text-sm"><i class="fa-solid fa-dice"></i> เริ่มหมุนวงล้อสุ่มรางวัล</button>
-                    </div>
-                    <div class="lg:col-span-2 bg-[#111520] p-6 rounded-xl border border-[#1f2838] space-y-5 shadow-2xl">
-                        <h3 class="text-sm font-bold text-gray-200">รายชื่อผู้มีสิทธิ์โควตาสุ่มรางวัล</h3>
-                        <div class="overflow-x-auto"><table class="w-full text-left text-sm border-collapse"><thead><tr class="bg-[#1c2331] text-gray-300"><th class="p-3 font-bold">ชื่อตัวละคร</th><th class="p-3 font-bold">ของรางวัลที่ลุ้นได้</th><th class="p-3 font-bold">สถานะของรางวัล</th></tr></thead><tbody id="reward-quota-table-body" class="divide-y divide-[#1c2331]"></tbody></table></div>
-                    </div>
+            <!-- 4. แท็บหน้าโควตาสุ่มของรางวัล -->
+<div id="tab-content-rewards" class="hidden space-y-5">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <div class="lg:col-span-1 bg-[#111520] p-6 rounded-xl border border-[#1f2838] flex flex-col items-center justify-between min-h-[420px] shadow-2xl">
+            <div class="text-center w-full">
+                <h2 class="text-base font-bold text-[#d4af37] uppercase tracking-widest">
+                    <i class="fa-solid fa-gift text-lg"></i> แท่นสุ่มรางวัล BELLONA
+                </h2>
+            </div>
+
+            <div class="relative w-48 h-48 flex items-center justify-center my-4">
+                <div id="raffle-glow" class="absolute inset-0 rounded-full border-4 border-dashed border-[#d4af37]/40"></div>
+                <div class="absolute inset-4 rounded-full bg-[#0c0e14] border flex flex-col items-center justify-center p-3 text-center">
+                    <div id="lucky-winner-name" class="text-xl font-bold text-white py-1.5 truncate max-w-full">???</div>
+                    <div id="lucky-winner-job" class="text-xs text-[#d4af37] italic">พร้อมรับรางวัล</div>
                 </div>
             </div>
+
+            <div class="w-full space-y-2">
+                <button onclick="spinEligibleReward()" class="admin-only w-full bg-[#d4af37] hover:bg-yellow-500 text-black font-extrabold py-3 px-4 rounded-lg text-sm">
+                    <i class="fa-solid fa-dice"></i> สุ่มจากคนมีสิทธิ์
+                </button>
+
+                <button onclick="spinAllReward()" class="admin-only w-full bg-[#1c2331] hover:bg-[#263249] text-cyan-300 border border-cyan-900/50 font-bold py-3 px-4 rounded-lg text-sm">
+                    <i class="fa-solid fa-users"></i> สุ่มจากรายชื่อทั้งหมด
+                </button>
+            </div>
+        </div>
+
+        <div class="lg:col-span-2 bg-[#111520] p-6 rounded-xl border border-[#1f2838] space-y-4 shadow-2xl">
+            <div class="flex flex-wrap justify-between items-center gap-3 border-b border-[#1f2838] pb-3">
+                <h3 class="text-sm font-bold text-gray-200">
+                    รายชื่อผู้มีสิทธิ์โควตาสุ่มรางวัล
+                </h3>
+
+                <div class="flex flex-wrap gap-2 text-xs">
+                    <span class="bg-[#0c0e14] border border-[#1f2838] rounded-lg px-3 py-2">
+                        👥 ทั้งหมด <b id="reward-total-members" class="text-white">0</b>
+                    </span>
+                    <span class="bg-[#0c0e14] border border-[#1f2838] rounded-lg px-3 py-2">
+                        ✅ มีสิทธิ์ <b id="reward-active-members" class="text-green-400">0</b>
+                    </span>
+                    <span class="bg-[#0c0e14] border border-[#1f2838] rounded-lg px-3 py-2">
+                        ❌ ตัดสิทธิ์ <b id="reward-inactive-members" class="text-red-400">0</b>
+                    </span>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap gap-2 text-xs">
+                <button onclick="setAllRewardQuota(true)" class="admin-only bg-green-950/40 text-green-400 border border-green-900/40 px-3 py-2 rounded-lg font-bold">
+                    เปิดสิทธิ์ทั้งหมด
+                </button>
+                <button onclick="setAllRewardQuota(false)" class="admin-only bg-red-950/40 text-red-400 border border-red-900/40 px-3 py-2 rounded-lg font-bold">
+                    ปิดสิทธิ์ทั้งหมด
+                </button>
+                <button onclick="resetAllRewardQuota()" class="admin-only bg-[#1c2331] text-[#d4af37] border border-[#2d3748] px-3 py-2 rounded-lg font-bold">
+                    รีเซ็ตสิทธิ์ทั้งหมด
+                </button>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm border-collapse">
+                    <thead>
+                        <tr class="bg-[#1c2331] text-gray-300">
+                            <th class="p-3 font-bold">ชื่อตัวละคร</th>
+                            <th class="p-3 font-bold">ของรางวัลที่ลุ้นได้</th>
+                            <th class="p-3 font-bold text-center">สถานะสิทธิ์</th>
+                            <th class="p-3 font-bold text-right">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reward-quota-table-body" class="divide-y divide-[#1c2331]"></tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
 
             <!-- 5. แท็บหน้าวิเคราะห์ข้อมูลประวัติการมาวอร์สะสม -->
             <div id="tab-content-stats" class="hidden space-y-5">
