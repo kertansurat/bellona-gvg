@@ -1069,7 +1069,7 @@ function releasePlayer(id) {
     renderWaitingList();
     renderParties();
     renderMemberManagerTab();
-    renderRewardsTab();
+   if (typeof renderRewardsTab === "function") renderRewardsTab();
     renderStatsTab();
 
     if (typeof renderMarkers === "function") {
