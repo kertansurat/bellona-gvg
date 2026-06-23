@@ -964,9 +964,30 @@ console.log("Realtime Sync Started");
             players.forEach(p => { tbody.innerHTML += `<tr class="border-b border-[#1c2331] text-xs"><td class="p-3 text-center"><input type="checkbox" value="${p.id}" class="member-select-chk accent-[#d4af37]"></td><td class="p-3 font-bold text-white">${p.name} <span class="text-xs text-gray-500">(ID: ${p.id})</span></td><td class="p-3">${p.job}</td><td class="p-3">${p.status}</td><td class="p-3 text-center">${p.hasQuota?'เปิด':'ปิด'}</td><td class="p-3 text-right"><button onclick="releasePlayer('${p.id}')" class="text-gray-400 hover:text-white bg-[#1c2331] px-2 py-1 rounded">ปลดล็อก</button></td></tr>`; });
         }
         function renderRewardsTab() {
-            const tbody = document.getElementById('reward-quota-table-body'); if(!tbody) return; tbody.innerHTML = '';
-            players.filter(p => p.hasQuota).forEach(p => { tbody.innerHTML += `<tr><td class="p-3 font-bold text-white">${p.name}</td><td class="p-3 text-gray-300">${p.rewardName || 'รางวัล'}</td><td class="p-3">${p.rewardClaimed ? '🟢 ได้รับแล้ว':'🔴 ยังไม่ได้'}</td></tr>`; });
-        }
+    const tbody = document.getElementById('reward-quota-table-body');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+
+    players.forEach(p => {
+        tbody.innerHTML += `
+            <tr class="text-xs border-b border-[#1c2331]">
+                <td class="p-3 font-bold text-white">${p.name || '-'}</td>
+                <td class="p-3">${p.rewardName || 'ยังไม่ระบุ'}</td>
+                <td class="p-3">
+                    ${p.hasQuota 
+                        ? '<span class="text-green-400 font-bold">เปิดสิทธิ์</span>' 
+                        : '<span class="text-red-400 font-bold">ปิดสิทธิ์</span>'}
+                </td>
+                <td class="p-3 text-right">
+                    <button onclick="toggleRewardQuota('${p.id}')" class="admin-only bg-[#1c2331] text-[#d4af37] border border-[#2d3748] px-3 py-1.5 rounded-lg text-xs font-bold">
+                        เปิด/ปิดสิทธิ์
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+}
         function renderStatsTab() {
             const tbody = document.getElementById('stats-table-body'); if(!tbody) return; tbody.innerHTML = ''; let totalP = 0, totalL = 0, totalA = 0;
             players.forEach(p => { totalP += p.presentCount; totalL += p.leaveCount; totalA += p.absentCount; tbody.innerHTML += `<tr><td class="p-3 font-bold">${p.name}</td><td class="p-3 text-gray-400">${p.job}</td><td class="p-3 text-center text-green-400">${p.presentCount}</td><td class="p-3 text-center text-amber-400">${p.leaveCount}</td><td class="p-3 text-center text-red-400">${p.absentCount}</td></tr>`; });
@@ -1040,6 +1061,29 @@ console.log("Realtime Sync Started");
     renderAll();
 
     alert('อัปเดตสถานะ ' + status + ' สำเร็จ');
+}
+        function toggleRewardQuota(playerId) {
+    if (!checkAdminAccess()) {
+        alert('เฉพาะ Admin เท่านั้น');
+        return;
+    }
+
+    const p = players.find(x => String(x.id) === String(playerId));
+
+    if (!p) {
+        alert('ไม่พบสมาชิก');
+        return;
+    }
+
+    p.hasQuota = !p.hasQuota;
+
+    saveToLocalStorage();
+
+    if (typeof window.savePlayersToFirebaseSafe === "function") {
+        window.savePlayersToFirebaseSafe();
+    }
+
+    renderAll();
 }
     </script>
 </body>
