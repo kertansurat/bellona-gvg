@@ -844,7 +844,22 @@
             if(name && name.trim() !== "") { markers.push({ id: 'm_' + Date.now(), name: name.trim(), posX: 15, posY: 15 }); renderMarkers(); renderMarkersSettingList(); saveToLocalStorage(); }
         }
 
-        function renderAll() { populateDynamicJobSelectors(); renderWaitingList(); renderParties(); renderMemberManagerTab(); renderRewardsTab(); renderStatsTab(); renderMarkers(); renderMarkersSettingList(); }
+        function renderAll() {
+    populateDynamicJobSelectors();
+    renderWaitingList();
+    renderParties();
+    renderMemberManagerTab();
+    renderRewardsTab();
+    renderStatsTab();
+
+    if (typeof renderMarkers === "function") {
+        renderMarkers();
+    }
+
+    if (typeof renderMarkersSettingList === "function") {
+        renderMarkersSettingList();
+    }
+}
     </script>
 </body>
     
