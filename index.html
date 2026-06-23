@@ -41,7 +41,7 @@
         /* กระดานแผนที่ขนาดใหญ่ 1:1 Scrollable */
         .map-scroll-container {
             width: 100%;
-            height: 75vh;
+            height: 85vh;
             overflow: auto;
             border: 2px solid #1f2838;
             border-radius: 12px;
@@ -50,8 +50,8 @@
         }
         .map-canvas-wrapper {
             position: relative;
-            width: 2000px;  
-            height: 1125px; 
+            width: 1200px;  
+            height: 1200px; 
         }
     </style>
 </head>
@@ -808,7 +808,7 @@ console.log("Realtime Sync Started");
             setTimeout(resizeCanvas, 100);
         }
         function getCanvasMousePos(e) { const rect = canvas.getBoundingClientRect(); return [((e.clientX - rect.left) / rect.width) * canvas.width, ((e.clientY - rect.top) / rect.height) * canvas.height]; }
-        function resizeCanvas() { if(canvas) { canvas.width = 2000; canvas.height = 1125; redrawCanvasPaths(); } }
+        function resizeCanvas() { if(canvas) { canvas.width = 1200; canvas.height = 1200; redrawCanvasPaths(); } }
         function clearDrawing() { drawingPaths = []; redrawCanvasPaths(); }
         function undoDrawing() { drawingPaths.splice(-25); redrawCanvasPaths(); }
         function redrawCanvasPaths() { if(!ctx) return; ctx.clearRect(0, 0, canvas.width, canvas.height); drawingPaths.forEach(p => { ctx.beginPath(); ctx.strokeStyle = p.color; ctx.lineWidth = brushSize; ctx.lineCap = 'round'; ctx.moveTo(p.x1, p.y1); ctx.lineTo(p.x2, p.y2); ctx.stroke(); }); }
