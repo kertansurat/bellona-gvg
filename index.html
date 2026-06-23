@@ -1266,7 +1266,8 @@ function spinAllReward() {
 
     spinRewardWheel(pool);
 }
-
+    let rewardSpinLock = false;
+        
 function spinRewardWheel(pool) {
     if (rewardSpinLock) return;
 
