@@ -1203,20 +1203,68 @@ function renderRewardsTab() {
     alert('🎉 ผู้ชนะจากคนมีสิทธิ์คือ: ' + winner.name);
 }
 
+let rewardSpinLock = false;
+
+function spinRewardWheel(pool, modeName) {
+    if (rewardSpinLock) return;
+
+    if (!pool || pool.length === 0) {
+        alert('ไม่มีรายชื่อสำหรับสุ่ม');
+        return;
+    }
+
+    const nameEl = document.getElementById('lucky-winner-name');
+    const jobEl = document.getElementById('lucky-winner-job');
+
+    if (!nameEl || !jobEl) {
+        alert('ไม่พบช่องแสดงผลผู้ชนะ');
+        return;
+    }
+
+    rewardSpinLock = true;
+
+    let elapsed = 0;
+    const duration = 10000;
+    const intervalMs = 90;
+
+    const timer = setInterval(() => {
+        const randomPlayer = pool[Math.floor(Math.random() * pool.length)];
+
+        nameEl.innerText = randomPlayer.name || '-';
+        jobEl.innerText = randomPlayer.job || modeName || '-';
+
+        elapsed += intervalMs;
+
+        if (elapsed >= duration) {
+            clearInterval(timer);
+
+            const winner = pool[Math.floor(Math.random() * pool.length)];
+
+            nameEl.innerText = winner.name || '-';
+            jobEl.innerText = '🎉 ' + (winner.job || modeName || '-');
+
+            rewardSpinLock = false;
+        }
+    }, intervalMs);
+}
+
+function spinEligibleReward() {
+    if (!checkAdminAccess()) {
+        alert('เฉพาะ Admin เท่านั้น');
+        return;
+    }
+
+    const pool = players.filter(p => p.hasQuota === true);
+    spinRewardWheel(pool, 'สุ่มจากคนมีสิทธิ์');
+}
+
 function spinAllReward() {
     if (!checkAdminAccess()) {
         alert('เฉพาะ Admin เท่านั้น');
         return;
     }
 
-    if (!players || players.length === 0) {
-        alert('ยังไม่มีรายชื่อสมาชิก');
-        return;
-    }
-
-    const winner = players[Math.floor(Math.random() * players.length)];
-
-    alert('🎉 ผู้ชนะจากรายชื่อทั้งหมดคือ: ' + winner.name);
+    spinRewardWheel(players, 'สุ่มจากรายชื่อทั้งหมด');
 }
     </script>
 </body>
