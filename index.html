@@ -514,21 +514,39 @@ let userRole = 'guest';
     }, 1500);
 };
 
-        function checkLoginSession() {
-            const savedRole = sessionStorage.getItem('bellona_role');
-            if (sessionStorage.getItem('bellona_is_logged_in') === 'true' && savedRole) {
-                userRole = savedRole; document.getElementById('login-overlay-screen').classList.add('hidden'); applyRolePermissions();
-            }
-        }
+ function checkLoginSession() {
+    const savedRole = sessionStorage.getItem('bellona_role');
 
-        function attemptAdminLogin() {
-            const userInp = document.getElementById('login-username').value.trim();
-            const passInp = document.getElementById('login-password').value.trim();
-            if (userInp === 'admin-bellona' && passInp === '5000') { 
-                userRole = 'admin'; sessionStorage.setItem('bellona_role', 'admin'); sessionStorage.setItem('bellona_is_logged_in', 'true');
-                applyRolePermissions(); renderAll();
-            } else { alert('รหัสผ่านไม่ถูกต้อง');
-        }
+    if (sessionStorage.getItem('bellona_is_logged_in') === 'true' && savedRole) {
+        userRole = savedRole;
+
+        const overlay = document.getElementById('login-overlay-screen');
+        if (overlay) overlay.classList.add('hidden');
+
+        applyRolePermissions();
+    }
+}
+
+function attemptAdminLogin() {
+    const userInp = document.getElementById('login-username').value.trim();
+    const passInp = document.getElementById('login-password').value.trim();
+
+    if (userInp === 'admin-bellona' && passInp === '5000') {
+        userRole = 'admin';
+
+        sessionStorage.setItem('bellona_role', 'admin');
+        sessionStorage.setItem('bellona_is_logged_in', 'true');
+
+        const overlay = document.getElementById('login-overlay-screen');
+        if (overlay) overlay.classList.add('hidden');
+
+        applyRolePermissions();
+        renderAll();
+    } else {
+        alert('รหัสผ่านไม่ถูกต้อง');
+    }
+}
+
 function bypassAsGuest() {
     userRole = 'guest';
 
@@ -546,8 +564,15 @@ function bypassAsGuest() {
         displayGlobalMap('vigrid');
     }, 300);
 }
-        function logoutSession() { sessionStorage.clear(); location.reload(); }
-        function checkAdminAccess() { return userRole === 'admin'; }
+
+function logoutSession() {
+    sessionStorage.clear();
+    location.reload();
+}
+
+function checkAdminAccess() {
+    return userRole === 'admin';
+}
 
 function applyRolePermissions() {
     const badge = document.getElementById('role-status-badge');
@@ -576,8 +601,6 @@ function applyRolePermissions() {
         displayGlobalMap('vigrid');
     }, 300);
 }
-        }
-
         function loadFromLocalStorage() {
             const rawData = localStorage.getItem('bellona_gvg_v13_final');
             if (rawData) {
