@@ -12,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- html2canvas for high quality screenshots -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    
+
     <style>
         body {
             font-family: 'Inter', 'Noto Sans Thai', sans-serif;
@@ -37,7 +37,7 @@
             50% { transform: scale(1.04) rotate(180deg); filter: hue-rotate(60deg); }
             100% { transform: scale(1) rotate(360deg); filter: hue-rotate(360deg); }
         }
-        
+
         /* กระดานแผนที่ขนาดใหญ่ 1:1 Scrollable */
         .map-scroll-container {
             width: 100%;
@@ -177,61 +177,96 @@
 
             <!-- 2. แท็บกระดานวางแผนยุทธวิธี -->
             <div id="tab-content-tactical" class="hidden space-y-5">
-                <div class="bg-[#111520] border border-[#1f2838] rounded-xl p-6 shadow-2xl space-y-4">
-                    <div class="flex flex-wrap justify-between items-center gap-3 border-b border-[#1f2838] pb-3">
-                        <div>
-                            <h2 class="text-base font-bold text-[#d4af37] uppercase tracking-wider"><i class="fa-solid fa-map-location-dot"></i> Tactical Board</h2>
-                            <p class="text-[11px] text-gray-500 mt-1">พื้นที่เตรียมต่อระบบแผนที่ / หมุด / เส้นวาดจากคลังรูป GitHub</p>
+                <div class="flex flex-wrap items-center justify-between gap-3 bg-[#111520] border border-[#1f2838] p-4 rounded-xl">
+                    <div class="flex items-center gap-3 flex-wrap text-sm">
+                        <button onclick="setDrawMode('move')" id="tool-move" class="draw-tool bg-[#d4af37] text-black font-bold px-4 py-2 rounded-lg text-xs"><i class="fa-solid fa-hand"></i> ลากหมาก</button>
+                        <button onclick="setDrawMode('draw')" id="tool-draw" class="draw-tool admin-only bg-[#1c2331] text-gray-300 px-4 py-2 rounded-lg text-xs"><i class="fa-solid fa-pencil"></i> วาดเส้นแผน</button>
+                        <div class="h-6 w-[1px] bg-[#1f2838]"></div>
+                        <span class="text-gray-300 font-bold text-xs">สีดินสอ:</span>
+                        <div class="flex items-center gap-1.5">
+                            <button onclick="setDrawColor('#ff4d4d')" class="w-7 h-7 rounded-full bg-[#ff4d4d] border border-transparent hover:scale-110 transition cursor-pointer" id="color-ff4d4d"></button>
+                            <button onclick="setDrawColor('#4dabff')" class="w-7 h-7 rounded-full bg-[#4dabff] border border-transparent hover:scale-110 transition cursor-pointer" id="color-4dabff"></button>
+                            <button onclick="setDrawColor('#4dff88')" class="w-7 h-7 rounded-full bg-[#4dff88] border border-transparent hover:scale-110 transition cursor-pointer" id="color-4dff88"></button>
+                            <button onclick="setDrawColor('#ffd44d')" class="w-7 h-7 rounded-full bg-[#ffd44d] border border-transparent hover:scale-110 transition cursor-pointer" id="color-ffd44d"></button>
+                            <button onclick="setDrawColor('#ffffff')" class="w-7 h-7 rounded-full bg-[#ffffff] border border-transparent hover:scale-110 transition cursor-pointer" id="color-ffffff"></button>
+                        </div>
+                        <div class="h-6 w-[1px] bg-[#1f2838]"></div>
+                        <span class="text-gray-300 font-bold text-xs">ขนาดเส้น:</span>
+                        <input type="range" id="brush-size" min="1" max="15" value="4" onchange="updateBrushSize(this.value)" class="w-24 accent-[#d4af37] cursor-pointer">
+                    </div>
+                    <div class="flex items-center gap-2 flex-wrap text-xs">
+                        <button onclick="undoDrawing()" class="admin-only bg-[#1c2331] text-gray-300 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-undo"></i> ย้อนกลับ</button>
+                        <button onclick="clearDrawing()" class="admin-only bg-[#1c2331] text-red-400 px-3 py-1.5 rounded-lg">ล้างเส้นวาด</button>
+                        <button onclick="resetMarkersToDefault()" class="admin-only bg-[#1c2331] text-[#d4af37] px-3 py-1.5 rounded-lg">รีเซ็ตหมาก</button>
+                        <button onclick="exportTacticalMap()" class="bg-[#d4af37] text-black font-extrabold px-5 py-2.5 rounded-lg transition flex items-center gap-1.5 shadow-md hover:bg-yellow-500"><i class="fa-solid fa-download"></i> เซฟรูปภาพแผนกลยุทธ์</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 xl:grid-cols-4 gap-5">
+                    <div class="xl:col-span-3 bg-[#111520] rounded-xl p-4 border border-[#1f2838] shadow-2xl">
+                        <div class="map-scroll-container">
+                            <div class="map-canvas-wrapper" id="tactical-board-wrapper">
+                                <div id="battle-map-placeholder" class="w-full h-full absolute inset-0 bg-[#0c0e14] flex flex-col items-center justify-center select-none">
+                                    <img src="./assets/logo-bellona.png" id="fallback-watermark-logo" onerror="this.src='https://placehold.co/400x200/121620/d4af37?text=BELLONA+ROOC+GUILD'" class="w-full max-w-[400px] opacity-10 rounded">
+                                </div>
+                                <img id="battle-map-bg" src="" class="w-full h-full object-cover absolute inset-0 hidden">
+                                <canvas id="drawing-canvas" class="absolute inset-0 z-10 w-full h-full cursor-crosshair"></canvas>
+                                <div id="markers-overlay" class="absolute inset-0 z-20 pointer-events-none"></div>
+                            </div>
                         </div>
                     </div>
-                    <div class="bg-[#0c0e14] border border-[#1f2838] rounded-xl min-h-[420px] flex flex-col items-center justify-center text-center p-6">
-                        <img src="./assets/logo-bellona.png" class="w-52 opacity-20 mb-4" alt="BELLONA">
-                        <h3 class="text-lg font-extrabold text-white">BELLONA Tactical Board</h3>
-                        <p class="text-sm text-gray-500 mt-2">เวอร์ชันนี้พักระบบ Tactical เดิมไว้ก่อน เพื่อให้ระบบสมาชิก / Firebase / สุ่มรางวัลเสถียร</p>
+
+                    <div class="space-y-4">
+                        <div class="bg-[#111520] p-4.5 rounded-xl border border-[#1f2838] space-y-3 shadow-xl">
+                            <h3 class="text-xs font-bold text-gray-300 uppercase tracking-wider"><i class="fa-solid fa-map text-[#d4af37]"></i> รูปภาพแผนที่ยุทธวิธี GVG</h3>
+                            <select id="map-selector" onchange="changeBattleMap(this.value)" class="w-full bg-[#1c2331] text-xs text-gray-200 p-2.5 rounded-lg border border-[#1f2838] focus:outline-none">
+                                <option value="default">🖥️ พื้นหลังบอร์ดมาตรฐานกิลด์ BELLONA</option>
+                            </select>
+
+                            <div class="space-y-3 pt-2 border-t border-[#1f2838]/40">
+                                <div class="admin-only space-y-1.5">
+                                    <label class="block text-[11px] text-gray-400 font-bold">เพิ่มแผนที่ใหม่ด้วยลิงก์ URL รูปภาพ:</label>
+                                    <div class="flex gap-1.5">
+                                        <input type="text" id="map-url-input-web" placeholder="วางลิงก์รูปภาพแผนที่ (.jpg / .png)..." class="flex-grow bg-[#1c2331] text-[11px] p-2 rounded-lg text-white border border-[#2b354a] focus:outline-none">
+                                        <button onclick="addMapViaUrlManual()" class="bg-[#d4af37] text-black font-bold px-3 py-1 rounded-lg text-xs">เพิ่ม</button>
+                                    </div>
+                                </div>
+                                <div class="space-y-1.5">
+                                    <span class="text-[10px] text-gray-400 uppercase tracking-wider font-bold block">จัดการและเปลี่ยนชื่อรูปภาพในคลัง:</span>
+                                    <div id="saved-maps-list" class="space-y-1.5 max-h-[160px] overflow-y-auto pr-1"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-[#111520] p-4.5 rounded-xl border border-[#1f2838] flex flex-col max-h-[340px] shadow-xl">
+                            <div class="flex justify-between items-center mb-2.5">
+                                <h3 class="text-xs font-bold text-gray-300 uppercase tracking-wider">ปักหมุดตำแหน่ง (Markers)</h3>
+                                <button onclick="addNewMarker()" class="admin-only bg-cyan-950/40 text-cyan-400 text-[10px] px-2 py-0.5 rounded font-bold">+ เพิ่มหมุด</button>
+                            </div>
+                            <div class="flex gap-1.5 mb-2.5">
+                                <input type="text" id="new-marker-name" placeholder="ชื่อหมาก..." class="flex-grow bg-[#1c2331] text-[11px] text-gray-200 px-2.5 py-2 rounded-lg border border-[#1f2838] focus:outline-none">
+                            </div>
+                            <div class="flex-grow overflow-y-auto space-y-1.5 pr-1" id="markers-setting-list"></div>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- 3. แท็บจัดการสมาชิกกิลด์ & เช็คชื่อ -->
             <div id="tab-content-members" class="hidden space-y-5">
-                <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-
-                    <div class="xl:col-span-2 bg-[#111520] p-5 rounded-xl border border-[#1f2838] shadow-xl space-y-4">
-                        <div class="flex flex-wrap justify-between items-center border-b border-[#1f2838] pb-3.5 gap-3">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 bg-[#111520] p-5 rounded-xl border border-[#1f2838] shadow-xl space-y-4">
+                        <div class="flex flex-wrap justify-between items-center border-b border-[#1f2838] pb-3.5 gap-2">
                             <div>
-                                <h2 class="text-base font-bold text-gray-200 flex items-center gap-2">
-                                    <i class="fa-solid fa-users-gear text-[#d4af37]"></i>
-                                    ทะเบียนและสิทธิ์จัดการสมาชิกกิลด์
-                                </h2>
-                                <p class="text-[11px] text-gray-500 mt-1">ติ๊กเลือกสมาชิก แล้วกดสถานะเพื่อเช็คชื่อแบบกลุ่ม</p>
+                                <h2 class="text-base font-bold text-gray-200 flex items-center gap-2"><i class="fa-solid fa-users-gear text-[#d4af37]"></i> ทะเบียนและสิทธิ์จัดการสมาชิกกิลด์</h2>
                             </div>
-
-                            <div class="flex flex-wrap items-center gap-2">
-                                <button onclick="bulkSetAttendanceStatus('มา')" class="admin-only bg-green-950/40 text-green-400 border border-green-900/40 px-3 py-2 rounded-lg text-xs font-bold">
-                                    <i class="fa-solid fa-circle-check"></i> มาวอร์
-                                </button>
-
-                                <button onclick="bulkSetAttendanceStatus('ลา')" class="admin-only bg-amber-950/40 text-amber-400 border border-amber-900/40 px-3 py-2 rounded-lg text-xs font-bold">
-                                    <i class="fa-solid fa-clock"></i> ลา
-                                </button>
-
-                                <button onclick="bulkSetAttendanceStatus('ขาด')" class="admin-only bg-red-950/40 text-red-400 border border-red-900/40 px-3 py-2 rounded-lg text-xs font-bold">
-                                    <i class="fa-solid fa-circle-xmark"></i> ขาด
-                                </button>
-
-                                <button onclick="deleteSelectedPlayers()" class="admin-only bg-red-950/40 text-red-400 border border-red-900/40 px-4 py-2 rounded-lg transition shadow-md text-xs font-bold">
-                                    <i class="fa-solid fa-trash-can"></i> ลบสมาชิก
-                                </button>
-                            </div>
+                            <button onclick="deleteSelectedPlayers()" class="admin-only bg-red-950/40 text-red-400 border border-red-900/40 px-4 py-2.5 rounded-lg transition shadow-md"><i class="fa-solid fa-trash-can"></i> ลบสมาชิกที่ติ๊กเลือก</button>
                         </div>
-
                         <div class="overflow-x-auto">
                             <table class="w-full text-left text-sm border-collapse">
                                 <thead>
                                     <tr class="bg-[#1c2331] text-gray-300 border-b border-[#1f2838]">
-                                        <th class="p-3 text-center w-10">
-                                            <input type="checkbox" id="select-all-members-chk" onchange="toggleSelectAllMembers(this)" class="w-4.5 h-4.5 rounded accent-[#d4af37]">
-                                        </th>
+                                        <th class="p-3 text-center w-10"><input type="checkbox" id="select-all-members-chk" onchange="toggleSelectAllMembers(this)" class="w-4.5 h-4.5 rounded accent-[#d4af37]"></th>
                                         <th class="p-3 font-bold">ชื่อตัวละคร (ID ระบบ)</th>
                                         <th class="p-3 font-bold">อาชีพคลาส</th>
                                         <th class="p-3 font-bold">สถานะวันนี้</th>
@@ -246,21 +281,16 @@
 
                     <div class="space-y-4">
                         <div class="bg-[#111520] p-5 rounded-xl border border-[#1f2838] space-y-4 shadow-xl">
-                            <h3 class="text-xs font-bold text-[#d4af37] uppercase tracking-wider flex items-center gap-2 border-b border-[#1f2838] pb-2">
-                                <i class="fa-solid fa-user-plus"></i> เพิ่มสมาชิกแมนนวลหน้าเว็บ
-                            </h3>
-
+                            <h3 class="text-xs font-bold text-[#d4af37] uppercase tracking-wider flex items-center gap-2 border-b border-[#1f2838] pb-2"><i class="fa-solid fa-user-plus"></i> เพิ่มสมาชิกแมนนวลหน้าเว็บ</h3>
                             <div class="space-y-3.5 text-xs">
                                 <div>
                                     <label class="block text-gray-300 mb-1 font-semibold">ชื่อตัวละครในเกม</label>
                                     <input type="text" id="manual-add-name" placeholder="ระบุชื่อ..." class="w-full bg-[#1c2331] text-gray-100 px-4 py-2.5 rounded-lg border border-[#2d3748] focus:outline-none">
                                 </div>
-
                                 <div>
                                     <label class="block text-gray-300 mb-1 font-semibold">สายอาชีพตัวละคร (Job)</label>
                                     <select id="manual-add-job" class="w-full bg-[#1c2331] text-gray-300 p-2.5 rounded-lg border border-[#2d3748] focus:outline-none"></select>
                                 </div>
-
                                 <div>
                                     <label class="block text-gray-300 mb-1 font-semibold">สถานะวันนี้</label>
                                     <select id="manual-add-status" class="w-full bg-[#1c2331] text-gray-300 p-2.5 rounded-lg border border-[#2d3748] focus:outline-none">
@@ -269,87 +299,41 @@
                                         <option value="ขาด">🔴 ขาดเช็คชื่อ</option>
                                     </select>
                                 </div>
+                                <button onclick="manualAddMemberSubmit()" class="admin-only w-full bg-[#d4af37] text-black font-extrabold py-3 rounded-lg text-sm transition"><i class="fa-solid fa-plus-circle"></i> บันทึกรายชื่อเข้าบอร์ด</button>
+                            </div>
+                        </div>
 
-                                <button onclick="manualAddMemberSubmit()" class="admin-only w-full bg-[#d4af37] text-black font-extrabold py-3 rounded-lg text-sm transition">
-                                    <i class="fa-solid fa-plus-circle"></i> บันทึกรายชื่อเข้าบอร์ด
-                                </button>
+                        <div class="bg-[#111520] p-5 rounded-xl border border-[#1f2838] space-y-4 shadow-xl">
+                            <h3 class="text-xs font-bold text-gray-200 uppercase tracking-wider flex items-center gap-2 border-b border-[#1f2838] pb-2"><i class="fa-solid fa-file-excel text-[#d4af37]"></i> Google Sheets Live-Sync (ID Number)</h3>
+                            <div class="space-y-2.5 text-xs">
+                                <input type="text" id="sheet-url-input-members" placeholder="วางลิงก์ CSV จากกูเกิ้ลชีท..." class="w-full bg-[#1c2331] p-2.5 rounded-lg text-white border border-[#2d3748] focus:outline-none">
+                                <button onclick="fetchGoogleSheetDataFromMembers()" class="w-full bg-[#1a202c] text-[#d4af37] border border-[#2d3748] font-bold py-2.5 px-4 rounded-lg transition text-xs flex justify-center items-center gap-2"><i class="fa-solid fa-rotate"></i> ดึงรายชื่ออิง ID ทันที</button>
                             </div>
                         </div>
                     </div>
-
                 </div>
             </div>
 
             <!-- 4. แท็บหน้าโควตาสุ่มของรางวัล -->
             <div id="tab-content-rewards" class="hidden space-y-5">
-                <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-
-                    <div class="bg-[#111520] p-6 rounded-xl border border-[#1f2838] flex flex-col items-center justify-between min-h-[420px] shadow-2xl">
-                        <div class="text-center w-full space-y-1">
-                            <h2 class="text-base font-bold text-[#d4af37] uppercase tracking-widest">
-                                <i class="fa-solid fa-gift"></i> แท่นสุ่มรางวัล BELLONA
-                            </h2>
-                            <p class="text-[11px] text-gray-500">เลือกโหมดสุ่มตามสิทธิ์รางวัลของสมาชิก</p>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-1 bg-[#111520] p-6 rounded-xl border border-[#1f2838] flex flex-col items-center justify-between min-h-[420px] shadow-2xl">
+                        <div class="text-center w-full">
+                            <h2 class="text-base font-bold text-[#d4af37] uppercase tracking-widest"><i class="fa-solid fa-gift text-lg"></i> แท่นสุ่มรางวัลนำโชค BELLONA</h2>
                         </div>
-
-                        <div class="relative w-52 h-52 flex items-center justify-center my-5">
-                            <div class="absolute inset-0 rounded-full border-4 border-dashed border-[#d4af37]/40 animate-pulse"></div>
-                            <div class="absolute inset-5 rounded-full bg-[#0c0e14] border border-[#2a3448] flex flex-col items-center justify-center p-4 text-center shadow-inner">
-                                <div id="lucky-winner-name" class="text-2xl font-extrabold text-white py-1 truncate max-w-full">???</div>
-                                <div id="lucky-winner-job" class="text-xs text-[#d4af37] italic">รอเริ่มสุ่ม</div>
+                        <div class="relative w-48 h-48 flex items-center justify-center my-4">
+                            <div id="raffle-glow" class="absolute inset-0 rounded-full border-4 border-dashed border-[#d4af37]/40"></div>
+                            <div class="absolute inset-4 rounded-full bg-[#0c0e14] border flex flex-col items-center justify-center p-3 text-center">
+                                <div id="lucky-winner-name" class="text-xl font-bold text-white py-1.5 truncate max-w-full">???</div>
+                                <div id="lucky-winner-job" class="text-xs text-[#d4af37] italic">พร้อมรับรางวัล</div>
                             </div>
                         </div>
-
-                        <div class="w-full space-y-2">
-                            <button onclick="spinEligibleRaffle()" class="admin-only w-full bg-[#d4af37] hover:bg-yellow-500 text-black font-extrabold py-3 px-4 rounded-lg text-sm">
-                                <i class="fa-solid fa-dice"></i> สุ่มเฉพาะคนมีสิทธิ์
-                            </button>
-
-                            <button onclick="spinAllPlayersRaffle()" class="admin-only w-full bg-[#1c2331] hover:bg-[#263249] text-cyan-300 border border-cyan-900/50 font-bold py-3 px-4 rounded-lg text-sm">
-                                <i class="fa-solid fa-users"></i> สุ่มจากรายชื่อทั้งหมด
-                            </button>
-
-                            <button onclick="resetRaffleDisplay()" class="admin-only w-full bg-red-950/30 text-red-400 border border-red-900/40 font-bold py-2.5 px-4 rounded-lg text-xs">
-                                <i class="fa-solid fa-rotate-left"></i> รีเซ็ตผลสุ่ม
-                            </button>
-                        </div>
+                        <button onclick="spinLuckyRaffle()" class="admin-only w-full bg-[#d4af37] hover:bg-yellow-500 text-black font-extrabold py-3 px-4 rounded-lg text-sm"><i class="fa-solid fa-dice"></i> เริ่มหมุนวงล้อสุ่มรางวัล</button>
                     </div>
-
-                    <div class="xl:col-span-2 bg-[#111520] p-6 rounded-xl border border-[#1f2838] space-y-5 shadow-2xl">
-                        <div class="flex flex-wrap justify-between items-center gap-3 border-b border-[#1f2838] pb-3">
-                            <div>
-                                <h3 class="text-sm font-bold text-gray-200">
-                                    <i class="fa-solid fa-list-check text-[#d4af37]"></i> รายชื่อและสิทธิ์สุ่มรางวัล
-                                </h3>
-                                <p class="text-[11px] text-gray-500 mt-1">เปิด/ปิดสิทธิ์ และดูว่าใครได้รับรางวัลแล้ว</p>
-                            </div>
-
-                            <div class="flex gap-2 text-xs">
-                                <span class="px-3 py-1.5 rounded-lg bg-[#0c0e14] border border-[#1f2838] text-green-400 font-bold">
-                                    มีสิทธิ์: <span id="reward-eligible-count">0</span>
-                                </span>
-                                <span class="px-3 py-1.5 rounded-lg bg-[#0c0e14] border border-[#1f2838] text-red-400 font-bold">
-                                    รับแล้ว: <span id="reward-claimed-count">0</span>
-                                </span>
-                            </div>
-                        </div>
-
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left text-sm border-collapse">
-                                <thead>
-                                    <tr class="bg-[#1c2331] text-gray-300">
-                                        <th class="p-3 font-bold">ชื่อตัวละคร</th>
-                                        <th class="p-3 font-bold">อาชีพ</th>
-                                        <th class="p-3 font-bold text-center">สิทธิ์สุ่ม</th>
-                                        <th class="p-3 font-bold text-center">สถานะรางวัล</th>
-                                        <th class="p-3 font-bold text-right">จัดการ</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="reward-quota-table-body" class="divide-y divide-[#1c2331]"></tbody>
-                            </table>
-                        </div>
+                    <div class="lg:col-span-2 bg-[#111520] p-6 rounded-xl border border-[#1f2838] space-y-5 shadow-2xl">
+                        <h3 class="text-sm font-bold text-gray-200">รายชื่อผู้มีสิทธิ์โควตาสุ่มรางวัล</h3>
+                        <div class="overflow-x-auto"><table class="w-full text-left text-sm border-collapse"><thead><tr class="bg-[#1c2331] text-gray-300"><th class="p-3 font-bold">ชื่อตัวละคร</th><th class="p-3 font-bold">ของรางวัลที่ลุ้นได้</th><th class="p-3 font-bold">สถานะของรางวัล</th></tr></thead><tbody id="reward-quota-table-body" class="divide-y divide-[#1c2331]"></tbody></table></div>
                     </div>
-
                 </div>
             </div>
 
@@ -371,7 +355,7 @@
     <div id="guild-settings-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm flex items-center justify-center z-[100] hidden">
         <div class="bg-[#111520] border border-[#1f2838] rounded-xl p-6 w-[540px] max-w-[90%] flex flex-col max-h-[85vh] shadow-2xl">
             <h3 class="text-base font-bold text-[#d4af37] mb-1.5 uppercase tracking-wider flex items-center gap-2"><i class="fa-solid fa-sliders"></i> ศูนย์ตั้งค่ารูปโลโก้และคลาสอาชีพประจำกิลด์</h3>
-            
+
             <div class="flex-grow overflow-y-auto pr-1 space-y-4 text-xs mt-3">
                 <div class="p-4 bg-[#181f2d] border border-[#232c3f] rounded-lg space-y-3">
                     <span class="text-xs text-[#d4af37] font-bold block"><i class="fa-solid fa-link"></i> วางลิงก์ URL เปลี่ยนรูปโลโก้หลักของกิลด์</span>
@@ -424,77 +408,39 @@
             renderAll();
         };
 
-function checkLoginSession() {
-    userRole = 'guest';
-    sessionStorage.clear();
-
-    const loginOverlay = document.getElementById('login-overlay-screen');
-    if (loginOverlay) {
-        loginOverlay.classList.remove('hidden');
-    }
-}
-
-function attemptAdminLogin() {
-    const userInp = document.getElementById('login-username').value.trim();
-    const passInp = document.getElementById('login-password').value.trim();
-
-    if (userInp === 'admin-bellona' && passInp === '5000') {
-        userRole = 'admin';
-
-        const loginOverlay = document.getElementById('login-overlay-screen');
-        if (loginOverlay) {
-            loginOverlay.classList.add('hidden');
+        function checkLoginSession() {
+            const savedRole = sessionStorage.getItem('bellona_role');
+            if (sessionStorage.getItem('bellona_is_logged_in') === 'true' && savedRole) {
+                userRole = savedRole; document.getElementById('login-overlay-screen').classList.add('hidden'); applyRolePermissions();
+            }
         }
 
-        applyRolePermissions();
-        renderAll();
-    } else {
-        alert('รหัสผ่านไม่ถูกต้อง');
-    }
-}
+        function attemptAdminLogin() {
+            const userInp = document.getElementById('login-username').value.trim();
+            const passInp = document.getElementById('login-password').value.trim();
+            if (userInp === 'admin-bellona' && passInp === '5000') { 
+                userRole = 'admin'; sessionStorage.setItem('bellona_role', 'admin'); sessionStorage.setItem('bellona_is_logged_in', 'true');
+                applyRolePermissions(); renderAll();
+            } else { alert('รหัสผ่านไม่ถูกต้อง'); }
+        }
+        function bypassAsGuest() { userRole = 'guest'; sessionStorage.setItem('bellona_role', 'guest'); sessionStorage.setItem('bellona_is_logged_in', 'true'); applyRolePermissions(); renderAll(); }
+        function logoutSession() { sessionStorage.clear(); location.reload(); }
+        function checkAdminAccess() { return userRole === 'admin'; }
 
-function bypassAsGuest() {
-    userRole = 'guest';
+        function applyRolePermissions() {
+            document.getElementById('login-overlay-screen').classList.add('hidden');
+            const badge = document.getElementById('role-status-badge');
+            if (userRole === 'admin') {
+                badge.className = "px-3.5 py-1.5 rounded text-[11px] font-extrabold text-[#d4af37] border border-[#d4af37]/30 bg-[#232c3f]";
+                badge.innerHTML = `<i class="fa-solid fa-lock-open"></i> ADMIN MODE`;
+                document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('opacity-40', 'pointer-events-none'));
+            } else {
+                badge.className = "px-3.5 py-1.5 rounded text-[11px] font-extrabold text-gray-400 border border-[#2d3748] bg-[#181f2d]";
+                badge.innerHTML = `<i class="fa-solid fa-lock"></i> GUEST MODE`;
+                document.querySelectorAll('.admin-only').forEach(el => el.classList.add('opacity-40', 'pointer-events-none'));
+            }
+        }
 
-    const loginOverlay = document.getElementById('login-overlay-screen');
-    if (loginOverlay) {
-        loginOverlay.classList.add('hidden');
-    }
-
-    applyRolePermissions();
-    renderAll();
-}
-
-function logoutSession() {
-    userRole = 'guest';
-    sessionStorage.clear();
-
-    const loginOverlay = document.getElementById('login-overlay-screen');
-    if (loginOverlay) {
-        loginOverlay.classList.remove('hidden');
-    }
-
-    applyRolePermissions();
-}
-
-function checkAdminAccess() {
-    return userRole === 'admin';
-}
-
-function applyRolePermissions() {
-    const badge = document.getElementById('role-status-badge');
-    if (!badge) return;
-
-    if (userRole === 'admin') {
-        badge.className = "px-3.5 py-1.5 rounded text-[11px] font-extrabold text-[#d4af37] border border-[#d4af37]/30 bg-[#232c3f]";
-        badge.innerHTML = `<i class="fa-solid fa-lock-open"></i> ADMIN MODE`;
-        document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('opacity-40', 'pointer-events-none'));
-    } else {
-        badge.className = "px-3.5 py-1.5 rounded text-[11px] font-extrabold text-gray-400 border border-[#2d3748] bg-[#181f2d]";
-        badge.innerHTML = `<i class="fa-solid fa-lock"></i> GUEST MODE`;
-        document.querySelectorAll('.admin-only').forEach(el => el.classList.add('opacity-40', 'pointer-events-none'));
-    }
-}
         function loadFromLocalStorage() {
             const rawData = localStorage.getItem('bellona_gvg_v13_final');
             if (rawData) {
@@ -509,7 +455,7 @@ function applyRolePermissions() {
                     selectedMap = data.selectedMap || 'default';
                     markers = data.markers || [];
                     drawingPaths = data.drawingPaths || [];
-                    
+
                     const logoData = localStorage.getItem('bellona_custom_logo_data');
                     if(logoData) { displayGuildLogo(logoData); if(document.getElementById('guild-logo-url-input')) document.getElementById('guild-logo-url-input').value = logoData; }
                     updateMapDropdownOptions();
@@ -539,11 +485,14 @@ async function importPlayersFromFirebaseSafe() {
 
         const snap = await getDocs(collection(window.bellonaDB, "players"));
 
+        players = snap.docs.map(doc => ({
       players = snap.docs.map(doc => ({
             id: doc.id,
             name: doc.data().name || "ไม่ระบุชื่อ",
             job: doc.data().job || "ไม่ระบุอาชีพ",
             status: doc.data().status || "มา",
+            partyId: doc.data().partyId ?? null,
+            slotIndex: doc.data().slotIndex ?? null,
 
             presentCount: doc.data().presentCount || 0,
             leaveCount: doc.data().leaveCount || 0,
@@ -551,6 +500,8 @@ async function importPlayersFromFirebaseSafe() {
 
             hasQuota: doc.data().hasQuota ?? true,
             rewardName: doc.data().rewardName || "",
+            rewardClaimed: doc.data().rewardClaimed || false
+        }));
             rewardClaimed: doc.data().rewardClaimed || false,
 
             discordId: doc.data().discordId || "",
@@ -587,26 +538,20 @@ window.savePlayersToFirebaseSafe = async function() {
         for (const p of players) {
             const playerId = String(p.id || p.name || Date.now());
 
-await setDoc(doc(window.bellonaDB, "players", playerId), {
-    name: p.name || "",
-    job: p.job || "",
-    status: p.status || "มา",
-
-    presentCount: p.presentCount || 0,
-    leaveCount: p.leaveCount || 0,
-    absentCount: p.absentCount || 0,
-
-    hasQuota: p.hasQuota ?? true,
-    rewardName: p.rewardName || "",
-    rewardClaimed: p.rewardClaimed || false,
-
-    discordId: p.discordId || "",
-
-    partyId: p.partyId ?? null,
-    slotIndex: p.slotIndex ?? null,
-
-    updatedAt: new Date().toISOString()
-}, { merge: true });
+            await setDoc(doc(window.bellonaDB, "players", playerId), {
+                name: p.name || "",
+                job: p.job || "",
+                status: p.status || "มา",
+                partyId: p.partyId ?? null,
+                slotIndex: p.slotIndex ?? null,
+                presentCount: p.presentCount || 0,
+                leaveCount: p.leaveCount || 0,
+                absentCount: p.absentCount || 0,
+                hasQuota: p.hasQuota ?? true,
+                rewardName: p.rewardName || "",
+                rewardClaimed: p.rewardClaimed || false,
+                updatedAt: new Date().toISOString()
+            }, { merge: true });
         }
 
         alert("บันทึกข้อมูลขึ้น Firebase สำเร็จ: " + players.length + " คน");
@@ -653,7 +598,7 @@ await setDoc(doc(window.bellonaDB, "players", playerId), {
         alert("Realtime Sync Error: " + err.message);
     }
 };
-        
+
         /* ================= ⚡ ระบบเพิ่มแผนที่ผ่าน ลิงก์ URL รูปภาพหน้าเว็บ ================= */
         function addMapViaUrlManual() {
             if (!checkAdminAccess()) return;
@@ -797,16 +742,16 @@ await setDoc(doc(window.bellonaDB, "players", playerId), {
             alert('📸 กำลังประมวลผลเซฟภาพปาร์ตี้หลักและรองความละเอียดสูงแบบแยกไฟล์...');
             const mainZone = document.getElementById('capture-main-zone');
             const subZone = document.getElementById('capture-sub-zone');
-            
+
             if (!mainZone || !subZone) { alert('ไม่พบข้อมูลกล่องผังปาร์ตี้'); return; }
-            
+
             try {
                 const canvasMain = await html2canvas(mainZone, { backgroundColor: '#111520', scale: 2, useCORS: true });
                 const link1 = document.createElement('a');
                 link1.download = `bellona-main-party-${Date.now()}.png`;
                 link1.href = canvasMain.toDataURL('image/png');
                 link1.click();
-                
+
                 setTimeout(async () => {
                     const canvasSub = await html2canvas(subZone, { backgroundColor: '#111520', scale: 2, useCORS: true });
                     const link2 = document.createElement('a');
@@ -881,7 +826,7 @@ await setDoc(doc(window.bellonaDB, "players", playerId), {
                 for (let i = 1; i < lines.length; i++) {
                     const line = lines[i].trim(); if (!line) continue;
                     const cells = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^["']|["']$/g, '').trim()); if (cells.length < 3) continue;
-                    
+
                     // 1. ตรวจจับข้อมูลไอคอนอาชีพเรียงจากบนลงล่างใน คอลัมน์ K (cells[10]) - แมตช์ตามลำดับแถว
                     if (cells[10] && cells[10].startsWith('http') && availableJobsList[i - 1]) {
                         jobIcons[availableJobsList[i - 1]] = cells[10].trim();
@@ -895,7 +840,7 @@ await setDoc(doc(window.bellonaDB, "players", playerId), {
                     // 3. ผูกข้อมูลสมาชิกกิลด์ในคอลัมน์ A-J
                     imported.push({ id: cells[0].trim(), name: cells[1].trim(), job: cells[2].trim(), status: cells[3] || 'มา', presentCount: parseInt(cells[4])||0, leaveCount: parseInt(cells[5])||0, absentCount: parseInt(cells[6])||0, hasQuota: cells[7]==='เปิด'||cells[7]==='true', rewardName: cells[8]||'', rewardClaimed: cells[9]==='ได้แล้ว'||cells[9]==='true', partyId: null, slotIndex: null });
                 }
-                
+
                 if (parsedMaps.length > 0) { globalMaps = parsedMaps; }
                 players = imported; 
                 saveToLocalStorage(); updateMapDropdownOptions(); renderAll(); 
@@ -908,12 +853,12 @@ await setDoc(doc(window.bellonaDB, "players", playerId), {
         function manualAddMemberSubmit() {
             const name = document.getElementById('manual-add-name').value.trim(); const job = document.getElementById('manual-add-job').value; const status = document.getElementById('manual-add-status').value; if (!name) return;
             players.push({ id: String(Date.now()), name: name, job: job, status: status, presentCount: 1, leaveCount: 0, absentCount: 0, hasQuota: false, rewardName: '', rewardClaimed: false, partyId: null, slotIndex: null });
-            document.getElementById('manual-add-name').value = ''; saveToLocalStorage(); if (typeof window.savePlayersToFirebaseSafe === 'function') window.savePlayersToFirebaseSafe(); renderAll();
+            document.getElementById('manual-add-name').value = ''; saveToLocalStorage(); renderAll();
         }
         function toggleSelectAllMembers(master) { document.querySelectorAll('.member-select-chk').forEach(c => c.checked = master.checked); }
         function deleteSelectedPlayers() {
             const chks = document.querySelectorAll('.member-select-chk:checked'); if (chks.length === 0) return;
-            if (confirm(`ลบสมาชิกที่เลือกจำนวน ${chks.length} คน?`)) { const ids = Array.from(chks).map(c => c.value); players = players.filter(p => !ids.includes(p.id)); saveToLocalStorage(); if (typeof window.savePlayersToFirebaseSafe === 'function') window.savePlayersToFirebaseSafe(); renderAll(); }
+            if (confirm(`ลบสมาชิกที่เลือกจำนวน ${chks.length} คน?`)) { const ids = Array.from(chks).map(c => c.value); players = players.filter(p => !ids.includes(p.id)); saveToLocalStorage(); renderAll(); }
         }
 
         function initPartiesGrid() {
@@ -964,275 +909,57 @@ await setDoc(doc(window.bellonaDB, "players", playerId), {
         function triggerClearPartiesConfirmation() { players.forEach(p => { p.partyId = null; p.slotIndex = null; }); saveToLocalStorage(); renderAll(); }
 
         function renderMemberManagerTab() {
-            const tbody = document.getElementById('member-manager-table-body');
-            if(!tbody) return;
-            tbody.innerHTML = '';
-            players.forEach(p => {
-                tbody.innerHTML += `<tr class="border-b border-[#1c2331] text-xs">
-                    <td class="p-3 text-center"><input type="checkbox" value="${p.id}" class="member-select-chk accent-[#d4af37]"></td>
-                    <td class="p-3 font-bold text-white">${p.name || '-'} <span class="text-xs text-gray-500">(ID: ${p.id})</span></td>
-                    <td class="p-3">${p.job || '-'}</td>
-                    <td class="p-3 font-bold">${p.status || '-'}</td>
-                    <td class="p-3 text-center">${p.hasQuota ? '<span class="text-green-400 font-bold">เปิด</span>' : '<span class="text-red-400 font-bold">ปิด</span>'}</td>
-                    <td class="p-3 text-right"><button onclick="releasePlayer('${p.id}')" class="text-gray-400 hover:text-white bg-[#1c2331] px-2 py-1 rounded">ปลดล็อก</button></td>
-                </tr>`;
-            });
+            const tbody = document.getElementById('member-manager-table-body'); if(!tbody) return; tbody.innerHTML = '';
+            players.forEach(p => { tbody.innerHTML += `<tr class="border-b border-[#1c2331] text-xs"><td class="p-3 text-center"><input type="checkbox" value="${p.id}" class="member-select-chk accent-[#d4af37]"></td><td class="p-3 font-bold text-white">${p.name} <span class="text-xs text-gray-500">(ID: ${p.id})</span></td><td class="p-3">${p.job}</td><td class="p-3">${p.status}</td><td class="p-3 text-center">${p.hasQuota?'เปิด':'ปิด'}</td><td class="p-3 text-right"><button onclick="releasePlayer('${p.id}')" class="text-gray-400 hover:text-white bg-[#1c2331] px-2 py-1 rounded">ปลดล็อก</button></td></tr>`; });
         }
-
         function renderRewardsTab() {
-            const tbody = document.getElementById('reward-quota-table-body');
-            if (!tbody) return;
-            tbody.innerHTML = '';
-
-            const eligibleCount = players.filter(p => p.hasQuota === true && p.rewardClaimed !== true).length;
-            const claimedCount = players.filter(p => p.rewardClaimed === true).length;
-            const eligibleEl = document.getElementById('reward-eligible-count');
-            const claimedEl = document.getElementById('reward-claimed-count');
-            if (eligibleEl) eligibleEl.innerText = eligibleCount;
-            if (claimedEl) claimedEl.innerText = claimedCount;
-
-            players.forEach(p => {
-                tbody.innerHTML += `<tr class="text-xs hover:bg-[#151b28]">
-                    <td class="p-3 font-bold text-white">${p.name || '-'}</td>
-                    <td class="p-3 text-gray-300">${p.job || '-'}</td>
-                    <td class="p-3 text-center">${p.hasQuota ? '<span class="text-green-400 font-bold">เปิด</span>' : '<span class="text-red-400 font-bold">ปิด</span>'}</td>
-                    <td class="p-3 text-center">${p.rewardClaimed ? '<span class="text-[#d4af37] font-bold">ได้รางวัลแล้ว</span>' : '<span class="text-gray-400">ยังไม่ได้</span>'}</td>
-                    <td class="p-3 text-right space-x-1">
-                        <button onclick="toggleRewardQuota('${p.id}')" class="admin-only bg-[#1c2331] text-cyan-300 px-2 py-1 rounded text-[10px] font-bold">เปิด/ปิดสิทธิ์</button>
-                        <button onclick="resetPlayerRewardClaim('${p.id}')" class="admin-only bg-amber-950/40 text-amber-400 px-2 py-1 rounded text-[10px] font-bold">คืนสิทธิ์</button>
-                    </td>
-                </tr>`;
-            });
+            const tbody = document.getElementById('reward-quota-table-body'); if(!tbody) return; tbody.innerHTML = '';
+            players.filter(p => p.hasQuota).forEach(p => { tbody.innerHTML += `<tr><td class="p-3 font-bold text-white">${p.name}</td><td class="p-3 text-gray-300">${p.rewardName || 'รางวัล'}</td><td class="p-3">${p.rewardClaimed ? '🟢 ได้รับแล้ว':'🔴 ยังไม่ได้'}</td></tr>`; });
         }
-
         function renderStatsTab() {
             const tbody = document.getElementById('stats-table-body'); if(!tbody) return; tbody.innerHTML = ''; let totalP = 0, totalL = 0, totalA = 0;
-            players.forEach(p => { totalP += (p.presentCount || 0); totalL += (p.leaveCount || 0); totalA += (p.absentCount || 0); tbody.innerHTML += `<tr><td class="p-3 font-bold">${p.name}</td><td class="p-3 text-gray-400">${p.job}</td><td class="p-3 text-center text-green-400">${p.presentCount || 0}</td><td class="p-3 text-center text-amber-400">${p.leaveCount || 0}</td><td class="p-3 text-center text-red-400">${p.absentCount || 0}</td></tr>`; });
+            players.forEach(p => { totalP += p.presentCount; totalL += p.leaveCount; totalA += p.absentCount; tbody.innerHTML += `<tr><td class="p-3 font-bold">${p.name}</td><td class="p-3 text-gray-400">${p.job}</td><td class="p-3 text-center text-green-400">${p.presentCount}</td><td class="p-3 text-center text-amber-400">${p.leaveCount}</td><td class="p-3 text-center text-red-400">${p.absentCount}</td></tr>`; });
             document.getElementById('stat-avg-present').innerText = totalP + " ครั้ง"; document.getElementById('stat-avg-leave').innerText = totalL + " ครั้ง"; document.getElementById('stat-avg-absent').innerText = totalA + " ครั้ง";
         }
-
-        function spinEligibleRaffle() {
-
-    if (!checkAdminAccess()) {
-        return alert('เฉพาะ Admin เท่านั้น');
-    }
-
-    const pool = players.filter(
-        p => p.hasQuota === true && p.rewardClaimed !== true
-    );
-
-    if (pool.length === 0) {
-        return alert('ไม่มีสมาชิกที่เหลือสิทธิ์สุ่ม');
-    }
-
-    const nameEl = document.getElementById('lucky-winner-name');
-    const jobEl = document.getElementById('lucky-winner-job');
-
-    let count = 0;
-
-    const spinInterval = setInterval(() => {
-
-        const randomPlayer =
-            pool[Math.floor(Math.random() * pool.length)];
-
-        nameEl.innerText = randomPlayer.name;
-        jobEl.innerText = randomPlayer.job;
-
-        count++;
-
-    }, 100);
-
-    setTimeout(() => {
-
-        clearInterval(spinInterval);
-
-        const winner =
-            pool[Math.floor(Math.random() * pool.length)];
-
-        showRaffleWinner(winner);
-
-        winner.rewardClaimed = true;
-        winner.hasQuota = false;
-
-        saveToLocalStorage();
-
-        if (typeof window.savePlayersToFirebaseSafe === 'function') {
-            window.savePlayersToFirebaseSafe();
+        function spinLuckyRaffle() {
+            const eligible = players.filter(p => p.hasQuota); if (eligible.length === 0) return; let ticks = 0; const glow = document.getElementById('raffle-glow');
+            const timer = setInterval(() => { ticks++; glow.style.transform = `rotate(${ticks * 20}deg)`; const p = eligible[Math.floor(Math.random() * eligible.length)]; document.getElementById('lucky-winner-name').innerText = p.name; document.getElementById('lucky-winner-job').innerText = p.job; if (ticks >= 25) { clearInterval(timer); alert(`🎉 ผู้โชคดีคือคุณ: ${p.name}!`); } }, 80);
+        }
+        function switchTab(t) {
+            ['party', 'tactical', 'members', 'rewards', 'stats'].forEach(tab => document.getElementById(`tab-content-${tab}`).classList.add('hidden')); document.getElementById(`tab-content-${t}`).classList.remove('hidden'); document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); document.getElementById(`tab-btn-${t}`).classList.add('active'); if (t === 'tactical') setTimeout(resizeCanvas, 50);
+        }
+        function populateDynamicJobSelectors() {
+            const dropdown = document.getElementById('search-job-dropdown'); const addSel = document.getElementById('manual-add-job');
+            if(dropdown) { dropdown.innerHTML = '<option value="all">🔍 แสดงสายอาชีพทั้งหมด</option>'; availableJobsList.forEach(job => dropdown.innerHTML += `<option value="${job}">${job}</option>`); }
+            if(addSel) { addSel.innerHTML = ''; availableJobsList.forEach(job => addSel.innerHTML += `<option value="${job}">${job}</option>`); }
+        }
+        function openGuildSettingsModal() { document.getElementById('guild-settings-modal').classList.remove('hidden'); renderJobIconSettingsList(); }
+        function closeGuildSettingsModal() { document.getElementById('guild-settings-modal').classList.add('hidden'); }
+        function filterPlayers() { renderWaitingList(); }
+        function addNewMarker() {
+            const name = prompt('ระบุชื่อสัญลักษณ์หมุดปักใหม่:', 'หมากรบ');
+            if(name && name.trim() !== "") { markers.push({ id: 'm_' + Date.now(), name: name.trim(), posX: 15, posY: 15 }); renderMarkers(); renderMarkersSettingList(); saveToLocalStorage(); }
         }
 
-        renderAll();
+        function renderAll() {
+    populateDynamicJobSelectors();
+    renderWaitingList();
+    renderParties();
+    renderMemberManagerTab();
+    renderRewardsTab();
+    renderStatsTab();
 
-        alert('🎉 ผู้ชนะคือ ' + winner.name);
-
-    }, 10000);
-}
-function switchTab(tabName) {
-    document.querySelectorAll('[id^="tab-content-"]').forEach(el => {
-        el.classList.add('hidden');
-    });
-
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-
-    const content = document.getElementById('tab-content-' + tabName);
-    const btn = document.getElementById('tab-btn-' + tabName);
-
-    if (content) content.classList.remove('hidden');
-    if (btn) btn.classList.add('active');
-}
-function populateDynamicJobSelectors() {
-    const selectors = [
-        document.getElementById('manual-add-job'),
-        document.getElementById('search-job-dropdown')
-    ];
-
-    selectors.forEach(sel => {
-        if (!sel) return;
-
-        const currentValue = sel.value;
-        sel.innerHTML = '';
-
-        if (sel.id === 'search-job-dropdown') {
-            sel.innerHTML += `<option value="all">🔍 แสดงสายอาชีพทั้งหมด</option>`;
-        }
-
-        availableJobsList.forEach(job => {
-            sel.innerHTML += `<option value="${job}">${job}</option>`;
-        });
-
-        if (currentValue) sel.value = currentValue;
-    });
-}        
-function renderAll() {
-    if (typeof populateDynamicJobSelectors === "function") populateDynamicJobSelectors();
-    if (typeof renderWaitingList === "function") renderWaitingList();
-    if (typeof renderParties === "function") renderParties();
-    if (typeof renderMemberManagerTab === "function") renderMemberManagerTab();
-    if (typeof renderRewardsTab === "function") renderRewardsTab();
-    if (typeof renderStatsTab === "function") renderStatsTab();
-    if (typeof renderMarkers === "function") renderMarkers();
-    if (typeof renderMarkersSettingList === "function") renderMarkersSettingList();
-}
-
-        function bulkSetAttendanceStatus(status) {
-    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
-
-    const checked = document.querySelectorAll('.member-select-chk:checked');
-    if (checked.length === 0) return alert('กรุณาติ๊กเลือกสมาชิกก่อน');
-
-    checked.forEach(chk => {
-        const p = players.find(x => String(x.id) === String(chk.value));
-        if (!p) return;
-
-        p.status = status;
-        if (status === 'มา') p.presentCount = (p.presentCount || 0) + 1;
-        if (status === 'ลา') p.leaveCount = (p.leaveCount || 0) + 1;
-        if (status === 'ขาด') p.absentCount = (p.absentCount || 0) + 1;
-    });
-
-    saveToLocalStorage();
-    if (typeof window.savePlayersToFirebaseSafe === 'function') window.savePlayersToFirebaseSafe();
-    renderAll();
-    alert('อัปเดตสถานะ ' + status + ' สำเร็จ');
-}
-
-function spinEligibleRaffle() {
-    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
-
-    const pool = players.filter(p => p.hasQuota === true && p.rewardClaimed !== true);
-    if (pool.length === 0) return alert('ไม่มีสมาชิกที่เหลือสิทธิ์สุ่ม');
-
-    const winner = pool[Math.floor(Math.random() * pool.length)];
-    showRaffleWinner(winner);
-
-    winner.rewardClaimed = true;
-    winner.hasQuota = false;
-
-    saveToLocalStorage();
-    if (typeof window.savePlayersToFirebaseSafe === 'function') window.savePlayersToFirebaseSafe();
-    renderAll();
-}
-
-function spinAllPlayersRaffle() {
-    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
-    if (!players || players.length === 0) return alert('ยังไม่มีรายชื่อสมาชิก');
-
-    const winner = players[Math.floor(Math.random() * players.length)];
-    showRaffleWinner(winner);
-
-    saveToLocalStorage();
-    if (typeof window.savePlayersToFirebaseSafe === 'function') window.savePlayersToFirebaseSafe();
-    renderAll();
-}
-
-function showRaffleWinner(winner) {
-    const nameEl = document.getElementById('lucky-winner-name');
-    const jobEl = document.getElementById('lucky-winner-job');
-
-    if (nameEl) nameEl.innerText = winner.name || 'ไม่ระบุชื่อ';
-    if (jobEl) jobEl.innerText = winner.job || 'ไม่ระบุอาชีพ';
-}
-
-function resetRaffleDisplay() {
-    const nameEl = document.getElementById('lucky-winner-name');
-    const jobEl = document.getElementById('lucky-winner-job');
-
-    if (nameEl) nameEl.innerText = '???';
-    if (jobEl) jobEl.innerText = 'รอเริ่มสุ่ม';
-}
-
-function toggleRewardQuota(playerId) {
-    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
-
-    const p = players.find(x => String(x.id) === String(playerId));
-    if (!p) return;
-
-    p.hasQuota = !p.hasQuota;
-
-    saveToLocalStorage();
-    if (typeof window.savePlayersToFirebaseSafe === 'function') window.savePlayersToFirebaseSafe();
-    renderAll();
-}
-
-function resetPlayerRewardClaim(playerId) {
-    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
-
-    const p = players.find(x => String(x.id) === String(playerId));
-    if (!p) return;
-
-    p.rewardClaimed = false;
-    p.hasQuota = true;
-
-    saveToLocalStorage();
-    if (typeof window.savePlayersToFirebaseSafe === 'function') window.savePlayersToFirebaseSafe();
-    renderAll();
-}
-       function populateDynamicJobSelectors() {
-    const manualJob = document.getElementById('manual-add-job');
-    const searchJob = document.getElementById('search-job-dropdown');
-
-    if (manualJob) {
-        const oldValue = manualJob.value;
-        manualJob.innerHTML = '';
-        availableJobsList.forEach(job => {
-            manualJob.innerHTML += `<option value="${job}">${job}</option>`;
-        });
-        if (oldValue) manualJob.value = oldValue;
+    if (typeof renderMarkers === "function") {
+        renderMarkers();
     }
 
-    if (searchJob) {
-        const oldValue = searchJob.value;
-        searchJob.innerHTML = '<option value="all">🔍 แสดงสายอาชีพทั้งหมด</option>';
-        availableJobsList.forEach(job => {
-            searchJob.innerHTML += `<option value="${job}">${job}</option>`;
-        });
-        if (oldValue) searchJob.value = oldValue;
+    if (typeof renderMarkersSettingList === "function") {
+        renderMarkersSettingList();
     }
 }
     </script>
 </body>
-    
+
     <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
 import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
