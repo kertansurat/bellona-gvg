@@ -965,7 +965,6 @@ await setDoc(doc(window.bellonaDB, "players", playerId), {
         renderMarkersSettingList();
     }
 }
- 
 function bulkSetAttendanceStatus(status) {
 
     if (!checkAdminAccess()) {
@@ -991,7 +990,6 @@ function bulkSetAttendanceStatus(status) {
         if (status === 'มา') p.presentCount = (p.presentCount || 0) + 1;
         if (status === 'ลา') p.leaveCount = (p.leaveCount || 0) + 1;
         if (status === 'ขาด') p.absentCount = (p.absentCount || 0) + 1;
-
     });
 
     saveToLocalStorage();
@@ -1004,7 +1002,6 @@ function bulkSetAttendanceStatus(status) {
 
     alert('อัปเดตสถานะ ' + status + ' สำเร็จ');
 }
-
 </script>
 </body>
     
