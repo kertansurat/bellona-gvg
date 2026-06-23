@@ -323,7 +323,7 @@
 
             <!-- 4. แท็บหน้าโควตาสุ่มของรางวัล -->
             <div id="tab-content-rewards" class="hidden space-y-5">
-                <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 2xl:grid-cols-3 gap-6">
                     <div class="lg:col-span-1 bg-[#111520] p-6 rounded-xl border border-[#1f2838] flex flex-col items-center justify-between min-h-[420px] shadow-2xl">
                         <div class="text-center w-full">
                             <h2 class="text-base font-bold text-[#d4af37] uppercase tracking-widest"><i class="fa-solid fa-gift text-lg"></i> แท่นสุ่มรางวัลนำโชค BELLONA</h2>
@@ -337,7 +337,7 @@
                         </div>
                         <button onclick="spinLuckyRaffle()" class="admin-only w-full bg-[#d4af37] hover:bg-yellow-500 text-black font-extrabold py-3 px-4 rounded-lg text-sm"><i class="fa-solid fa-dice"></i> เริ่มหมุนวงล้อสุ่มรางวัล</button>
                     </div>
-                    <div class="xl:col-span-2 bg-[#111520] p-6 rounded-xl border border-[#1f2838] space-y-5 shadow-2xl">
+                    <div class="2xl:col-span-2 bg-[#111520] p-6 rounded-xl border border-[#1f2838] space-y-5 shadow-2xl">
                         <h3 class="text-sm font-bold text-gray-200">รายชื่อผู้มีสิทธิ์โควตาสุ่มรางวัล</h3>
                         <div class="overflow-x-auto"><table class="w-full text-left text-sm border-collapse"><thead><tr class="bg-[#1c2331] text-gray-300"><th class="p-3 font-bold">ชื่อตัวละคร</th><th class="p-3 font-bold">ของรางวัลที่ลุ้นได้</th><th class="p-3 font-bold">สถานะของรางวัล</th></tr></thead><tbody id="reward-quota-table-body" class="divide-y divide-[#1c2331]"></tbody></table></div>
                     </div>
@@ -965,12 +965,9 @@ await setDoc(doc(window.bellonaDB, "players", playerId), {
         renderMarkersSettingList();
     }
 }
-    </script>
-function renderAll() {
-    ...
-}
-
+ 
 function bulkSetAttendanceStatus(status) {
+
     if (!checkAdminAccess()) {
         alert('เฉพาะ Admin เท่านั้น');
         return;
@@ -984,7 +981,9 @@ function bulkSetAttendanceStatus(status) {
     }
 
     checked.forEach(chk => {
+
         const p = players.find(x => String(x.id) === String(chk.value));
+
         if (!p) return;
 
         p.status = status;
@@ -992,6 +991,7 @@ function bulkSetAttendanceStatus(status) {
         if (status === 'มา') p.presentCount = (p.presentCount || 0) + 1;
         if (status === 'ลา') p.leaveCount = (p.leaveCount || 0) + 1;
         if (status === 'ขาด') p.absentCount = (p.absentCount || 0) + 1;
+
     });
 
     saveToLocalStorage();
