@@ -341,7 +341,28 @@
                         <button onclick="spinLuckyRaffle()" class="admin-only w-full bg-[#d4af37] hover:bg-yellow-500 text-black font-extrabold py-3 px-4 rounded-lg text-sm"><i class="fa-solid fa-dice"></i> เริ่มหมุนวงล้อสุ่มรางวัล</button>
                     </div>
                     <div class="lg:col-span-2 bg-[#111520] p-6 rounded-xl border border-[#1f2838] space-y-5 shadow-2xl">
-                        <h3 class="text-sm font-bold text-gray-200">รายชื่อผู้มีสิทธิ์โควตาสุ่มรางวัล</h3>
+                        <h3 class="text-sm font-bold text-gray-200">รายชื่อผู้มีสิทธิ์โควตาสุ่มรางวัล</h3> </div>
+
+        <div class="bg-[#111520] rounded-lg px-3 py-2 border border-[#1f2838]">
+            ✅ มีสิทธิ์ <b id="reward-active-members" class="text-green-400">0</b>
+        </div>
+
+        <div class="bg-[#111520] rounded-lg px-3 py-2 border border-[#1f2838]">
+            ❌ ตัดสิทธิ์ <b id="reward-inactive-members" class="text-red-400">0</b>
+        </div>
+
+        <button onclick="setAllRewardQuota(true)" class="admin-only bg-green-950/40 text-green-400 border border-green-900/40 px-3 py-2 rounded-lg font-bold">
+            เปิดทั้งหมด
+        </button>
+
+        <button onclick="setAllRewardQuota(false)" class="admin-only bg-red-950/40 text-red-400 border border-red-900/40 px-3 py-2 rounded-lg font-bold">
+            ปิดทั้งหมด
+        </button>
+
+        <button onclick="resetAllRewardQuota()" class="admin-only bg-[#1c2331] text-[#d4af37] border border-[#2d3748] px-3 py-2 rounded-lg font-bold">
+            รีเซ็ตสิทธิ์
+        </button>
+
                         <div class="overflow-x-auto"><table class="w-full text-left text-sm border-collapse"><thead><tr class="bg-[#1c2331] text-gray-300"><th class="p-3 font-bold">ชื่อตัวละคร</th><th class="p-3 font-bold">ของรางวัลที่ลุ้นได้</th><th class="p-3 font-bold">สถานะของรางวัล</th></tr></thead><tbody id="reward-quota-table-body" class="divide-y divide-[#1c2331]"></tbody></table></div>
                     </div>
                 </div>
@@ -1136,7 +1157,17 @@ function releasePlayer(id) {
     if (!tbody) return;
 
     tbody.innerHTML = '';
+const totalMembers = players.length;
+const activeMembers = players.filter(p => p.hasQuota === true && p.status !== 'ขาด').length;
+const inactiveMembers = totalMembers - activeMembers;
 
+const totalMembersEl = document.getElementById('reward-total-members');
+const activeMembersEl = document.getElementById('reward-active-members');
+const inactiveMembersEl = document.getElementById('reward-inactive-members');
+
+if (totalMembersEl) totalMembersEl.innerText = totalMembers;
+if (activeMembersEl) activeMembersEl.innerText = activeMembers;
+if (inactiveMembersEl) inactiveMembersEl.innerText = inactiveMembers;
     players.forEach(p => {
         tbody.innerHTML += `
             <tr class="text-xs border-b border-[#1c2331]">
@@ -1155,6 +1186,44 @@ function releasePlayer(id) {
             </tr>
         `;
     });
+}
+        function setAllRewardQuota(value) {
+    if (!checkAdminAccess()) {
+        alert('เฉพาะ Admin เท่านั้น');
+        return;
+    }
+
+    players.forEach(p => {
+        p.hasQuota = value;
+    });
+
+    saveToLocalStorage();
+
+    if (typeof window.savePlayersToFirebaseSafe === "function") {
+        window.savePlayersToFirebaseSafe();
+    }
+
+    renderAll();
+}
+
+function resetAllRewardQuota() {
+    if (!checkAdminAccess()) {
+        alert('เฉพาะ Admin เท่านั้น');
+        return;
+    }
+
+    players.forEach(p => {
+        p.hasQuota = p.status !== 'ขาด';
+        p.rewardClaimed = false;
+    });
+
+    saveToLocalStorage();
+
+    if (typeof window.savePlayersToFirebaseSafe === "function") {
+        window.savePlayersToFirebaseSafe();
+    }
+
+    renderAll();
 }
     </script>
 </body>
