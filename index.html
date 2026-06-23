@@ -392,11 +392,11 @@
         let canvas, ctx; let isDrawing = false; let lastX = 0, lastY = 0; let drawMode = 'move'; let drawColor = '#ff4d4d'; let brushSize = 4; let drawingPaths = [];
 
         window.onload = function() {
-            checkLoginSession();
-            loadPlayersFromFirebaseRealtime();
-            initPartiesGrid();
-            initDrawingCanvas();
-            renderAll();
+               checkLoginSession();
+    loadFromLocalStorage();
+    initPartiesGrid();
+    initDrawingCanvas();
+    renderAll();
 };
 
         function checkLoginSession() {
