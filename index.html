@@ -483,8 +483,8 @@
             name: doc.data().name || "ไม่ระบุชื่อ",
             job: doc.data().job || "ไม่ระบุอาชีพ",
             status: doc.data().status || "มา",
-            partyId: null,
-            slotIndex: null,
+            partyId: doc.data().partyId ?? null,
+            slotIndex: doc.data().slotIndex ?? null,
             presentCount: doc.data().presentCount || 0,
             leaveCount: doc.data().leaveCount || 0,
             absentCount: doc.data().absentCount || 0,
@@ -493,6 +493,8 @@
 
         saveToLocalStorage();
         renderAll();
+        renderWaitingList();
+        renderMemberManagerTab();
 
         alert("นำเข้ารายชื่อจาก Firebase สำเร็จ: " + players.length + " คน");
     } catch (err) {
