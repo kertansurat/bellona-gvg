@@ -102,6 +102,9 @@
         <div class="flex items-center gap-2 flex-wrap">
             <button onclick="openGuildSettingsModal()" class="admin-only bg-[#141a24] text-[#d4af37] border border-[#2b3543] px-4 py-2.5 rounded-lg text-sm font-bold"><i class="fa-solid fa-gear"></i> ตั้งค่าระบบกิลด์</button>
             <button onclick="autoAssign()" class="admin-only bg-[#d4af37] text-black font-bold px-4 py-2.5 rounded-lg text-sm"><i class="fa-solid fa-wand-magic-sparkles"></i> จัดปาร์ตี้ออโต้</button>
+            <button onclick="saveToLocalStorageManual()" class="admin-only bg-[#071911] text-emerald-400 border border-[#0d3f25] px-4 py-2.5 rounded-lg text-sm font-bold">
+    <i class="fa-solid fa-floppy-disk"></i> เซฟข้อมูล
+</button>
             <button onclick="saveToLocalStorageManual()" class="admin-only bg-[#071911] text-emerald-400 border border-[#0d3f25] px-4 py-2.5 rounded-lg text-sm font-bold"><i class="fa-solid fa-floppy-disk"></i> เซฟข้อมูล</button>
             <button onclick="importPlayersFromFirebaseSafe()" class="admin-only bg-[#111827] text-cyan-400 border border-cyan-900/60 px-4 py-2.5 rounded-lg text-sm font-bold">
     <i class="fa-solid fa-cloud-arrow-down"></i> ดึง Firebase
@@ -1087,18 +1090,61 @@ function handleSlotDrop(event, partyId, slotIndex) {
             document.getElementById('count-total').innerText = players.length;
             document.getElementById('count-assigned').innerText = players.filter(p => p.partyId !== null).length;
         }
-        let selectedPlayerId = null; function selectPlayer(id) { selectedPlayerId = id; }
-        function handleSlotClick(partyId, slotIndex) {
-            if(selectedPlayerId) {
-                const p = players.find(pl => pl.id === selectedPlayerId);
-                if(p){ p.partyId = partyId; p.slotIndex = slotIndex; selectedPlayerId = null; saveToLocalStorage(); renderAll(); }
-            }
+let selectedPlayerId = null;
+
+function selectPlayer(id) {
+    selectedPlayerId = id;
+}
+
+function handleSlotClick(partyId, slotIndex) {
+    if (!checkAdminAccess()) {
+        alert('เฉพาะ Admin เท่านั้น');
+        return;
+    }
+
+    if (!selectedPlayerId) {
+        alert('กรุณาเลือกสมาชิกก่อน');
+        return;
+    }
+
+    const p = players.find(pl => String(pl.id) === String(selectedPlayerId));
+
+    if (p) {
+        p.partyId = partyId;
+        p.slotIndex = slotIndex;
+        selectedPlayerId = null;
+
+        saveToLocalStorage();
+
+        if (typeof window.savePlayersToFirebaseSafe === "function") {
+            window.savePlayersToFirebaseSafe();
         }
+
+        renderAll();
+    }
+}
+
 function releasePlayer(id) {
     if (!checkAdminAccess()) {
         alert('เฉพาะ Admin เท่านั้น');
         return;
     }
+
+    const p = players.find(pl => String(pl.id) === String(id));
+
+    if (!p) return;
+
+    p.partyId = null;
+    p.slotIndex = null;
+
+    saveToLocalStorage();
+
+    if (typeof window.savePlayersToFirebaseSafe === "function") {
+        window.savePlayersToFirebaseSafe();
+    }
+
+    renderAll();
+}
 
     const p = players.find(pl => String(pl.id) === String(id));
 
