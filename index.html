@@ -1146,24 +1146,6 @@ function releasePlayer(id) {
     renderAll();
 }
 
-    const p = players.find(pl => String(pl.id) === String(id));
-
-    if (!p) {
-        alert('ไม่พบสมาชิก');
-        return;
-    }
-
-    p.partyId = null;
-    p.slotIndex = null;
-
-    saveToLocalStorage();
-
-    if (typeof window.savePlayersToFirebaseSafe === "function") {
-        window.savePlayersToFirebaseSafe();
-    }
-
-    renderAll();
-
   // alert('ปลดล็อกสมาชิกออกจากปาร์ตี้แล้ว');
 }
         function autoAssign() {
