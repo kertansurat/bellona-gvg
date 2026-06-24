@@ -896,7 +896,23 @@ console.log("Realtime Sync Started");
         function clearDrawing() { drawingPaths = []; redrawCanvasPaths(); }
         function undoDrawing() { drawingPaths.splice(-25); redrawCanvasPaths(); }
         function redrawCanvasPaths() { if(!ctx) return; ctx.clearRect(0, 0, canvas.width, canvas.height); drawingPaths.forEach(p => { ctx.beginPath(); ctx.strokeStyle = p.color; ctx.lineWidth = brushSize; ctx.lineCap = 'round'; ctx.moveTo(p.x1, p.y1); ctx.lineTo(p.x2, p.y2); ctx.stroke(); }); }
+        function cropCanvas(sourceCanvas, targetW, targetH) {
+    const output = document.createElement('canvas');
+    output.width = targetW;
+    output.height = targetH;
 
+    const ctx = output.getContext('2d');
+
+    ctx.drawImage(
+        sourceCanvas,
+        0, 0,
+        targetW, targetH,
+        0, 0,
+        targetW, targetH
+    );
+
+    return output;
+}
         /* ================= 📸 ฟังก์ชันแคปเจอร์หน้าจอผังปาร์ตี้แยก 2 ภาพ ================= */
 async function captureParties() {
     const mainZone = document.getElementById('capture-main-zone');
@@ -926,7 +942,7 @@ async function captureParties() {
 
         const link1 = document.createElement('a');
         link1.download = `bellona-main-party-${Date.now()}.png`;
-        link1.href = canvasMain.toDataURL('image/png');
+        link1.href = cropCanvas(canvasMain, 2000, 1560).toDataURL('image/png');
         link1.click();
 
         setTimeout(async () => {
@@ -943,7 +959,7 @@ async function captureParties() {
 });
             const link2 = document.createElement('a');
             link2.download = `bellona-sub-party-${Date.now()}.png`;
-            link2.href = canvasSub.toDataURL('image/png');
+            link2.href = cropCanvas(canvasSub, 2000, 1560).toDataURL('image/png')
             link2.click();
 
             document.body.classList.remove('capture-mode');
@@ -1155,16 +1171,16 @@ function renderParties() {
 
             if (slot) {
                slot.innerHTML = `
-    <div class="grid grid-cols-[32px_1fr_22px] items-center w-full h-full gap-2 overflow-hidden">
-        <div class="w-8 h-8 flex items-center justify-center shrink-0 overflow-hidden">
+    <div class="grid grid-cols-[30px_1fr_20px] items-center w-full h-full gap-2 overflow-hidden">
+        <div class="w-7 h-7 flex items-center justify-center shrink-0 overflow-hidden">
             ${getJobIcon(p.job)}
         </div>
 
-        <strong class="party-player-name text-white font-extrabold text-[13px] leading-[1.35] truncate">
+        <strong class="party-player-name text-white font-extrabold text-[12px] leading-[1.3] whitespace-nowrap overflow-hidden text-ellipsis">
             ${p.name}
         </strong>
 
-        <button onclick="event.stopPropagation(); releasePlayer('${p.id}')" class="text-red-400 text-lg leading-none shrink-0">
+        <button onclick="event.stopPropagation(); releasePlayer('${p.id}')" class="text-red-400 text-base leading-none shrink-0">
             ✕
         </button>
     </div>
