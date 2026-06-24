@@ -1143,6 +1143,22 @@ function releasePlayer(id) {
     }
 
     const p = players.find(pl => String(pl.id) === String(id));
+    if (!p) return;
+
+    p.partyId = null;
+    p.slotIndex = null;
+
+    saveToLocalStorage();
+
+    if (typeof window.savePlayersToFirebaseSafe === "function") {
+        window.savePlayersToFirebaseSafe();
+    }
+
+    initPartiesGrid();
+    renderAll();
+}
+
+    const p = players.find(pl => String(pl.id) === String(id));
 
     if (!p) return;
 
