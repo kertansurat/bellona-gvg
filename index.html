@@ -591,7 +591,16 @@ drawingPaths = data.drawingPaths || [];
         }
 
         function saveToLocalStorage() {
-            const data = { players: players, googleSheetUrl: googleSheetUrl, availableJobsList: availableJobsList, jobIcons: jobIcons, globalMaps: globalMaps, selectedGlobalMapId: selectedGlobalMapId, selectedMap: selectedMap, markers: markers, drawingPaths: drawingPaths };
+            const data = {
+    players: players,
+    googleSheetUrl: googleSheetUrl,
+    availableJobsList: availableJobsList,
+    globalMaps: globalMaps,
+    selectedGlobalMapId: selectedGlobalMapId,
+    selectedMap: selectedMap,
+    markers: markers,
+    drawingPaths: drawingPaths
+};
             localStorage.setItem('bellona_gvg_v13_final', JSON.stringify(data));
         }
 
@@ -826,14 +835,6 @@ console.log("Realtime Sync Started");
 
     return `<div class="w-8 h-8 rounded-full flex items-center justify-center text-xs bg-slate-700 font-bold shrink-0">🛡️</div>`;
 }
-        function addNewJobToGuild() {
-            if (!checkAdminAccess()) return;
-            const input = document.getElementById('new-job-input'); if (!input) return; const name = input.value.trim(); if (!name) return;
-            if (availableJobsList.includes(name)) return; availableJobsList.push(name); input.value = ''; saveToLocalStorage(); renderAll(); renderJobIconSettingsList();
-        }
-        function removeJobFromGuild(jobName) {
-            if (!checkAdminAccess()) return; if (confirm(`ลบอาชีพ ${jobName}?`)) { availableJobsList = availableJobsList.filter(j => j !== jobName); saveToLocalStorage(); renderAll(); renderJobIconSettingsList(); }
-        }
         /* ================= 🎨 ดึงระบบวาดเขียน (Drawing Engine) ดั้งเดิมกลับมาทำงานแม่นยำพรีเมียม ================= */
         function initDrawingCanvas() {
             canvas = document.getElementById('drawing-canvas'); if (!canvas) return; ctx = canvas.getContext('2d');
@@ -919,47 +920,6 @@ console.log("Realtime Sync Started");
                 link.click();
             } catch (e) { alert('เกิดข้อผิดพลาดในการรวมสื่อบันทึกรูปภาพภาพ'); }
         }
-
-        /* ================= 📊 ระบบ Google Sheet Live-Sync แก้บั๊กแยกสายรันลูปคอลัมน์อิสระพรีเมียม ================= */
-        function fetchGoogleSheetDataFromMembers() {
-            let url = document.getElementById('sheet-url-input-members').value.trim(); if (!url) return;
-            if (url.includes('/edit') && !url.includes('output=csv')) {
-                const idMatch = url.match(/\/d\/([a-zA-Z0-9-_]+)/); if (idMatch && idMatch[1]) url = `https://docs.google.com/spreadsheets/d/${idMatch[1]}/gviz/tq?tqx=out:csv`;
-            }
-            googleSheetUrl = url; saveToLocalStorage(); fetch(url).then(r => r.text()).then(d => parseGoogleSheetCSV(d)).catch(() => alert('ดึงชีทล้มเหลว'));
-        }
-
-        function parseGoogleSheetCSV(csvText) {
-            try {
-                const lines = csvText.split('\n'); if (lines.length <= 1) return; 
-                let imported = []; let parsedMaps = [];
-
-                for (let i = 1; i < lines.length; i++) {
-                    const line = lines[i].trim(); if (!line) continue;
-                    const cells = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^["']|["']$/g, '').trim()); if (cells.length < 3) continue;
-                    
-                    // 1. ตรวจจับข้อมูลไอคอนอาชีพเรียงจากบนลงล่างใน คอลัมน์ K (cells[10]) - แมตช์ตามลำดับแถว
-                    if (cells[10] && cells[10].startsWith('http') && availableJobsList[i - 1]) {
-                        jobIcons[availableJobsList[i - 1]] = cells[10].trim();
-                    }
-
-                    // 2. ตรวจจับข้อมูลลิงก์แผนที่เรียงจากบนลงล่างใน คอลัมน์ L (cells[11]) - สร้างเป็นคลังแผนที่เลือกได้
-                    if (cells[11] && cells[11].startsWith('http')) {
-                        parsedMaps.push({ id: 'sheet_map_' + i, name: '🗺️ แผนที่จากชีท ลำดับที่ ' + i, image: cells[11].trim() });
-                    }
-
-                    // 3. ผูกข้อมูลสมาชิกกิลด์ในคอลัมน์ A-J
-                    imported.push({ id: cells[0].trim(), name: cells[1].trim(), job: cells[2].trim(), status: cells[3] || 'มา', presentCount: parseInt(cells[4])||0, leaveCount: parseInt(cells[5])||0, absentCount: parseInt(cells[6])||0, hasQuota: cells[7]==='เปิด'||cells[7]==='true', rewardName: cells[8]||'', rewardClaimed: cells[9]==='ได้แล้ว'||cells[9]==='true', partyId: null, slotIndex: null });
-                }
-                
-                if (parsedMaps.length > 0) { globalMaps = parsedMaps; }
-                players = imported; 
-                saveToLocalStorage(); updateMapDropdownOptions(); renderAll(); 
-                if (globalMaps.length > 0) changeBattleMap(globalMaps[0].id);
-                alert('专 ซิงค์ระบบโครงสร้างฐานข้อมูลและคลังรูปภาพเรียบร้อย (Guest มองเห็นตรงกันทั่วโลก)!');
-            } catch (e) { alert('รูปแบบไฟล์ชีทผิดพลาด'); }
-        }
-
         /* ================= ระบบการจัดปาร์ตี้ และ การจัดการหน้าต่างสมาชิก ================= */
        function manualAddMemberSubmit() {
     if (!checkAdminAccess()) return;
