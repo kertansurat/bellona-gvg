@@ -14,6 +14,41 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <style>
+
+body {
+    background:#111520;
+}
+
+/* ====== CAPTURE MODE ====== */
+
+.capture-mode #parties-grid,
+.capture-mode #sub-parties-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(260px, 1fr)) !important;
+    gap: 16px !important;
+}
+
+.capture-mode .party-player-name {
+    font-size: 18px !important;
+    line-height: 1.7 !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+}
+
+.capture-mode .party-slot {
+    min-height: 66px !important;
+    overflow: visible !important;
+}
+
+/* ====== CSS เดิมของคุณ ====== */
+
+.glass-panel {
+    ...
+}
+
+</style>
+    <style>
         body {
             font-family: 'Inter', 'Noto Sans Thai', sans-serif;
             background-color: #0b0d13;
@@ -850,76 +885,100 @@ console.log("Realtime Sync Started");
         function redrawCanvasPaths() { if(!ctx) return; ctx.clearRect(0, 0, canvas.width, canvas.height); drawingPaths.forEach(p => { ctx.beginPath(); ctx.strokeStyle = p.color; ctx.lineWidth = brushSize; ctx.lineCap = 'round'; ctx.moveTo(p.x1, p.y1); ctx.lineTo(p.x2, p.y2); ctx.stroke(); }); }
 
         /* ================= 📸 ฟังก์ชันแคปเจอร์หน้าจอผังปาร์ตี้แยก 2 ภาพ ================= */
-        async function captureParties() {
-            alert('📸 กำลังประมวลผลเซฟภาพปาร์ตี้หลักและรองความละเอียดสูงแบบแยกไฟล์...');
-            const mainZone = document.getElementById('capture-main-zone');
-            const subZone = document.getElementById('capture-sub-zone');
-            
-            if (!mainZone || !subZone) { alert('ไม่พบข้อมูลกล่องผังปาร์ตี้'); return; }
-            
-            try {
-                const canvasMain = await html2canvas(mainZone, { backgroundColor: '#111520', scale: 2, useCORS: true });
-                const link1 = document.createElement('a');
-                link1.download = `bellona-main-party-${Date.now()}.png`;
-                link1.href = canvasMain.toDataURL('image/png');
-                link1.click();
-                
-                setTimeout(async () => {
-                    const canvasSub = await html2canvas(subZone, { backgroundColor: '#111520', scale: 2, useCORS: true });
-                    const link2 = document.createElement('a');
-                    link2.download = `bellona-sub-party-${Date.now()}.png`;
-                    link2.href = canvasSub.toDataURL('image/png');
-                    link2.click();
-                }, 800);
-            } catch(err) { alert('เบราว์เซอร์ปฏิเสธคำสั่งสร้างรูปภาพ'); }
-        }
+async function captureParties() {
+    const mainZone = document.getElementById('capture-main-zone');
+    const subZone = document.getElementById('capture-sub-zone');
 
-        /* ================= 📸 ฟังก์ชันเซฟแผนภาพยุทธวิธี รวมเส้นวาด และ หมากรบ ================= */
-        function exportTacticalMap() {
-            if(!canvas) return;
-            alert('🖼️ กำลังรวมข้อมูลแผนที่ เส้นวาด และหมากปักตำแหน่งเพื่อส่งออกไฟล์...');
+    if (!mainZone || !subZone) {
+        alert('ไม่พบข้อมูลกล่องผังปาร์ตี้');
+        return;
+    }
 
-            const exportCanvas = document.createElement('canvas');
-            exportCanvas.width = canvas.width;
-            exportCanvas.height = canvas.height;
-            const exCtx = exportCanvas.getContext('2d');
+    try {
+        document.body.classList.add('capture-mode');
 
-            const bgImg = document.getElementById('battle-map-bg');
-            if (bgImg && bgImg.src && !bgImg.classList.contains('hidden')) {
-                exCtx.drawImage(bgImg, 0, 0, exportCanvas.width, exportCanvas.height);
-            } else {
-                exCtx.fillStyle = '#0c0e14';
-                exCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
-            }
+        await new Promise(resolve => setTimeout(resolve, 300));
 
-            exCtx.drawImage(canvas, 0, 0);
+        const canvasMain = await html2canvas(mainZone, {
+            backgroundColor: '#111520',
+            scale: 2,
+            useCORS: true
+        });
 
-            markers.forEach(m => {
-                const posX = (m.posX / 100) * exportCanvas.width;
-                const posY = (m.posY / 100) * exportCanvas.height;
+        const link1 = document.createElement('a');
+        link1.download = `bellona-main-party-${Date.now()}.png`;
+        link1.href = canvasMain.toDataURL('image/png');
+        link1.click();
 
-                exCtx.beginPath();
-                exCtx.arc(posX, posY, 16, 0, 2 * Math.PI);
-                exCtx.fillStyle = '#dc2626';
-                exCtx.strokeStyle = '#ffffff';
-                exCtx.lineWidth = 3;
-                exCtx.fill();
-                exCtx.stroke();
-
-                exCtx.fillStyle = '#ffffff';
-                exCtx.font = 'bold 12px Inter, sans-serif';
-                exCtx.textAlign = 'center';
-                exCtx.textBaseline = 'middle';
-                exCtx.fillText(m.name.substring(0, 3), posX, posY);
+        setTimeout(async () => {
+            const canvasSub = await html2canvas(subZone, {
+                backgroundColor: '#111520',
+                scale: 2,
+                useCORS: true
             });
 
-            try {
-                const link = document.createElement('a');
-                link.download = `bellona-tactical-map-${Date.now()}.png`;
-                link.href = exportCanvas.toDataURL('image/png');
-                link.click();
-            } catch (e) { alert('เกิดข้อผิดพลาดในการรวมสื่อบันทึกรูปภาพภาพ'); }
-        }
+            const link2 = document.createElement('a');
+            link2.download = `bellona-sub-party-${Date.now()}.png`;
+            link2.href = canvasSub.toDataURL('image/png');
+            link2.click();
+
+            document.body.classList.remove('capture-mode');
+        }, 800);
+
+    } catch (err) {
+        document.body.classList.remove('capture-mode');
+        alert('เบราว์เซอร์ปฏิเสธคำสั่งสร้างรูปภาพ');
+    }
+}
+
+/* ================= 📸 ฟังก์ชันเซฟแผนภาพยุทธวิธี รวมเส้นวาด และ หมากรบ ================= */
+function exportTacticalMap() {
+    if (!canvas) return;
+
+    const exportCanvas = document.createElement('canvas');
+    exportCanvas.width = canvas.width;
+    exportCanvas.height = canvas.height;
+
+    const exCtx = exportCanvas.getContext('2d');
+    const bgImg = document.getElementById('battle-map-bg');
+
+    if (bgImg && bgImg.src && !bgImg.classList.contains('hidden')) {
+        exCtx.drawImage(bgImg, 0, 0, exportCanvas.width, exportCanvas.height);
+    } else {
+        exCtx.fillStyle = '#0c0e14';
+        exCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+    }
+
+    exCtx.drawImage(canvas, 0, 0);
+
+    markers.forEach(m => {
+        const posX = (m.posX / 100) * exportCanvas.width;
+        const posY = (m.posY / 100) * exportCanvas.height;
+
+        exCtx.beginPath();
+        exCtx.arc(posX, posY, 16, 0, 2 * Math.PI);
+        exCtx.fillStyle = '#dc2626';
+        exCtx.strokeStyle = '#ffffff';
+        exCtx.lineWidth = 3;
+        exCtx.fill();
+        exCtx.stroke();
+
+        exCtx.fillStyle = '#ffffff';
+        exCtx.font = 'bold 12px Inter, sans-serif';
+        exCtx.textAlign = 'center';
+        exCtx.textBaseline = 'middle';
+        exCtx.fillText(m.name.substring(0, 3), posX, posY);
+    });
+
+    try {
+        const link = document.createElement('a');
+        link.download = `bellona-tactical-map-${Date.now()}.png`;
+        link.href = exportCanvas.toDataURL('image/png');
+        link.click();
+    } catch (e) {
+        alert('เกิดข้อผิดพลาดในการรวมสื่อบันทึกรูปภาพภาพ');
+    }
+}
         /* ================= ระบบการจัดปาร์ตี้ และ การจัดการหน้าต่างสมาชิก ================= */
        function manualAddMemberSubmit() {
     if (!checkAdminAccess()) return;
@@ -977,7 +1036,7 @@ console.log("Realtime Sync Started");
 
     for (let s = 0; s < 5; s++) {
         slots += `
-            <div class="bg-[#121620] p-2.5 rounded-lg border border-[#1f2838] min-h-[50px] flex items-center cursor-pointer"
+            <div class="party-slot bg-[#121620] p-2.5 rounded-lg border border-[#1f2838] min-h-[66px] flex items-center cursor-pointer"
                  onclick="handleSlotClick('${partyId}', ${s})"
                  ondragover="handleSlotDragOver(event)"
                  ondrop="handleSlotDrop(event, '${partyId}', ${s})">
@@ -1061,23 +1120,31 @@ function handleSlotDrop(event, partyId, slotIndex) {
 }
 function renderParties() {
     document.querySelectorAll('[id^="slot-"][id$="-content"]').forEach(slot => {
-       slot.innerHTML = `
-    <div class="flex items-center justify-between w-full h-full gap-3 overflow-visible">
-        <div class="flex items-center gap-3 min-w-0 overflow-visible">
-            <div class="shrink-0">
-                ${getJobIcon(p.job)}
-            </div>
+        slot.innerHTML = `<span class="text-gray-600">ว่างเปล่า</span>`;
+    });
 
-            <div class="text-white font-extrabold text-[20px] leading-[1.6] tracking-normal truncate overflow-visible">
-                ${p.name}
-            </div>
-        </div>
+    players.forEach(p => {
+        if (p.partyId) {
+            const slot = document.getElementById(`slot-${p.partyId}-${p.slotIndex}-content`);
 
-        <button onclick="event.stopPropagation(); releasePlayer('${p.id}')" class="text-red-400 text-2xl px-2 shrink-0">
-            ✕
-        </button>
-    </div>
-`;
+            if (slot) {
+                slot.innerHTML = `
+                    <div class="flex items-center justify-between w-full h-full gap-3 overflow-visible">
+                        <div class="flex items-center gap-3 min-w-0 overflow-visible">
+                            <div class="shrink-0">
+                                ${getJobIcon(p.job)}
+                            </div>
+
+                            <strong class="party-player-name text-white font-extrabold text-[18px] leading-[1.7] tracking-normal whitespace-normal overflow-visible">
+                                ${p.name}
+                            </strong>
+                        </div>
+
+                        <button onclick="event.stopPropagation(); releasePlayer('${p.id}')" class="text-red-400 text-2xl px-2 shrink-0">
+                            ✕
+                        </button>
+                    </div>
+                `;
             }
         }
     });
