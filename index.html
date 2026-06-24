@@ -803,22 +803,22 @@ console.log("Realtime Sync Started");
 
         function getJobIcon(jobName) {
 
-    const icons = {
-        "Lord Knight": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/lordknight.webp",
-        "Paladin": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/paladin.webp",
-        "High Priest": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/highpriest.webp",
-        "High Wizard": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/wizard.webp",
-        "Sniper": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/sniper.webp",
-        "Assassin Cross": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/assasin.webp",
-        "Champion": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/champion.webp",
-        "Sage": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/sage.webp",
-        "Stalker": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/stalker.webp",
-        "Gypsy": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/dance.webp",
-        "Mastersmith": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/blacksmith.webp",
-        "Biochemist": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/bio.webp",
-        "Gunslinger": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/gunslinger.png",
-        "Summoner": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/summoner.png"
-    };
+const icons = {
+    "Lord Knight": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/lordknight.webp",
+    "Paladin": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/paladin.webp",
+    "High Priest": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/highpriest.webp",
+    "High Wizard": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/wizard.webp",
+    "Sniper": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/sniper.webp",
+    "Assassin Cross": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/assasin.webp",
+    "Champion": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/champion.webp",
+    "Sage": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/sage.webp",
+    "Stalker": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/stalker.webp",
+    "Gypsy": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/dance.webp",
+    "Mastersmith": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/bio.webp",
+    "Biochemist": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/bio.webp",
+    "Gunslinger": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/gunslinger.png",
+    "Summoner": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/summoner.png"
+};
 
     if (icons[jobName]) {
         return `<img src="${icons[jobName]}" class="w-8 h-8 rounded-full object-cover border border-[#d4af37]/50 shrink-0" />`;
