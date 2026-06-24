@@ -565,10 +565,10 @@ class="admin-only bg-indigo-950/40 text-indigo-400 border border-indigo-900/40 p
                     players = data.players || [];
                     googleSheetUrl = data.googleSheetUrl || '';
                     availableJobsList = data.availableJobsList || [...defaultJobsList];
-                    jobIcons = data.jobIcons || {};
-                    globalMaps = data.globalMaps || [];
-                    selectedGlobalMapId = data.selectedGlobalMapId || null;
-                    selectedMap = data.selectedMap || 'default';
+                    jobIcons = Object.keys(data.jobIcons || {}).length ? data.jobIcons : jobIcons;
+                    globalMaps = (data.globalMaps || []).length ? data.globalMaps : globalMaps;
+                    selectedGlobalMapId = data.selectedGlobalMapId || selectedGlobalMapId;
+                    selectedMap = data.selectedMap || selectedMap;
                     markers = data.markers || [];
                     drawingPaths = data.drawingPaths || [];
                     
