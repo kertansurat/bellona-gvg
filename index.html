@@ -1061,23 +1061,19 @@ function handleSlotDrop(event, partyId, slotIndex) {
 }
 function renderParties() {
     document.querySelectorAll('[id^="slot-"][id$="-content"]').forEach(slot => {
-        slot.innerHTML = `<span class="text-gray-600">ว่างเปล่า</span>`;
-    });
+       slot.innerHTML = `
+    <div class="flex items-center justify-between w-full h-full gap-3 overflow-visible">
+        <div class="flex items-center gap-3 min-w-0 overflow-visible">
+            <div class="shrink-0">
+                ${getJobIcon(p.job)}
+            </div>
 
-    players.forEach(p => {
-        if (p.partyId) {
-            const slot = document.getElementById(`slot-${p.partyId}-${p.slotIndex}-content`);
-            if (slot) {
-                slot.innerHTML = `
-    <div class="flex items-center justify-between w-full">
-        <span class="flex items-center gap-3 min-w-0">
-            ${getJobIcon(p.job)}
-            <strong class="text-base md:text-lg font-extrabold text-white truncate">
+            <div class="text-white font-extrabold text-[20px] leading-[1.6] tracking-normal truncate overflow-visible">
                 ${p.name}
-            </strong>
-        </span>
+            </div>
+        </div>
 
-        <button onclick="event.stopPropagation(); releasePlayer('${p.id}')" class="text-red-400 text-xl px-2">
+        <button onclick="event.stopPropagation(); releasePlayer('${p.id}')" class="text-red-400 text-2xl px-2 shrink-0">
             ✕
         </button>
     </div>
