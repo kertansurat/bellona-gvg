@@ -103,13 +103,12 @@
             <button onclick="openGuildSettingsModal()" class="admin-only bg-[#141a24] text-[#d4af37] border border-[#2b3543] px-4 py-2.5 rounded-lg text-sm font-bold"><i class="fa-solid fa-gear"></i> เพิ่มอาชีพ</button>
             <button onclick="autoAssign()" class="admin-only bg-[#d4af37] text-black font-bold px-4 py-2.5 rounded-lg text-sm"><i class="fa-solid fa-wand-magic-sparkles"></i> จัดปาร์ตี้ออโต้</button>
             <button onclick="saveToLocalStorageManual()" class="admin-only bg-[#071911] text-emerald-400 border border-[#0d3f25] px-4 py-2.5 rounded-lg text-sm font-bold">
-    <i class="fa-solid fa-floppy-disk"></i> เซฟข้อมูล
-</button>
-            <button onclick="saveToLocalStorageManual()" class="admin-only bg-[#071911] text-emerald-400 border border-[#0d3f25] px-4 py-2.5 rounded-lg text-sm font-bold"><i class="fa-solid fa-floppy-disk"></i> เซฟข้อมูล</button>
+                <i class="fa-solid fa-floppy-disk"></i> เซฟข้อมูล
+            </button>
             <button onclick="importPlayersFromFirebaseSafe()" class="admin-only bg-[#111827] text-cyan-400 border border-cyan-900/60 px-4 py-2.5 rounded-lg text-sm font-bold">
     <i class="fa-solid fa-cloud-arrow-down"></i> ดึง Firebase
 </button>
-            <button onclick="savePlayersToFirebaseSafe()" class="bg-[#1f1a0b] text-[#d4af37] border border-[#d4af37]/40 px-4 py-2.5 rounded-lg text-sm font-bold">
+            <button onclick="savePlayersToFirebaseSafe()" class="admin-only bg-[#1f1a0b] text-[#d4af37] border border-[#d4af37]/40 px-4 py-2.5 rounded-lg text-sm font-bold">
     <i class="fa-solid fa-cloud-arrow-up"></i> บันทึก Firebase
 </button>
             <button onclick="startPlayersRealtimeSync()" class="bg-[#0b1f2a] text-sky-400 border border-sky-900/60 px-4 py-2.5 rounded-lg text-sm font-bold">
@@ -158,10 +157,6 @@
         </div>
 
         <div class="flex gap-2.5">
-            <button onclick="captureParties()" class="bg-[#141a24] hover:bg-[#1c2433] text-[#d4af37] border border-[#2d374a] px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 shadow-md">
-                <i class="fa-solid fa-camera"></i> แคปจอรายชื่อปาร์ตี้
-            </button>
-
             <button onclick="triggerClearPartiesConfirmation()" class="admin-only bg-red-950/40 text-red-400 border border-red-900/40 px-3 py-1.5 rounded-lg text-xs font-bold">
                 ล้างทีมปาร์ตี้ทั้งหมด
             </button>
@@ -180,7 +175,7 @@
                 </span>
             </div>
 
-            <div id="parties-grid" class="grid grid-cols-4 gap-3"></div>
+            <div id="parties-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3"></div>
         </div>
 
         <div class="space-y-3 p-4 bg-[#111520] rounded-xl border border-[#1f2838]" id="capture-sub-zone">
@@ -193,7 +188,7 @@
                 </span>
             </div>
 
-            <div id="sub-parties-grid" class="grid grid-cols-4 gap-3"></div>
+            <div id="sub-parties-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3"></div>
         </div>
 
     </div>
@@ -241,7 +236,7 @@
                     </div>
 
                     <div class="space-y-4">
-                        <div class="bg-[#111520] p-4.5 rounded-xl border border-[#1f2838] space-y-3 shadow-xl">
+                        <div class="bg-[#111520] p-4 rounded-xl border border-[#1f2838] space-y-3 shadow-xl">
                             <h3 class="text-xs font-bold text-gray-300 uppercase tracking-wider"><i class="fa-solid fa-map text-[#d4af37]"></i> รูปภาพแผนที่ยุทธวิธี GVG</h3>
                             <select id="map-selector" onchange="changeBattleMap(this.value)" class="w-full bg-[#1c2331] text-xs text-gray-200 p-2.5 rounded-lg border border-[#1f2838] focus:outline-none">
                                 <option value="default">🖥️ พื้นหลังบอร์ดมาตรฐานกิลด์ BELLONA</option>
@@ -255,7 +250,7 @@
                             </div>
                         </div>
 
-                        <div class="bg-[#111520] p-4.5 rounded-xl border border-[#1f2838] flex flex-col max-h-[340px] shadow-xl">
+                        <div class="bg-[#111520] p-4 rounded-xl border border-[#1f2838] flex flex-col max-h-[340px] shadow-xl">
                             <div class="flex justify-between items-center mb-2.5">
                                 <h3 class="text-xs font-bold text-gray-300 uppercase tracking-wider">ปักหมุดตำแหน่ง (Markers)</h3>
                                 <button onclick="addNewMarker()" class="admin-only bg-cyan-950/40 text-cyan-400 text-[10px] px-2 py-0.5 rounded font-bold">+ เพิ่มหมุด</button>
@@ -335,7 +330,6 @@
                                 <button onclick="manualAddMemberSubmit()" class="admin-only w-full bg-[#d4af37] text-black font-extrabold py-3 rounded-lg text-sm transition"><i class="fa-solid fa-plus-circle"></i> บันทึกรายชื่อเข้าบอร์ด</button>
                             </div>
                         </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -398,14 +392,12 @@
                 <button onclick="resetAllRewardQuota()" class="admin-only bg-[#1c2331] text-[#d4af37] border border-[#2d3748] px-3 py-2 rounded-lg font-bold">
                     รีเซ็ตสิทธิ์ทั้งหมด
                 </button>
-                <button onclick="copyRewardEligibleNames()"
-lass="admin-only bg-cyan-950/40 text-cyan-400 border border-cyan-900/40 px-3 py-2 rounded-lg font-bold text-xs">
-    📋 Copy คนมีสิทธิ์
-</button>
-                <button onclick="copyRewardAllNames()"
-class="admin-only bg-indigo-950/40 text-indigo-400 border border-indigo-900/40 px-3 py-2 rounded-lg font-bold text-xs">
-    👥 Copy มาวอร์
-</button>
+                <button onclick="copyRewardEligibleNames()" class="admin-only bg-cyan-950/40 text-cyan-400 border border-cyan-900/40 px-3 py-2 rounded-lg font-bold text-xs">
+                    📋 Copy คนมีสิทธิ์
+                </button>
+                <button onclick="copyRewardAllNames()" class="admin-only bg-indigo-950/40 text-indigo-400 border border-indigo-900/40 px-3 py-2 rounded-lg font-bold text-xs">
+                    👥 Copy มาวอร์
+                </button>
             </div>
 
             <div class="overflow-x-auto">
@@ -482,1108 +474,808 @@ class="admin-only bg-indigo-950/40 text-indigo-400 border border-indigo-900/40 p
         </div>
     </div>
 
-    <script>
-        window.alert = function(msg) {
+    
+<script>
+/* =========================================================
+   BELLONA ULTIMATE SUITE - CLEAN FUNCTION CORE
+   รวมฟังก์ชันหลักจากชุดสุดท้าย + แก้ syntax/function ซ้ำ/ตัวแปรหาย
+========================================================= */
 
-    if (String(msg).includes('Firebase')) {
-        return;
-    }
+const STORAGE_KEY = 'bellona_gvg_v14_clean';
+const LEGACY_STORAGE_KEY = 'bellona_gvg_v13_final';
 
+window.alert = function(msg) {
     console.log(msg);
 };
+
 const defaultJobsList = [
-    'Lord Knight',
-    'Paladin',
-    'High Priest',
-    'High Wizard',
-    'Sniper',
-    'Assassin Cross',
-    'Champion',
-    'Sage',
-    'Stalker',
-    'Gypsy',
-    'Mastersmith',
-    'Biochemist',
-    'Summoner',
-    'Gunslinger'
+    'Lord Knight','Paladin','High Priest','High Wizard','Sniper','Assassin Cross','Champion',
+    'Sage','Stalker','Gypsy','Mastersmith','Biochemist','Summoner','Gunslinger'
 ];
-        let availableJobsList = [...defaultJobsList]; 
-        let globalMaps = [
-    {
-        id: "vigrid",
-        name: "Vigrid",
-        image: "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/maps/vigrid.png"
-    }
-];
-        let selectedGlobalMapId = null; 
-        let selectedMap = 'default'; 
-        let googleSheetUrl = ''; 
-        let userRole = 'guest';
 
-        let canvas, ctx; let isDrawing = false; let lastX = 0, lastY = 0; let drawMode = 'move'; let drawColor = '#ff4d4d'; let brushSize = 4; let drawingPaths = [];
+let availableJobsList = [...defaultJobsList];
+let globalMaps = [{
+    id: 'vigrid',
+    name: 'Vigrid',
+    image: 'https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/maps/vigrid.png'
+}];
+let selectedGlobalMapId = 'vigrid';
+let selectedMap = 'vigrid';
+let googleSheetUrl = '';
+let userRole = 'guest';
+let players = [];
+let markers = [];
+let selectedPlayerId = null;
 
-    window.onload = function() {
+let canvas = null;
+let ctx = null;
+let isDrawing = false;
+let lastX = 0;
+let lastY = 0;
+let drawMode = 'move';
+let drawColor = '#ff4d4d';
+let brushSize = 4;
+let drawingPaths = [];
+let rewardSpinLock = false;
+let unsubPlayersRealtime = null;
+
+function safeEl(id) { return document.getElementById(id); }
+function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s]));
+}
+function normalizePlayer(raw) {
+    const status = raw.status || 'มา';
+    return {
+        id: String(raw.id || raw.name || Date.now() + Math.random()),
+        name: raw.name || 'ไม่ระบุชื่อ',
+        job: raw.job || 'ไม่ระบุอาชีพ',
+        status,
+        partyId: raw.partyId ?? null,
+        slotIndex: raw.slotIndex ?? null,
+        presentCount: Number(raw.presentCount || 0),
+        leaveCount: Number(raw.leaveCount || 0),
+        absentCount: Number(raw.absentCount || 0),
+        hasQuota: raw.hasQuota ?? true,
+        rewardName: raw.rewardName || '',
+        rewardClaimed: raw.rewardClaimed || false,
+        discordId: raw.discordId || raw.DiscordID || ''
+    };
+}
+
+window.onload = function() {
     checkLoginSession();
     loadFromLocalStorage();
     initPartiesGrid();
     initDrawingCanvas();
-    renderAll();
-      // โหลดแผนที่หลัก    
-    setTimeout(() => {
     updateMapDropdownOptions();
-    displayGlobalMap('vigrid');
-}, 500);
-        
+    displayGlobalMap(selectedGlobalMapId || 'vigrid');
+    renderAll();
     setTimeout(() => {
-        if (typeof window.startPlayersRealtimeSync === "function") {
-            window.startPlayersRealtimeSync();
-        }
-    }, 1500);
+        if (typeof window.startPlayersRealtimeSync === 'function') window.startPlayersRealtimeSync(false);
+    }, 1200);
 };
 
-        function checkLoginSession() {
-            const savedRole = sessionStorage.getItem('bellona_role');
-            if (sessionStorage.getItem('bellona_is_logged_in') === 'true' && savedRole) {
-                userRole = savedRole; document.getElementById('login-overlay-screen').classList.add('hidden'); applyRolePermissions();
-            }
-        }
+function checkLoginSession() {
+    const savedRole = sessionStorage.getItem('bellona_role');
+    if (sessionStorage.getItem('bellona_is_logged_in') === 'true' && savedRole) {
+        userRole = savedRole;
+        const overlay = safeEl('login-overlay-screen');
+        if (overlay) overlay.classList.add('hidden');
+    }
+    applyRolePermissions();
+}
 
-        function attemptAdminLogin() {
-            const userInp = document.getElementById('login-username').value.trim();
-            const passInp = document.getElementById('login-password').value.trim();
-            if (userInp === 'admin-bellona' && passInp === '5000') { 
-                userRole = 'admin'; sessionStorage.setItem('bellona_role', 'admin'); sessionStorage.setItem('bellona_is_logged_in', 'true');
-                applyRolePermissions(); renderAll();
-            } else { alert('รหัสผ่านไม่ถูกต้อง'); }
-        }
-       function bypassAsGuest() {
+function attemptAdminLogin() {
+    const userInp = (safeEl('login-username')?.value || '').trim();
+    const passInp = (safeEl('login-password')?.value || '').trim();
+    if (userInp === 'admin-bellona' && passInp === '5000') {
+        userRole = 'admin';
+        sessionStorage.setItem('bellona_role', 'admin');
+        sessionStorage.setItem('bellona_is_logged_in', 'true');
+        safeEl('login-overlay-screen')?.classList.add('hidden');
+        applyRolePermissions();
+        renderAll();
+    } else {
+        alert('รหัสผ่านไม่ถูกต้อง');
+    }
+}
+
+function bypassAsGuest() {
     userRole = 'guest';
-
     sessionStorage.setItem('bellona_role', 'guest');
     sessionStorage.setItem('bellona_is_logged_in', 'true');
-
-    const overlay = document.getElementById('login-overlay-screen');
-    if (overlay) overlay.classList.add('hidden');
-
+    safeEl('login-overlay-screen')?.classList.add('hidden');
     applyRolePermissions();
     renderAll();
 }
-        function checkAdminAccess() { return userRole === 'admin'; }
 
-        function applyRolePermissions() {
-            document.getElementById('login-overlay-screen').classList.add('hidden');
-            const badge = document.getElementById('role-status-badge');
-            if (userRole === 'admin') {
-                badge.className = "px-3.5 py-1.5 rounded text-[11px] font-extrabold text-[#d4af37] border border-[#d4af37]/30 bg-[#232c3f]";
-                badge.innerHTML = `<i class="fa-solid fa-lock-open"></i> ADMIN MODE`;
-                document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('opacity-40', 'pointer-events-none'));
-            } else {
-                badge.className = "px-3.5 py-1.5 rounded text-[11px] font-extrabold text-gray-400 border border-[#2d3748] bg-[#181f2d]";
-                badge.innerHTML = `<i class="fa-solid fa-lock"></i> GUEST MODE`;
-                document.querySelectorAll('.admin-only').forEach(el => el.classList.add('opacity-40', 'pointer-events-none'));
-            }
-        }
+function logoutSession() {
+    sessionStorage.removeItem('bellona_role');
+    sessionStorage.removeItem('bellona_is_logged_in');
+    userRole = 'guest';
+    safeEl('login-overlay-screen')?.classList.remove('hidden');
+    applyRolePermissions();
+}
 
-        function loadFromLocalStorage() {
-            const rawData = localStorage.getItem('bellona_gvg_v13_final');
-            if (rawData) {
-                try {
-                    const data = JSON.parse(rawData);
-                    players = data.players || [];
-googleSheetUrl = data.googleSheetUrl || '';
-availableJobsList = [...defaultJobsList];
+function checkAdminAccess() { return userRole === 'admin'; }
 
-// ใช้รูปจากโค้ดเสมอ
-// ไม่โหลด jobIcons/globalMaps จาก localStorage
-
-selectedGlobalMapId = 'vigrid';
-selectedMap = 'vigrid';
-
-markers = data.markers || [];
-drawingPaths = data.drawingPaths || [];
-                    
-                    const logoData = localStorage.getItem('bellona_custom_logo_data');
-                    if(logoData) { displayGuildLogo(logoData); if(document.getElementById('guild-logo-url-input')) document.getElementById('guild-logo-url-input').value = logoData; }
-                    updateMapDropdownOptions();
-                    changeBattleMap(selectedMap);
-                } catch(e) {}
-            }
-            if (document.getElementById('sheet-url-input-members')) document.getElementById('sheet-url-input-members').value = googleSheetUrl;
-        }
-
-        function saveToLocalStorage() {
-            const data = {
-    players: players,
-    googleSheetUrl: googleSheetUrl,
-    availableJobsList: availableJobsList,
-    globalMaps: globalMaps,
-    selectedGlobalMapId: selectedGlobalMapId,
-    selectedMap: selectedMap,
-    markers: markers,
-    drawingPaths: drawingPaths
-};
-            localStorage.setItem('bellona_gvg_v13_final', JSON.stringify(data));
-        }
-
-        function saveToLocalStorageManual() { saveToLocalStorage(); alert('💾 บันทึกฐานข้อมูลกิลด์สำเร็จ!'); }
-
-async function importPlayersFromFirebaseSafe() {
-    if (!window.bellonaDB) {
-        alert("Firebase ยังไม่พร้อม");
-        return;
-    }
-
-    try {
-        const { collection, getDocs } = await import(
-            "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js"
-        );
-
-        const snap = await getDocs(collection(window.bellonaDB, "players"));
-
-        players = snap.docs.map(doc => ({
-            id: doc.id,
-            name: doc.data().name || "ไม่ระบุชื่อ",
-            job: doc.data().job || "ไม่ระบุอาชีพ",
-            status: doc.data().status || "มา",
-            partyId: doc.data().partyId ?? null,
-            slotIndex: doc.data().slotIndex ?? null,
-            presentCount: doc.data().presentCount || 0,
-            leaveCount: doc.data().leaveCount || 0,
-            absentCount: doc.data().absentCount || 0,
-            hasQuota: doc.data().hasQuota ?? true,
-            rewardName: doc.data().rewardName || "",
-            rewardClaimed: doc.data().rewardClaimed || false
-        }));
-
-        saveToLocalStorage();
-        renderAll();
-
-        // alert("นำเข้ารายชื่อจาก Firebase สำเร็จ: " + players.length + " คน");
-    } catch (err) {
-    alert("Firebase Import Error: " + err.message);
+function applyRolePermissions() {
+    const badge = safeEl('role-status-badge');
+    if (!badge) return;
+    if (userRole === 'admin') {
+        badge.className = 'px-3.5 py-1.5 rounded text-[11px] font-extrabold text-[#d4af37] border border-[#d4af37]/30 bg-[#232c3f]';
+        badge.innerHTML = '<i class="fa-solid fa-lock-open"></i> ADMIN MODE';
+        document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('opacity-40','pointer-events-none'));
+    } else {
+        badge.className = 'px-3.5 py-1.5 rounded text-[11px] font-extrabold text-gray-400 border border-[#2d3748] bg-[#181f2d]';
+        badge.innerHTML = '<i class="fa-solid fa-lock"></i> GUEST MODE';
+        document.querySelectorAll('.admin-only').forEach(el => el.classList.add('opacity-40','pointer-events-none'));
     }
 }
 
-window.savePlayersToFirebaseSafe = async function() {
-    if (!window.bellonaDB) {
-        alert("Firebase ยังไม่พร้อม");
-        return;
-    }
-
-    if (!Array.isArray(players) || players.length === 0) {
-        alert("ยังไม่มีรายชื่อให้บันทึก");
-        return;
-    }
-
+function loadFromLocalStorage() {
+    const rawData = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
+    if (!rawData) return;
     try {
-        const { doc, setDoc } = await import(
-            "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js"
-        );
+        const data = JSON.parse(rawData);
+        players = Array.isArray(data.players) ? data.players.map(normalizePlayer) : [];
+        googleSheetUrl = data.googleSheetUrl || '';
+        availableJobsList = Array.isArray(data.availableJobsList) && data.availableJobsList.length ? data.availableJobsList : [...defaultJobsList];
+        markers = Array.isArray(data.markers) ? data.markers : [];
+        drawingPaths = Array.isArray(data.drawingPaths) ? data.drawingPaths : [];
+        selectedGlobalMapId = data.selectedGlobalMapId || 'vigrid';
+        selectedMap = data.selectedMap || selectedGlobalMapId || 'vigrid';
+        const logoData = localStorage.getItem('bellona_custom_logo_data');
+        if (logoData) displayGuildLogo(logoData);
+    } catch(e) {
+        console.error('loadFromLocalStorage error:', e);
+    }
+}
 
-        for (const p of players) {
-            const playerId = String(p.id || p.name || Date.now());
+function saveToLocalStorage() {
+    const data = { players, googleSheetUrl, availableJobsList, globalMaps, selectedGlobalMapId, selectedMap, markers, drawingPaths };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+function saveToLocalStorageManual() { saveToLocalStorage(); alert('💾 บันทึกฐานข้อมูลกิลด์สำเร็จ!'); }
 
-            await setDoc(doc(window.bellonaDB, "players", playerId), {
-                name: p.name || "",
-                job: p.job || "",
-                status: p.status || "มา",
+async function importPlayersFromFirebaseSafe() {
+    if (!window.bellonaDB) return alert('Firebase ยังไม่พร้อม');
+    try {
+        const { collection, getDocs } = await import('https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js');
+        const snap = await getDocs(collection(window.bellonaDB, 'players'));
+        players = snap.docs.map(doc => normalizePlayer({ id: doc.id, ...doc.data() }));
+        saveToLocalStorage();
+        renderAll();
+    } catch (err) { alert('Firebase Import Error: ' + err.message); }
+}
+
+window.savePlayersToFirebaseSafe = async function(showMessage = false) {
+    if (!window.bellonaDB) return alert('Firebase ยังไม่พร้อม');
+    if (!Array.isArray(players) || players.length === 0) return alert('ยังไม่มีรายชื่อให้บันทึก');
+    try {
+        const { doc, setDoc } = await import('https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js');
+        for (const raw of players) {
+            const p = normalizePlayer(raw);
+            await setDoc(doc(window.bellonaDB, 'players', String(p.id)), {
+                name: p.name,
+                job: p.job,
+                status: p.status,
                 partyId: p.partyId ?? null,
                 slotIndex: p.slotIndex ?? null,
                 presentCount: p.presentCount || 0,
                 leaveCount: p.leaveCount || 0,
                 absentCount: p.absentCount || 0,
                 hasQuota: p.hasQuota ?? true,
-                rewardName: p.rewardName || "",
+                rewardName: p.rewardName || '',
                 rewardClaimed: p.rewardClaimed || false,
+                discordId: p.discordId || '',
                 updatedAt: new Date().toISOString()
             }, { merge: true });
         }
-
-        // alert("บันทึกข้อมูลขึ้น Firebase สำเร็จ: " + players.length + " คน");
-    } catch (err) {
-        alert("Firebase Save Error: " + err.message);
-    }
+        if (showMessage) alert('บันทึกข้อมูลขึ้น Firebase สำเร็จ');
+    } catch (err) { alert('Firebase Save Error: ' + err.message); }
 };
 
-        window.startPlayersRealtimeSync = async function() {
-    if (!window.bellonaDB) {
-        alert("Firebase ยังไม่พร้อม");
-        return;
-    }
-
+window.startPlayersRealtimeSync = async function(showMessage = true) {
+    if (!window.bellonaDB) return alert('Firebase ยังไม่พร้อม');
     try {
-        const { collection, onSnapshot } = await import(
-            "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js"
-        );
-
-        onSnapshot(collection(window.bellonaDB, "players"), (snapshot) => {
-            players = snapshot.docs.map(doc => ({
-                id: doc.id,
-                name: doc.data().name || "ไม่ระบุชื่อ",
-                job: doc.data().job || "ไม่ระบุอาชีพ",
-                status: doc.data().status || "มา",
-                partyId: doc.data().partyId ?? null,
-                slotIndex: doc.data().slotIndex ?? null,
-                presentCount: doc.data().presentCount || 0,
-                leaveCount: doc.data().leaveCount || 0,
-                absentCount: doc.data().absentCount || 0,
-                hasQuota: doc.data().hasQuota ?? true,
-                rewardName: doc.data().rewardName || "",
-                rewardClaimed: doc.data().rewardClaimed || false
-            }));
-
+        const { collection, onSnapshot } = await import('https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js');
+        if (typeof unsubPlayersRealtime === 'function') unsubPlayersRealtime();
+        unsubPlayersRealtime = onSnapshot(collection(window.bellonaDB, 'players'), snapshot => {
+            players = snapshot.docs.map(doc => normalizePlayer({ id: doc.id, ...doc.data() }));
             saveToLocalStorage();
             renderAll();
-
-            console.log("Realtime players synced:", players.length);
-});
-
-console.log("Realtime Sync Started");
-
-} catch (err) {
-    alert("Realtime Sync Error: " + err.message);
-}
+            console.log('Realtime players synced:', players.length);
+        });
+        if (showMessage) alert('Realtime Sync Started');
+    } catch (err) { alert('Realtime Sync Error: ' + err.message); }
 };
-        
-        /* ================= ⚡ ระบบเพิ่มแผนที่ผ่าน ลิงก์ URL รูปภาพหน้าเว็บ ================= */
-        function addMapViaUrlManual() {
-            if (!checkAdminAccess()) return;
-            const urlInput = document.getElementById('map-url-input-web'); if (!urlInput) return;
-            const url = urlInput.value.trim();
-            if (!url || !url.startsWith('http')) { alert('กรุณาระบุลิงก์รูปภาพ URL ที่ถูกต้องครับ'); return; }
 
-            const mapName = prompt('ตั้งชื่อแผนที่ยุทธวิธีนี้:', 'แผนที่ใหม่');
-            if (!mapName || mapName.trim() === "") return;
-
-            const newMap = { id: 'map_' + Date.now(), name: mapName.trim().substring(0, 15), image: url };
-            globalMaps.push(newMap); selectedGlobalMapId = newMap.id;
-            urlInput.value = '';
-            saveToLocalStorage(); updateMapDropdownOptions(); changeBattleMap(newMap.id);
-        }
-
-        function updateMapDropdownOptions() {
-            const selector = document.getElementById('map-selector'); if (!selector) return;
-            selector.innerHTML = '<option value="default">🖥️ พื้นหลังบอร์ดมาตรฐานกิลด์ BELLONA</option>';
-            globalMaps.forEach(m => { selector.innerHTML += `<option value="${m.id}">${m.name}</option>`; });
-            renderGlobalMapsList();
-        }
-
-        function renderGlobalMapsList() {
-            const list = document.getElementById('saved-maps-list'); if(!list) return; list.innerHTML = '';
-            if (globalMaps.length === 0) { list.innerHTML = '<div class="text-xs text-gray-500 italic text-center py-2">ไม่มีแผนที่เสริมในคลัง</div>'; return; }
-            globalMaps.forEach(m => {
-                const item = document.createElement('div');
-                item.className = `flex items-center justify-between p-2 rounded text-xs border ${selectedGlobalMapId === m.id ? 'bg-amber-950/20 border-[#d4af37]':'bg-[#181f2d] border-[#222b3c]'}`;
-                item.innerHTML = `
-                    <span class="cursor-pointer font-bold" onclick="displayGlobalMap('${m.id}')">🗺️ ${m.name}</span>
-                    <div class="flex items-center gap-2">
-                        <button onclick="editMapName('${m.id}')" class="text-gray-400 hover:text-[#d4af37] admin-only"><i class="fa-solid fa-pencil text-[10px]"></i></button>
-                        <button onclick="deleteGlobalMap('${m.id}')" class="text-red-400 admin-only">✕</button>
-                    </div>`;
-                list.appendChild(item);
-            });
-        }
-
-        function editMapName(id) {
-            if (!checkAdminAccess()) return;
-            const map = globalMaps.find(m => m.id === id); if (!map) return;
-            const newName = prompt('ระบุชื่อแผนที่ใหม่:', map.name);
-            if (newName && newName.trim() !== "") {
-                map.name = newName.trim().substring(0, 15);
-                saveToLocalStorage(); updateMapDropdownOptions();
-                if (selectedGlobalMapId === id) document.getElementById('map-selector').value = id;
-            }
-        }
-
-        function displayGlobalMap(id) {
-            const map = globalMaps.find(m => m.id === id);
-            if (map) {
-                const bgImg = document.getElementById('battle-map-bg'); const placeholder = document.getElementById('battle-map-placeholder');
-                bgImg.src = map.image; bgImg.classList.remove('hidden'); placeholder.classList.add('hidden');
-                selectedGlobalMapId = id; selectedMap = id; document.getElementById('map-selector').value = id;
-                saveToLocalStorage(); renderGlobalMapsList(); setTimeout(resizeCanvas, 50);
-            }
-        }
-
-        function deleteGlobalMap(id) {
-            globalMaps = globalMaps.filter(m => m.id !== id); if (selectedGlobalMapId === id) selectedGlobalMapId = null;
-            saveToLocalStorage(); updateMapDropdownOptions(); changeBattleMap('default');
-        }
-
-        function changeBattleMap(val) {
-            selectedMap = val; const bgImg = document.getElementById('battle-map-bg'); const placeholder = document.getElementById('battle-map-placeholder');
-            if (val !== 'default') { displayGlobalMap(val); } 
-            else { selectedGlobalMapId = null; bgImg.classList.add('hidden'); placeholder.classList.remove('hidden'); document.getElementById('map-selector').value = 'default'; saveToLocalStorage(); renderGlobalMapsList(); }
-        }
-
-        /* ================= 🎨 วางลิงก์ URL เปลี่ยนรูปโลโก้กิลด์ และเปลี่ยนไอคอนประจำคลาสอาชีพ ================= */
-        function updateGuildLogoViaUrl() {
-            if (!checkAdminAccess()) return;
-            const input = document.getElementById('guild-logo-url-input'); if (!input) return;
-            const url = input.value.trim(); if (!url) return;
-            localStorage.setItem('bellona_custom_logo_data', url);
-            displayGuildLogo(url); alert('🖼️ อัปเดตรูปโลโก้กิลด์ประจำแผงควบคุมสำเร็จ!');
-        }
-
-        function displayGuildLogo(url) {
-            if(document.getElementById('login-logo')) document.getElementById('login-logo').src = url;
-            if(document.getElementById('header-logo')) document.getElementById('header-logo').src = url;
-            if(document.getElementById('fallback-watermark-logo')) document.getElementById('fallback-watermark-logo').src = url;
-        }
-
-        function getJobIcon(jobName) {
-
+function getJobIcon(jobName) {
     const icons = {
-    "Lord Knight": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/lordknight.webp",
-    "Paladin": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/paladin.webp",
-    "High Priest": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/highpriest.webp",
-    "High Wizard": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/wizard.webp",
-    "Sniper": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/sniper.webp",
-    "Assassin Cross": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/assasin.webp",
-    "Champion": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/champion.webp",
-    "Sage": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/sage.webp",
-    "Stalker": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/stalker.webp",
-    "Gypsy": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/dance.webp",
-    "Mastersmith": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/blacksmith.webp",
-    "Biochemist": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/bio.webp",
-    "Gunslinger": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/gunslinger.png",
-    "Summoner": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/summoner.png"
-};
-
-    if (icons[jobName]) {
-        return `<img src="${icons[jobName]}" class="w-8 h-8 rounded-full object-cover border border-[#d4af37]/50 shrink-0" />`;
-    }
-
-    return `<div class="w-8 h-8 rounded-full flex items-center justify-center text-xs bg-slate-700 font-bold shrink-0">🛡️</div>`;
+        'Lord Knight':'https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/lordknight.webp',
+        'Paladin':'https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/paladin.webp',
+        'High Priest':'https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/highpriest.webp',
+        'High Wizard':'https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/wizard.webp',
+        'Sniper':'https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/sniper.webp',
+        'Assassin Cross':'https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/assasin.webp',
+        'Champion':'https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/champion.webp',
+        'Sage':'https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/sage.webp',
+        'Stalker':'https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/stalker.webp',
+        'Gypsy':'https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/dance.webp',
+        'Mastersmith':'https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/blacksmith.webp',
+        'Biochemist':'https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/bio.webp',
+        'Gunslinger':'https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/gunslinger.png',
+        'Summoner':'https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/summoner.png'
+    };
+    const url = icons[jobName];
+    if (url) return `<img src="${url}" class="w-8 h-8 rounded-full object-cover border border-[#d4af37]/50 shrink-0" onerror="this.style.display='none'">`;
+    return '<div class="w-8 h-8 rounded-full flex items-center justify-center text-xs bg-slate-700 font-bold shrink-0">🛡️</div>';
 }
-        /* ================= 🎨 ดึงระบบวาดเขียน (Drawing Engine) ดั้งเดิมกลับมาทำงานแม่นยำพรีเมียม ================= */
-        function initDrawingCanvas() {
-            canvas = document.getElementById('drawing-canvas'); if (!canvas) return; ctx = canvas.getContext('2d');
-            canvas.addEventListener('mousedown', (e) => { if (drawMode !== 'draw') return; isDrawing = true; [lastX, lastY] = getCanvasMousePos(e); });
-            canvas.addEventListener('mousemove', (e) => { if (!isDrawing) return; const [x, y] = getCanvasMousePos(e); ctx.strokeStyle = drawColor; ctx.lineWidth = brushSize; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y); ctx.stroke(); drawingPaths.push({ x1: lastX, y1: lastY, x2: x, y2: y, color: drawColor }); [lastX, lastY] = [x, y]; });
-            canvas.addEventListener('mouseup', () => isDrawing = false);
-            setTimeout(resizeCanvas, 100);
-        }
-        function getCanvasMousePos(e) { const rect = canvas.getBoundingClientRect(); return [((e.clientX - rect.left) / rect.width) * canvas.width, ((e.clientY - rect.top) / rect.height) * canvas.height]; }
-        function resizeCanvas() { if(canvas) { canvas.width = 2000; canvas.height = 1125; redrawCanvasPaths(); } }
-        function clearDrawing() { drawingPaths = []; redrawCanvasPaths(); }
-        function undoDrawing() { drawingPaths.splice(-25); redrawCanvasPaths(); }
-        function redrawCanvasPaths() { if(!ctx) return; ctx.clearRect(0, 0, canvas.width, canvas.height); drawingPaths.forEach(p => { ctx.beginPath(); ctx.strokeStyle = p.color; ctx.lineWidth = brushSize; ctx.lineCap = 'round'; ctx.moveTo(p.x1, p.y1); ctx.lineTo(p.x2, p.y2); ctx.stroke(); }); }
 
-        /* ================= 📸 ฟังก์ชันแคปเจอร์หน้าจอผังปาร์ตี้แยก 2 ภาพ ================= */
-        async function captureParties() {
-            alert('📸 กำลังประมวลผลเซฟภาพปาร์ตี้หลักและรองความละเอียดสูงแบบแยกไฟล์...');
-            const mainZone = document.getElementById('capture-main-zone');
-            const subZone = document.getElementById('capture-sub-zone');
-            
-            if (!mainZone || !subZone) { alert('ไม่พบข้อมูลกล่องผังปาร์ตี้'); return; }
-            
-            try {
-                const canvasMain = await html2canvas(mainZone, { backgroundColor: '#111520', scale: 2, useCORS: true });
-                const link1 = document.createElement('a');
-                link1.download = `bellona-main-party-${Date.now()}.png`;
-                link1.href = canvasMain.toDataURL('image/png');
-                link1.click();
-                
-                setTimeout(async () => {
-                    const canvasSub = await html2canvas(subZone, { backgroundColor: '#111520', scale: 2, useCORS: true });
-                    const link2 = document.createElement('a');
-                    link2.download = `bellona-sub-party-${Date.now()}.png`;
-                    link2.href = canvasSub.toDataURL('image/png');
-                    link2.click();
-                }, 800);
-            } catch(err) { alert('เบราว์เซอร์ปฏิเสธคำสั่งสร้างรูปภาพ'); }
-        }
-
-        /* ================= 📸 ฟังก์ชันเซฟแผนภาพยุทธวิธี รวมเส้นวาด และ หมากรบ ================= */
-        function exportTacticalMap() {
-            if(!canvas) return;
-            alert('🖼️ กำลังรวมข้อมูลแผนที่ เส้นวาด และหมากปักตำแหน่งเพื่อส่งออกไฟล์...');
-
-            const exportCanvas = document.createElement('canvas');
-            exportCanvas.width = canvas.width;
-            exportCanvas.height = canvas.height;
-            const exCtx = exportCanvas.getContext('2d');
-
-            const bgImg = document.getElementById('battle-map-bg');
-            if (bgImg && bgImg.src && !bgImg.classList.contains('hidden')) {
-                exCtx.drawImage(bgImg, 0, 0, exportCanvas.width, exportCanvas.height);
-            } else {
-                exCtx.fillStyle = '#0c0e14';
-                exCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
-            }
-
-            exCtx.drawImage(canvas, 0, 0);
-
-            markers.forEach(m => {
-                const posX = (m.posX / 100) * exportCanvas.width;
-                const posY = (m.posY / 100) * exportCanvas.height;
-
-                exCtx.beginPath();
-                exCtx.arc(posX, posY, 16, 0, 2 * Math.PI);
-                exCtx.fillStyle = '#dc2626';
-                exCtx.strokeStyle = '#ffffff';
-                exCtx.lineWidth = 3;
-                exCtx.fill();
-                exCtx.stroke();
-
-                exCtx.fillStyle = '#ffffff';
-                exCtx.font = 'bold 12px Inter, sans-serif';
-                exCtx.textAlign = 'center';
-                exCtx.textBaseline = 'middle';
-                exCtx.fillText(m.name.substring(0, 3), posX, posY);
-            });
-
-            try {
-                const link = document.createElement('a');
-                link.download = `bellona-tactical-map-${Date.now()}.png`;
-                link.href = exportCanvas.toDataURL('image/png');
-                link.click();
-            } catch (e) { alert('เกิดข้อผิดพลาดในการรวมสื่อบันทึกรูปภาพภาพ'); }
-        }
-        /* ================= ระบบการจัดปาร์ตี้ และ การจัดการหน้าต่างสมาชิก ================= */
-       function manualAddMemberSubmit() {
-    if (!checkAdminAccess()) return;
-
-    const name = document.getElementById('manual-add-name').value.trim();
-    const job = document.getElementById('manual-add-job').value;
-    const status = document.getElementById('manual-add-status').value;
-
-    if (!name) {
-        alert('กรุณาใส่ชื่อตัวละคร');
-        return;
+function populateDynamicJobSelectors() {
+    const dropdown = safeEl('search-job-dropdown');
+    const addSel = safeEl('manual-add-job');
+    if (dropdown) {
+        const current = dropdown.value || 'all';
+        dropdown.innerHTML = '<option value="all">🔍 แสดงสายอาชีพทั้งหมด</option>' + availableJobsList.map(job => `<option value="${escapeHtml(job)}">${escapeHtml(job)}</option>`).join('');
+        dropdown.value = [...availableJobsList, 'all'].includes(current) ? current : 'all';
     }
+    if (addSel) {
+        const current = addSel.value;
+        addSel.innerHTML = availableJobsList.map(job => `<option value="${escapeHtml(job)}">${escapeHtml(job)}</option>`).join('');
+        if (current && availableJobsList.includes(current)) addSel.value = current;
+    }
+}
 
-    players.push({
-        id: String(Date.now()),
-        name: name,
-        job: job,
-        status: status,
+function addNewJobToGuild() {
+    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
+    const input = safeEl('new-job-input');
+    const job = (input?.value || '').trim();
+    if (!job) return alert('กรุณาพิมพ์ชื่ออาชีพ');
+    if (!availableJobsList.includes(job)) availableJobsList.push(job);
+    if (input) input.value = '';
+    saveToLocalStorage();
+    populateDynamicJobSelectors();
+    renderAll();
+}
+
+function openGuildSettingsModal() { safeEl('guild-settings-modal')?.classList.remove('hidden'); }
+function closeGuildSettingsModal() { safeEl('guild-settings-modal')?.classList.add('hidden'); }
+function renderJobIconSettingsList() {}
+
+function manualAddMemberSubmit() {
+    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
+    const name = (safeEl('manual-add-name')?.value || '').trim();
+    const job = safeEl('manual-add-job')?.value || availableJobsList[0] || 'ไม่ระบุอาชีพ';
+    const status = safeEl('manual-add-status')?.value || 'มา';
+    if (!name) return alert('กรุณาใส่ชื่อตัวละคร');
+    players.push(normalizePlayer({
+        id: String(Date.now()), name, job, status,
         presentCount: status === 'มา' ? 1 : 0,
         leaveCount: status === 'ลา' ? 1 : 0,
         absentCount: status === 'ขาด' ? 1 : 0,
-        hasQuota: true,
-        rewardName: '',
-        rewardClaimed: false,
-        partyId: null,
-        slotIndex: null,
-        discordId: ''
-    });
-
-    document.getElementById('manual-add-name').value = '';
-
+        hasQuota: status !== 'ขาด'
+    }));
+    safeEl('manual-add-name').value = '';
     saveToLocalStorage();
-
-    if (typeof window.savePlayersToFirebaseSafe === "function") {
-        window.savePlayersToFirebaseSafe();
-    }
-
+    if (typeof window.savePlayersToFirebaseSafe === 'function') window.savePlayersToFirebaseSafe(false);
     renderAll();
 }
-        function toggleSelectAllMembers(master) { document.querySelectorAll('.member-select-chk').forEach(c => c.checked = master.checked); }
-        function deleteSelectedPlayers() {
-            const chks = document.querySelectorAll('.member-select-chk:checked'); if (chks.length === 0) return;
-            if (confirm(`ลบสมาชิกที่เลือกจำนวน ${chks.length} คน?`)) { const ids = Array.from(chks).map(c => c.value); players = players.filter(p => !ids.includes(p.id)); saveToLocalStorage(); renderAll(); }
-        }
 
-        function initPartiesGrid() {
-            const pGrid = document.getElementById('parties-grid'); if(pGrid) { pGrid.innerHTML = ''; for(let i=1; i<=8; i++) pGrid.appendChild(createPartyCardHTML(i, `party-${i}`, 'PARTY')); }
-            const sGrid = document.getElementById('sub-parties-grid'); if(sGrid) { sGrid.innerHTML = ''; for(let i=1; i<=8; i++) sGrid.appendChild(createPartyCardHTML(i, `subparty-${i}`, 'SUB-PARTY')); }
-        }
-        function createPartyCardHTML(index, partyId, prefix) {
-    const card = document.createElement('div');
-    card.className = 'glass-panel bg-[#0c0e14] border border-[#1f2838] rounded-lg p-2 space-y-1 text-[10px]';
+function filterPlayers() { renderWaitingList(); }
 
-    let slots = '';
-
-    for (let s = 0; s < 5; s++) {
-        slots += `
-            <div class="party-slot bg-[#121620] px-2 py-1 rounded-md border border-[#1f2838] min-h-[42px] flex items-center cursor-pointer"
-                 onclick="handleSlotClick('${partyId}', ${s})"
-                 ondragover="handleSlotDragOver(event)"
-                 ondrop="handleSlotDrop(event, '${partyId}', ${s})">
-                <div class="w-full truncate" id="slot-${partyId}-${s}-content">
-                    <span class="text-gray-600 text-[10px]">ว่างเปล่า</span>
-                </div>
-            </div>
-        `;
-    }
-
-    card.innerHTML = `
-        <div class="flex justify-between pb-1 border-b border-[#1f2838]">
-            <span class="text-[#d4af37] font-bold text-[11px]">${prefix} ${index}</span>
-            <span id="${partyId}-counter" class="text-[10px]">0/5 คน</span>
-        </div>
-        <div class="space-y-1">${slots}</div>
-    `;
-
-    return card;
+function getFilteredWaitingPlayers() {
+    const keyword = (safeEl('search-name')?.value || '').trim().toLowerCase();
+    const job = safeEl('search-job-dropdown')?.value || 'all';
+    return players.filter(p => {
+        const inWait = p.partyId === null || p.partyId === undefined;
+        const byName = !keyword || String(p.name || '').toLowerCase().includes(keyword);
+        const byJob = job === 'all' || p.job === job;
+        return inWait && byName && byJob;
+    });
 }
-      function renderWaitingList() {
-    const container = document.getElementById('waiting-list');
+
+function renderWaitingList() {
+    const container = safeEl('waiting-list');
     if (!container) return;
-
     container.innerHTML = '';
-
-    players.filter(p => p.partyId === null).forEach(p => {
+    const list = getFilteredWaitingPlayers();
+    if (list.length === 0) {
+        container.innerHTML = '<div class="text-xs text-gray-500 text-center py-4">ไม่พบรายชื่อที่ตรงกับตัวกรอง</div>';
+    }
+    list.forEach(p => {
         const item = document.createElement('div');
-
-        item.className = 'flex items-center gap-3 bg-[#121620] border border-[#1f2838] p-2.5 rounded-lg cursor-pointer';
-        item.setAttribute('onclick', `selectPlayer('${p.id}')`);
-
-        item.setAttribute('draggable', 'true');
-        item.setAttribute('data-id', p.id);
-        item.setAttribute('ondragstart', `handlePlayerDragStart(event, '${p.id}')`);
-
-        item.innerHTML = `${getJobIcon(p.job)} <span class="text-sm font-bold text-white">${p.name} <span class="text-xs text-gray-500 font-normal">(${p.job})</span></span>`;
-
+        item.className = `flex items-center gap-3 bg-[#121620] border border-[#1f2838] p-2.5 rounded-lg cursor-pointer hover:border-[#d4af37]/50 ${String(selectedPlayerId) === String(p.id) ? 'ring-1 ring-[#d4af37]' : ''}`;
+        item.onclick = () => selectPlayer(p.id);
+        item.draggable = true;
+        item.dataset.id = p.id;
+        item.ondragstart = event => handlePlayerDragStart(event, p.id);
+        item.innerHTML = `${getJobIcon(p.job)}<span class="text-sm font-bold text-white truncate">${escapeHtml(p.name)} <span class="text-xs text-gray-500 font-normal">(${escapeHtml(p.job)})</span></span>`;
         container.appendChild(item);
     });
-
-    document.getElementById('waitlist-badge').innerText = players.filter(p => p.partyId === null).length;
-    document.getElementById('count-waitlist').innerText = players.filter(p => p.partyId === null).length;
+    const waitCount = players.filter(p => p.partyId === null || p.partyId === undefined).length;
+    if (safeEl('waitlist-badge')) safeEl('waitlist-badge').innerText = waitCount;
+    if (safeEl('count-waitlist')) safeEl('count-waitlist').innerText = waitCount;
 }
-        function handlePlayerDragStart(event, playerId) {
-    if (!checkAdminAccess()) {
-        event.preventDefault();
-        return;
-    }
 
+function selectPlayer(id) { selectedPlayerId = String(id); renderWaitingList(); }
+
+function initPartiesGrid() {
+    const pGrid = safeEl('parties-grid');
+    if (pGrid) { pGrid.innerHTML = ''; for (let i=1; i<=8; i++) pGrid.appendChild(createPartyCardHTML(i, `party-${i}`, 'PARTY')); }
+    const sGrid = safeEl('sub-parties-grid');
+    if (sGrid) { sGrid.innerHTML = ''; for (let i=1; i<=8; i++) sGrid.appendChild(createPartyCardHTML(i, `subparty-${i}`, 'SUB-PARTY')); }
+}
+
+function createPartyCardHTML(index, partyId, prefix) {
+    const card = document.createElement('div');
+    card.className = 'glass-panel bg-[#0c0e14] border border-[#1f2838] rounded-lg p-2 space-y-1 text-[10px]';
+    let slots = '';
+    for (let s=0; s<5; s++) {
+        slots += `<div class="party-slot bg-[#121620] px-2 py-1 rounded-md border border-[#1f2838] min-h-[42px] flex items-center cursor-pointer hover:border-[#d4af37]/50"
+            onclick="handleSlotClick('${partyId}', ${s})"
+            ondragover="handleSlotDragOver(event)"
+            ondrop="handleSlotDrop(event, '${partyId}', ${s})">
+            <div class="w-full min-w-0" id="slot-${partyId}-${s}-content"><span class="text-gray-600 text-[10px]">ว่างเปล่า</span></div>
+        </div>`;
+    }
+    card.innerHTML = `<div class="flex justify-between pb-1 border-b border-[#1f2838]"><span class="text-[#d4af37] font-bold text-[11px]">${prefix} ${index}</span><span id="${partyId}-counter" class="text-[10px]">0/5 คน</span></div><div class="space-y-1">${slots}</div>`;
+    return card;
+}
+
+function handlePlayerDragStart(event, playerId) {
+    if (!checkAdminAccess()) { event.preventDefault(); return; }
     event.dataTransfer.setData('text/plain', String(playerId));
 }
-
-function handleSlotDragOver(event) {
-    event.preventDefault();
-}
-
+function handleSlotDragOver(event) { event.preventDefault(); }
 function handleSlotDrop(event, partyId, slotIndex) {
     event.preventDefault();
-
-    if (!checkAdminAccess()) {
-        alert('เฉพาะ Admin เท่านั้น');
-        return;
-    }
-
+    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
     const playerId = event.dataTransfer.getData('text/plain');
+    assignPlayerToSlot(playerId, partyId, slotIndex);
+}
+function handleSlotClick(partyId, slotIndex) {
+    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
+    if (!selectedPlayerId) return alert('กรุณาเลือกสมาชิกก่อน');
+    assignPlayerToSlot(selectedPlayerId, partyId, slotIndex);
+    selectedPlayerId = null;
+}
+function assignPlayerToSlot(playerId, partyId, slotIndex) {
     const p = players.find(x => String(x.id) === String(playerId));
-
     if (!p) return;
-
+    const occupant = players.find(x => x.partyId === partyId && Number(x.slotIndex) === Number(slotIndex) && String(x.id) !== String(playerId));
+    if (occupant) { occupant.partyId = null; occupant.slotIndex = null; }
     p.partyId = partyId;
     p.slotIndex = slotIndex;
-
     saveToLocalStorage();
-
-    if (typeof window.savePlayersToFirebaseSafe === "function") {
-        window.savePlayersToFirebaseSafe();
-    }
-
+    if (typeof window.savePlayersToFirebaseSafe === 'function') window.savePlayersToFirebaseSafe(false);
     renderAll();
 }
+
 function renderParties() {
     document.querySelectorAll('[id^="slot-"][id$="-content"]').forEach(slot => {
-slot.innerHTML = `
-    <div class="flex items-center justify-between w-full h-full gap-3 overflow-visible">
-        <div class="flex items-center gap-3 min-w-0 overflow-visible">
-            <div class="shrink-0">
-                ${getJobIcon(p.job)}
-            </div>
-
-            <div class="text-white font-extrabold text-[16px] leading-[1.7] tracking-normal truncate overflow-visible">
-                ${p.name}
-            </div>
-        </div>
-
-        <button onclick="event.stopPropagation(); releasePlayer('${p.id}')" class="text-red-400 text-2xl px-2 shrink-0">
-            ✕
-        </button>
-    </div>
-`;
-            }
-        }
+        slot.innerHTML = '<span class="text-gray-600 text-[10px]">ว่างเปล่า</span>';
     });
-
-    document.getElementById('count-total').innerText = players.length;
-    document.getElementById('count-assigned').innerText = players.filter(p => p.partyId !== null).length;
-}
-let selectedPlayerId = null;
-
-function selectPlayer(id) {
-    selectedPlayerId = id;
-}
-
-function handleSlotClick(partyId, slotIndex) {
-    if (!checkAdminAccess()) {
-        alert('เฉพาะ Admin เท่านั้น');
-        return;
+    const counters = {};
+    players.filter(p => p.partyId !== null && p.partyId !== undefined).forEach(p => {
+        const slot = safeEl(`slot-${p.partyId}-${p.slotIndex}-content`);
+        if (!slot) return;
+        counters[p.partyId] = (counters[p.partyId] || 0) + 1;
+        slot.innerHTML = `<div class="flex items-center justify-between w-full h-full gap-2 min-w-0">
+            <div class="flex items-center gap-2 min-w-0">${getJobIcon(p.job)}<div class="text-white font-extrabold text-[14px] leading-snug truncate">${escapeHtml(p.name)}</div></div>
+            <button onclick="event.stopPropagation(); releasePlayer('${escapeHtml(p.id)}')" class="admin-only text-red-400 text-lg px-1 shrink-0">✕</button>
+        </div>`;
+    });
+    for (let i=1; i<=8; i++) {
+        const mainId = `party-${i}`;
+        const subId = `subparty-${i}`;
+        if (safeEl(`${mainId}-counter`)) safeEl(`${mainId}-counter`).innerText = `${counters[mainId] || 0}/5 คน`;
+        if (safeEl(`${subId}-counter`)) safeEl(`${subId}-counter`).innerText = `${counters[subId] || 0}/5 คน`;
     }
-
-    if (!selectedPlayerId) {
-        alert('กรุณาเลือกสมาชิกก่อน');
-        return;
-    }
-
-    const p = players.find(pl => String(pl.id) === String(selectedPlayerId));
-
-    if (p) {
-        p.partyId = partyId;
-        p.slotIndex = slotIndex;
-        selectedPlayerId = null;
-
-        saveToLocalStorage();
-
-        if (typeof window.savePlayersToFirebaseSafe === "function") {
-            window.savePlayersToFirebaseSafe();
-        }
-
-        renderAll();
-    }
+    if (safeEl('count-total')) safeEl('count-total').innerText = players.length;
+    if (safeEl('count-assigned')) safeEl('count-assigned').innerText = players.filter(p => p.partyId !== null && p.partyId !== undefined).length;
+    applyRolePermissions();
 }
 
 function releasePlayer(id) {
-    if (!checkAdminAccess()) {
-        alert('เฉพาะ Admin เท่านั้น');
-        return;
-    }
-
+    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
     const p = players.find(pl => String(pl.id) === String(id));
     if (!p) return;
-
     p.partyId = null;
     p.slotIndex = null;
-
     saveToLocalStorage();
-
-    if (typeof window.savePlayersToFirebaseSafe === "function") {
-        window.savePlayersToFirebaseSafe();
-    }
-
-    initPartiesGrid();
+    if (typeof window.savePlayersToFirebaseSafe === 'function') window.savePlayersToFirebaseSafe(false);
     renderAll();
 }
-       function autoAssign() {
-    players.forEach(p => {
-        p.partyId = null;
-        p.slotIndex = null;
-    });
 
+function autoAssign() {
+    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
+    players.forEach(p => { p.partyId = null; p.slotIndex = null; });
     let partyIdx = 1;
     let slotIdx = 0;
-
     players.filter(p => p.status === 'มา').forEach(p => {
-        p.partyId = `party-${partyIdx}`;
+        const isSub = partyIdx > 8;
+        const visualIndex = isSub ? partyIdx - 8 : partyIdx;
+        if (visualIndex > 8) return;
+        p.partyId = `${isSub ? 'subparty' : 'party'}-${visualIndex}`;
         p.slotIndex = slotIdx;
-
         slotIdx++;
-
-        if (slotIdx >= 5) {
-            slotIdx = 0;
-            partyIdx++;
-        }
+        if (slotIdx >= 5) { slotIdx = 0; partyIdx++; }
     });
-
     saveToLocalStorage();
-
-    if (typeof window.savePlayersToFirebaseSafe === "function") {
-        window.savePlayersToFirebaseSafe();
-    }
-
-    initPartiesGrid();
+    if (typeof window.savePlayersToFirebaseSafe === 'function') window.savePlayersToFirebaseSafe(false);
     renderAll();
 }
 
 function triggerClearPartiesConfirmation() {
-    players.forEach(p => {
-        p.partyId = null;
-        p.slotIndex = null;
-    });
-
+    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
+    players.forEach(p => { p.partyId = null; p.slotIndex = null; });
     saveToLocalStorage();
-
-    if (typeof window.savePlayersToFirebaseSafe === "function") {
-        window.savePlayersToFirebaseSafe();
-    }
-
-    initPartiesGrid();
+    if (typeof window.savePlayersToFirebaseSafe === 'function') window.savePlayersToFirebaseSafe(false);
     renderAll();
 }
-        function renderMemberManagerTab() {
-            const tbody = document.getElementById('member-manager-table-body');
-    if (!tbody) return;
 
-    tbody.innerHTML = '';
-
-    players.forEach(p => {
-        tbody.innerHTML += `
-            <tr class="border-b border-[#1c2331] text-xs">
-                <td class="p-3 text-center">
-                    <input type="checkbox" value="${p.id}" class="member-select-chk accent-[#d4af37]">
-                </td>
-
-                <td class="p-3 font-bold text-white">
-                    ${p.name}
-                    <span class="text-xs text-gray-500">(ID: ${p.id})</span>
-                </td>
-
-                <td class="p-3">${p.job}</td>
-
-                <td class="p-3">${p.status || '-'}</td>
-
-                <td class="p-3 text-center">
-                    <button onclick="toggleRewardQuota('${p.id}')" class="admin-only ${p.hasQuota ? 'bg-green-950/40 text-green-400 border-green-900/40' : 'bg-red-950/40 text-red-400 border-red-900/40'} border px-3 py-1.5 rounded-lg text-xs font-bold">
-                        ${p.hasQuota ? 'เปิด' : 'ปิด'}
-                    </button>
-                </td>
-
-                <td class="p-3 text-right">
-                    <button onclick="releasePlayer('${p.id}')" class="admin-only text-gray-400 hover:text-white bg-[#1c2331] px-2 py-1 rounded">
-                        ปลดล็อก
-                    </button>
-                </td>
-            </tr>
-        `;
-    });
-}
-        function toggleRewardQuota(playerId) {
-    if (!checkAdminAccess()) {
-        alert('เฉพาะ Admin เท่านั้น');
-        return;
-    }
-
-    const p = players.find(x => String(x.id) === String(playerId));
-    if (!p) return;
-
-    p.hasQuota = !p.hasQuota;
-
+function toggleSelectAllMembers(master) { document.querySelectorAll('.member-select-chk').forEach(c => c.checked = master.checked); }
+function deleteSelectedPlayers() {
+    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
+    const chks = document.querySelectorAll('.member-select-chk:checked');
+    if (chks.length === 0) return alert('กรุณาติ๊กเลือกสมาชิกก่อน');
+    const ids = Array.from(chks).map(c => String(c.value));
+    players = players.filter(p => !ids.includes(String(p.id)));
     saveToLocalStorage();
-
-    if (typeof window.savePlayersToFirebaseSafe === "function") {
-        window.savePlayersToFirebaseSafe();
-    }
-
+    if (typeof window.savePlayersToFirebaseSafe === 'function') window.savePlayersToFirebaseSafe(false);
     renderAll();
 }
-        function renderStatsTab() {
-            const tbody = document.getElementById('stats-table-body'); if(!tbody) return; tbody.innerHTML = ''; let totalP = 0, totalL = 0, totalA = 0;
-            players.forEach(p => { totalP += p.presentCount; totalL += p.leaveCount; totalA += p.absentCount; tbody.innerHTML += `<tr><td class="p-3 font-bold">${p.name}</td><td class="p-3 text-gray-400">${p.job}</td><td class="p-3 text-center text-green-400">${p.presentCount}</td><td class="p-3 text-center text-amber-400">${p.leaveCount}</td><td class="p-3 text-center text-red-400">${p.absentCount}</td></tr>`; });
-            document.getElementById('stat-avg-present').innerText = totalP + " ครั้ง"; document.getElementById('stat-avg-leave').innerText = totalL + " ครั้ง"; document.getElementById('stat-avg-absent').innerText = totalA + " ครั้ง";
-        }
-        function spinLuckyRaffle() {
-            const eligible = players.filter(p => p.hasQuota); if (eligible.length === 0) return; let ticks = 0; const glow = document.getElementById('raffle-glow');
-            const timer = setInterval(() => { ticks++; glow.style.transform = `rotate(${ticks * 20}deg)`; const p = eligible[Math.floor(Math.random() * eligible.length)]; document.getElementById('lucky-winner-name').innerText = p.name; document.getElementById('lucky-winner-job').innerText = p.job; if (ticks >= 25) { clearInterval(timer); alert(`🎉 ผู้โชคดีคือคุณ: ${p.name}!`); } }, 80);
-        }
-        function switchTab(t) {
-            ['party', 'tactical', 'members', 'rewards', 'stats'].forEach(tab => document.getElementById(`tab-content-${tab}`).classList.add('hidden')); document.getElementById(`tab-content-${t}`).classList.remove('hidden'); document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); document.getElementById(`tab-btn-${t}`).classList.add('active'); if (t === 'tactical') setTimeout(resizeCanvas, 50);
-        }
-        function populateDynamicJobSelectors() {
-            const dropdown = document.getElementById('search-job-dropdown'); const addSel = document.getElementById('manual-add-job');
-            if(dropdown) { dropdown.innerHTML = '<option value="all">🔍 แสดงสายอาชีพทั้งหมด</option>'; availableJobsList.forEach(job => dropdown.innerHTML += `<option value="${job}">${job}</option>`); }
-            if(addSel) { addSel.innerHTML = ''; availableJobsList.forEach(job => addSel.innerHTML += `<option value="${job}">${job}</option>`); }
-        }
-        function openGuildSettingsModal() { document.getElementById('guild-settings-modal').classList.remove('hidden'); renderJobIconSettingsList(); }
-        function closeGuildSettingsModal() { document.getElementById('guild-settings-modal').classList.add('hidden'); }
-        function filterPlayers() { renderWaitingList(); }
-        function addNewMarker() {
-            const name = prompt('ระบุชื่อสัญลักษณ์หมุดปักใหม่:', 'หมากรบ');
-            if(name && name.trim() !== "") { markers.push({ id: 'm_' + Date.now(), name: name.trim(), posX: 15, posY: 15 }); renderMarkers(); renderMarkersSettingList(); saveToLocalStorage(); }
-        }
-        function renderAll() {
-    populateDynamicJobSelectors();
-    renderWaitingList();
-    renderParties();
-    renderMemberManagerTab();
-   if (typeof renderRewardsTab === "function") renderRewardsTab();
-    renderStatsTab();
 
-    if (typeof renderMarkers === "function") {
-        renderMarkers();
-    }
-
-    if (typeof renderMarkersSettingList === "function") {
-        renderMarkersSettingList();
-    }
-}
-        function bulkSetAttendanceStatus(status) {
-    if (!checkAdminAccess()) {
-        alert('เฉพาะ Admin เท่านั้น');
-        return;
-    }
-
+function bulkSetAttendanceStatus(status) {
+    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
     const checked = document.querySelectorAll('.member-select-chk:checked');
-
-    if (checked.length === 0) {
-        alert('กรุณาติ๊กเลือกสมาชิกก่อน');
-        return;
-    }
-
+    if (checked.length === 0) return alert('กรุณาติ๊กเลือกสมาชิกก่อน');
     checked.forEach(chk => {
         const p = players.find(x => String(x.id) === String(chk.value));
         if (!p) return;
-
         p.status = status;
-
         if (status === 'มา') p.presentCount = (p.presentCount || 0) + 1;
         if (status === 'ลา') p.leaveCount = (p.leaveCount || 0) + 1;
         if (status === 'ขาด') p.absentCount = (p.absentCount || 0) + 1;
+        if (status === 'ขาด') p.hasQuota = false;
     });
-
     saveToLocalStorage();
-
-    if (typeof window.savePlayersToFirebaseSafe === 'function') {
-        window.savePlayersToFirebaseSafe();
-    }
-
-    renderAll();
-
-    // alert('อัปเดตสถานะ ' + status + ' สำเร็จ');
-}
-        function toggleRewardQuota(playerId) {
-    if (!checkAdminAccess()) {
-        alert('เฉพาะ Admin เท่านั้น');
-        return;
-    }
-
-    const p = players.find(x => String(x.id) === String(playerId));
-
-    if (!p) {
-        alert('ไม่พบสมาชิก');
-        return;
-    }
-
-    p.hasQuota = !p.hasQuota;
-
-    saveToLocalStorage();
-
-    if (typeof window.savePlayersToFirebaseSafe === "function") {
-        window.savePlayersToFirebaseSafe();
-    }
-
+    if (typeof window.savePlayersToFirebaseSafe === 'function') window.savePlayersToFirebaseSafe(false);
     renderAll();
 }
-        function toggleRewardQuota(playerId) {
+
+function renderMemberManagerTab() {
+    const tbody = safeEl('member-manager-table-body');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    players.forEach(p => {
+        tbody.innerHTML += `<tr class="border-b border-[#1c2331] text-xs">
+            <td class="p-3 text-center"><input type="checkbox" value="${escapeHtml(p.id)}" class="member-select-chk accent-[#d4af37]"></td>
+            <td class="p-3 font-bold text-white">${escapeHtml(p.name)} <span class="text-xs text-gray-500">(ID: ${escapeHtml(p.id)})</span></td>
+            <td class="p-3">${escapeHtml(p.job)}</td>
+            <td class="p-3">${escapeHtml(p.status || '-')}</td>
+            <td class="p-3 text-center"><button onclick="toggleRewardQuota('${escapeHtml(p.id)}')" class="admin-only ${p.hasQuota ? 'bg-green-950/40 text-green-400 border-green-900/40' : 'bg-red-950/40 text-red-400 border-red-900/40'} border px-3 py-1.5 rounded-lg text-xs font-bold">${p.hasQuota ? 'เปิด' : 'ปิด'}</button></td>
+            <td class="p-3 text-right"><button onclick="releasePlayer('${escapeHtml(p.id)}')" class="admin-only text-gray-400 hover:text-white bg-[#1c2331] px-2 py-1 rounded">ปลดปาร์ตี้</button></td>
+        </tr>`;
+    });
+}
+
+function renderStatsTab() {
+    const tbody = safeEl('stats-table-body');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    let totalP=0, totalL=0, totalA=0;
+    players.forEach(p => {
+        totalP += p.presentCount || 0;
+        totalL += p.leaveCount || 0;
+        totalA += p.absentCount || 0;
+        tbody.innerHTML += `<tr><td class="p-3 font-bold">${escapeHtml(p.name)}</td><td class="p-3 text-gray-400">${escapeHtml(p.job)}</td><td class="p-3 text-center text-green-400">${p.presentCount || 0}</td><td class="p-3 text-center text-amber-400">${p.leaveCount || 0}</td><td class="p-3 text-center text-red-400">${p.absentCount || 0}</td></tr>`;
+    });
+    if (safeEl('stat-avg-present')) safeEl('stat-avg-present').innerText = totalP + ' ครั้ง';
+    if (safeEl('stat-avg-leave')) safeEl('stat-avg-leave').innerText = totalL + ' ครั้ง';
+    if (safeEl('stat-avg-absent')) safeEl('stat-avg-absent').innerText = totalA + ' ครั้ง';
+}
+
+function toggleRewardQuota(playerId) {
+    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
     const p = players.find(x => String(x.id) === String(playerId));
     if (!p) return;
-
     p.hasQuota = !p.hasQuota;
-
     saveToLocalStorage();
-
-    if (typeof window.savePlayersToFirebaseSafe === "function") {
-        window.savePlayersToFirebaseSafe();
-    }
-
+    if (typeof window.savePlayersToFirebaseSafe === 'function') window.savePlayersToFirebaseSafe(false);
     renderAll();
 }
-
 function setAllRewardQuota(value) {
-    players.forEach(p => {
-        p.hasQuota = value;
-    });
-
+    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
+    players.forEach(p => { p.hasQuota = value; });
     saveToLocalStorage();
-
-    if (typeof window.savePlayersToFirebaseSafe === "function") {
-        window.savePlayersToFirebaseSafe();
-    }
-
+    if (typeof window.savePlayersToFirebaseSafe === 'function') window.savePlayersToFirebaseSafe(false);
     renderAll();
 }
-
 function resetAllRewardQuota() {
-    players.forEach(p => {
-
-        if (p.status === 'ขาด') {
-            p.hasQuota = false;
-        } else {
-            p.hasQuota = true;
-        }
-
-    });
-
+    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
+    players.forEach(p => { p.hasQuota = p.status !== 'ขาด'; });
     saveToLocalStorage();
-
-    if (typeof window.savePlayersToFirebaseSafe === "function") {
-        window.savePlayersToFirebaseSafe();
-    }
-
+    if (typeof window.savePlayersToFirebaseSafe === 'function') window.savePlayersToFirebaseSafe(false);
     renderAll();
 }
-let rewardSpinLock = false;
-        
-function spinEligibleReward() {
-
-    const pool = players.filter(
-        p => p.status === 'มา' &&
-             p.hasQuota !== false
-    );
-
-    spinRewardWheel(pool);
+function renderRewardsTab() {
+    const tbody = safeEl('reward-quota-table-body');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    const totalMembers = players.length;
+    const activeMembers = players.filter(p => p.hasQuota !== false && p.status === 'มา').length;
+    const inactiveMembers = totalMembers - activeMembers;
+    if (safeEl('reward-total-members')) safeEl('reward-total-members').innerText = totalMembers;
+    if (safeEl('reward-active-members')) safeEl('reward-active-members').innerText = activeMembers;
+    if (safeEl('reward-inactive-members')) safeEl('reward-inactive-members').innerText = inactiveMembers;
+    players.forEach(p => {
+        tbody.innerHTML += `<tr class="text-xs border-b border-[#1c2331]"><td class="p-3 font-bold text-white">${escapeHtml(p.name || '-')}</td><td class="p-3">${escapeHtml(p.rewardName || 'ยังไม่ระบุ')}</td><td class="p-3 text-center">${p.hasQuota && p.status !== 'ขาด' ? '<span class="text-green-400 font-bold">เปิดสิทธิ์</span>' : '<span class="text-red-400 font-bold">ปิดสิทธิ์</span>'}</td><td class="p-3 text-right"><button onclick="toggleRewardQuota('${escapeHtml(p.id)}')" class="admin-only bg-[#1c2331] text-[#d4af37] border border-[#2d3748] px-3 py-1.5 rounded-lg text-xs font-bold">เปิด/ปิดสิทธิ์</button></td></tr>`;
+    });
 }
-
-function spinAllReward() {
-
-    const pool = players.filter(
-        p => p.status === 'มา'
-    );
-
-    spinRewardWheel(pool);
-}
-        
+function spinEligibleReward() { spinRewardWheel(players.filter(p => p.status === 'มา' && p.hasQuota !== false)); }
+function spinAllReward() { spinRewardWheel(players.filter(p => p.status === 'มา')); }
 function spinRewardWheel(pool) {
     if (rewardSpinLock) return;
-
-    if (!pool || pool.length === 0) {
-        alert('ไม่มีรายชื่อสำหรับสุ่ม');
-        return;
-    }
-
-    const winnerName = document.getElementById('lucky-winner-name');
-    const winnerJob = document.getElementById('lucky-winner-job');
-
+    if (!pool || pool.length === 0) return alert('ไม่มีรายชื่อสำหรับสุ่ม');
+    const winnerName = safeEl('lucky-winner-name');
+    const winnerJob = safeEl('lucky-winner-job');
+    const glow = safeEl('raffle-glow');
     rewardSpinLock = true;
-
     let elapsed = 0;
-
     const timer = setInterval(() => {
         const current = pool[Math.floor(Math.random() * pool.length)];
-
-        winnerName.innerText = current.name;
-        winnerJob.innerText = current.job || '-';
-
+        if (winnerName) winnerName.innerText = current.name;
+        if (winnerJob) winnerJob.innerText = current.job || '-';
+        if (glow) glow.style.transform = `rotate(${elapsed * 2}deg)`;
         elapsed += 100;
-
-        if (elapsed >= 10000) {
+        if (elapsed >= 3000) {
             clearInterval(timer);
-
             const winner = pool[Math.floor(Math.random() * pool.length)];
-
-            winnerName.innerText = winner.name;
-            winnerJob.innerText = "🎉 ผู้ชนะ";
-
+            if (winnerName) winnerName.innerText = winner.name;
+            if (winnerJob) winnerJob.innerText = '🎉 ผู้ชนะ';
             rewardSpinLock = false;
         }
     }, 100);
 }
-function renderRewardsTab() {
-    const tbody = document.getElementById('reward-quota-table-body');
-    if (!tbody) return;
+async function copyTextToClipboard(text) {
+    if (navigator.clipboard) return navigator.clipboard.writeText(text);
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+}
+function copyRewardEligibleNames() {
+    const names = players.filter(p => p.status === 'มา' && p.hasQuota !== false).map(p => p.name).filter(Boolean).join('\n');
+    if (!names) return alert('ไม่มีรายชื่อคนมีสิทธิ์');
+    copyTextToClipboard(names); alert('คัดลอกรายชื่อคนมีสิทธิ์แล้ว');
+}
+function copyRewardAllNames() {
+    const names = players.filter(p => p.status === 'มา').map(p => p.name).filter(Boolean).join('\n');
+    if (!names) return alert('ไม่มีรายชื่อมาวอร์');
+    copyTextToClipboard(names); alert('คัดลอกรายชื่อมาวอร์ทั้งหมดแล้ว');
+}
 
-    tbody.innerHTML = '';
+function switchTab(t) {
+    ['party','tactical','members','rewards','stats'].forEach(tab => safeEl(`tab-content-${tab}`)?.classList.add('hidden'));
+    safeEl(`tab-content-${t}`)?.classList.remove('hidden');
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    safeEl(`tab-btn-${t}`)?.classList.add('active');
+    if (t === 'tactical') setTimeout(resizeCanvas, 50);
+    renderAll();
+}
 
-    const totalMembers = players.length;
-    const activeMembers = players.filter(p => p.hasQuota !== false && p.status === 'มา').length;
-    const inactiveMembers = totalMembers - activeMembers;
+function addMapViaUrlManual() {}
+function updateMapDropdownOptions() {
+    const selector = safeEl('map-selector');
+    if (!selector) return;
+    selector.innerHTML = '<option value="default">🖥️ พื้นหลังบอร์ดมาตรฐานกิลด์ BELLONA</option>' + globalMaps.map(m => `<option value="${escapeHtml(m.id)}">${escapeHtml(m.name)}</option>`).join('');
+    selector.value = selectedMap || 'default';
+    renderGlobalMapsList();
+}
+function renderGlobalMapsList() {
+    const list = safeEl('saved-maps-list');
+    if (!list) return;
+    list.innerHTML = '';
+    globalMaps.forEach(m => {
+        const item = document.createElement('div');
+        item.className = `flex items-center justify-between p-2 rounded text-xs border ${selectedGlobalMapId === m.id ? 'bg-amber-950/20 border-[#d4af37]' : 'bg-[#181f2d] border-[#222b3c]'}`;
+        item.innerHTML = `<span class="cursor-pointer font-bold" onclick="displayGlobalMap('${escapeHtml(m.id)}')">🗺️ ${escapeHtml(m.name)}</span><div class="flex items-center gap-2"><button onclick="editMapName('${escapeHtml(m.id)}')" class="text-gray-400 hover:text-[#d4af37] admin-only"><i class="fa-solid fa-pencil text-[10px]"></i></button><button onclick="deleteGlobalMap('${escapeHtml(m.id)}')" class="text-red-400 admin-only">✕</button></div>`;
+        list.appendChild(item);
+    });
+    applyRolePermissions();
+}
+function editMapName(id) {
+    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
+    const map = globalMaps.find(m => m.id === id);
+    if (!map) return;
+    const newName = prompt('ระบุชื่อแผนที่ใหม่:', map.name);
+    if (newName && newName.trim()) { map.name = newName.trim().substring(0, 20); saveToLocalStorage(); updateMapDropdownOptions(); }
+}
+function displayGlobalMap(id) {
+    const map = globalMaps.find(m => m.id === id) || globalMaps[0];
+    if (!map) return changeBattleMap('default');
+    const bgImg = safeEl('battle-map-bg');
+    const placeholder = safeEl('battle-map-placeholder');
+    if (bgImg) { bgImg.src = map.image; bgImg.classList.remove('hidden'); }
+    if (placeholder) placeholder.classList.add('hidden');
+    selectedGlobalMapId = map.id; selectedMap = map.id;
+    if (safeEl('map-selector')) safeEl('map-selector').value = map.id;
+    saveToLocalStorage(); renderGlobalMapsList(); setTimeout(resizeCanvas, 50);
+}
+function deleteGlobalMap(id) {
+    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
+    globalMaps = globalMaps.filter(m => m.id !== id);
+    if (globalMaps.length === 0) globalMaps.push({ id:'vigrid', name:'Vigrid', image:'https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/maps/vigrid.png' });
+    changeBattleMap(globalMaps[0].id);
+}
+function changeBattleMap(val) {
+    selectedMap = val;
+    const bgImg = safeEl('battle-map-bg');
+    const placeholder = safeEl('battle-map-placeholder');
+    if (val && val !== 'default') return displayGlobalMap(val);
+    selectedGlobalMapId = null;
+    if (bgImg) bgImg.classList.add('hidden');
+    if (placeholder) placeholder.classList.remove('hidden');
+    if (safeEl('map-selector')) safeEl('map-selector').value = 'default';
+    saveToLocalStorage(); renderGlobalMapsList();
+}
+function updateGuildLogoViaUrl() {
+    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
+    const url = (safeEl('guild-logo-url-input')?.value || '').trim();
+    if (!url) return;
+    localStorage.setItem('bellona_custom_logo_data', url);
+    displayGuildLogo(url);
+}
+function displayGuildLogo(url) {
+    ['login-logo','header-logo','fallback-watermark-logo'].forEach(id => { const img = safeEl(id); if (img) img.src = url; });
+}
 
-    const totalEl = document.getElementById('reward-total-members');
-    const activeEl = document.getElementById('reward-active-members');
-    const inactiveEl = document.getElementById('reward-inactive-members');
+function initDrawingCanvas() {
+    canvas = safeEl('drawing-canvas');
+    if (!canvas) return;
+    ctx = canvas.getContext('2d');
+    canvas.addEventListener('mousedown', e => { if (drawMode !== 'draw' || !checkAdminAccess()) return; isDrawing = true; [lastX,lastY] = getCanvasMousePos(e); });
+    canvas.addEventListener('mousemove', e => {
+        if (!isDrawing || drawMode !== 'draw') return;
+        const [x,y] = getCanvasMousePos(e);
+        ctx.strokeStyle = drawColor; ctx.lineWidth = brushSize; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(lastX,lastY); ctx.lineTo(x,y); ctx.stroke();
+        drawingPaths.push({ x1:lastX, y1:lastY, x2:x, y2:y, color:drawColor, size:brushSize });
+        [lastX,lastY] = [x,y];
+    });
+    ['mouseup','mouseleave'].forEach(evt => canvas.addEventListener(evt, () => { if (isDrawing) saveToLocalStorage(); isDrawing = false; }));
+    setTimeout(resizeCanvas, 100);
+}
+function getCanvasMousePos(e) { const rect = canvas.getBoundingClientRect(); return [((e.clientX - rect.left) / rect.width) * canvas.width, ((e.clientY - rect.top) / rect.height) * canvas.height]; }
+function resizeCanvas() { if (!canvas) return; canvas.width = 2000; canvas.height = 1125; redrawCanvasPaths(); }
+function setDrawMode(mode) {
+    drawMode = mode;
+    document.querySelectorAll('.draw-tool').forEach(b => b.classList.remove('bg-[#d4af37]','text-black'));
+    safeEl(`tool-${mode}`)?.classList.add('bg-[#d4af37]','text-black');
+}
+function setDrawColor(color) { drawColor = color; }
+function updateBrushSize(value) { brushSize = Number(value) || 4; }
+function clearDrawing() { if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น'); drawingPaths = []; redrawCanvasPaths(); saveToLocalStorage(); }
+function undoDrawing() { if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น'); drawingPaths.splice(-25); redrawCanvasPaths(); saveToLocalStorage(); }
+function redrawCanvasPaths() {
+    if (!ctx || !canvas) return;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    drawingPaths.forEach(p => { ctx.beginPath(); ctx.strokeStyle = p.color || drawColor; ctx.lineWidth = p.size || brushSize; ctx.lineCap='round'; ctx.moveTo(p.x1,p.y1); ctx.lineTo(p.x2,p.y2); ctx.stroke(); });
+}
+function exportTacticalMap() {
+    if (!canvas) return;
+    const exportCanvas = document.createElement('canvas');
+    exportCanvas.width = canvas.width; exportCanvas.height = canvas.height;
+    const exCtx = exportCanvas.getContext('2d');
+    const bgImg = safeEl('battle-map-bg');
+    if (bgImg && bgImg.src && !bgImg.classList.contains('hidden')) exCtx.drawImage(bgImg,0,0,exportCanvas.width,exportCanvas.height);
+    else { exCtx.fillStyle = '#0c0e14'; exCtx.fillRect(0,0,exportCanvas.width,exportCanvas.height); }
+    exCtx.drawImage(canvas,0,0);
+    markers.forEach(m => {
+        const posX = (m.posX/100) * exportCanvas.width;
+        const posY = (m.posY/100) * exportCanvas.height;
+        exCtx.beginPath(); exCtx.arc(posX,posY,18,0,2*Math.PI); exCtx.fillStyle='#dc2626'; exCtx.strokeStyle='#ffffff'; exCtx.lineWidth=3; exCtx.fill(); exCtx.stroke();
+        exCtx.fillStyle='#ffffff'; exCtx.font='bold 13px Inter, sans-serif'; exCtx.textAlign='center'; exCtx.textBaseline='middle'; exCtx.fillText(String(m.name || '').substring(0,3), posX, posY);
+    });
+    const link = document.createElement('a'); link.download = `bellona-tactical-map-${Date.now()}.png`; link.href = exportCanvas.toDataURL('image/png'); link.click();
+}
 
-    if (totalEl) totalEl.innerText = totalMembers;
-    if (activeEl) activeEl.innerText = activeMembers;
-    if (inactiveEl) inactiveEl.innerText = inactiveMembers;
-
-    players.forEach(p => {
-        tbody.innerHTML += `
-            <tr class="text-xs border-b border-[#1c2331]">
-                <td class="p-3 font-bold text-white">${p.name || '-'}</td>
-                <td class="p-3">${p.rewardName || 'ยังไม่ระบุ'}</td>
-                <td class="p-3 text-center">
-                    ${p.hasQuota && p.status !== 'ขาด'
-                        ? '<span class="text-green-400 font-bold">เปิดสิทธิ์</span>' 
-                        : '<span class="text-red-400 font-bold">ปิดสิทธิ์</span>'}
-                </td>
-                <td class="p-3 text-right">
-                    <button onclick="toggleRewardQuota('${p.id}')" class="admin-only bg-[#1c2331] text-[#d4af37] border border-[#2d3748] px-3 py-1.5 rounded-lg text-xs font-bold">
-                        เปิด/ปิดสิทธิ์
-                    </button>
-                </td>
-            </tr>
-        `;
+function addNewMarker() {
+    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
+    const inputName = (safeEl('new-marker-name')?.value || '').trim();
+    const promptName = inputName || prompt('ระบุชื่อสัญลักษณ์หมุดปักใหม่:', 'หมากรบ');
+    if (!promptName || !promptName.trim()) return;
+    markers.push({ id:'m_'+Date.now(), name:promptName.trim(), posX:15, posY:15 });
+    if (safeEl('new-marker-name')) safeEl('new-marker-name').value = '';
+    saveToLocalStorage(); renderMarkers(); renderMarkersSettingList();
+}
+function renderMarkers() {
+    const overlay = safeEl('markers-overlay');
+    if (!overlay) return;
+    overlay.innerHTML = '';
+    markers.forEach(m => {
+        const el = document.createElement('div');
+        el.className = 'absolute z-30 pointer-events-auto cursor-move select-none';
+        el.style.left = `${m.posX}%`; el.style.top = `${m.posY}%`; el.style.transform = 'translate(-50%, -50%)';
+        el.innerHTML = `<div class="bg-red-700 text-white border-2 border-white rounded-full w-10 h-10 flex items-center justify-center text-xs font-bold shadow-lg">${escapeHtml(String(m.name || '').substring(0,3))}</div>`;
+        el.onmousedown = event => startMarkerDrag(event, m.id);
+        overlay.appendChild(el);
     });
 }
-        
-function copyRewardEligibleNames() {
-
-    const names = players
-        .filter(p =>
-            p.status === 'มา' &&
-            p.hasQuota !== false
-        )
-        .map(p => p.name)
-        .filter(Boolean)
-        .join('\n');
-
-    if (!names) {
-        alert('ไม่มีรายชื่อคนมีสิทธิ์');
-        return;
-    }
-
-    navigator.clipboard.writeText(names);
-
-    alert('คัดลอกรายชื่อคนมีสิทธิ์แล้ว');
+function startMarkerDrag(event, markerId) {
+    if (!checkAdminAccess() || drawMode !== 'move') return;
+    event.preventDefault(); event.stopPropagation();
+    const wrapper = safeEl('tactical-board-wrapper');
+    const move = e => {
+        const rect = wrapper.getBoundingClientRect();
+        const marker = markers.find(m => m.id === markerId);
+        if (!marker) return;
+        marker.posX = Math.min(100, Math.max(0, ((e.clientX - rect.left) / rect.width) * 100));
+        marker.posY = Math.min(100, Math.max(0, ((e.clientY - rect.top) / rect.height) * 100));
+        renderMarkers();
+    };
+    const up = () => { document.removeEventListener('mousemove', move); document.removeEventListener('mouseup', up); saveToLocalStorage(); renderMarkersSettingList(); };
+    document.addEventListener('mousemove', move); document.addEventListener('mouseup', up);
+}
+function renderMarkersSettingList() {
+    const list = safeEl('markers-setting-list');
+    if (!list) return;
+    list.innerHTML = '';
+    markers.forEach(m => {
+        const row = document.createElement('div');
+        row.className = 'flex items-center justify-between gap-2 bg-[#181f2d] border border-[#222b3c] rounded p-2 text-xs';
+        row.innerHTML = `<span class="font-bold text-gray-200 truncate">📍 ${escapeHtml(m.name)}</span><button onclick="deleteMarker('${escapeHtml(m.id)}')" class="admin-only text-red-400">ลบ</button>`;
+        list.appendChild(row);
+    });
+    applyRolePermissions();
+}
+function deleteMarker(id) {
+    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
+    markers = markers.filter(m => m.id !== id);
+    saveToLocalStorage(); renderMarkers(); renderMarkersSettingList();
+}
+function resetMarkersToDefault() {
+    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
+    markers = [];
+    saveToLocalStorage(); renderMarkers(); renderMarkersSettingList();
 }
 
-function copyRewardAllNames() {
-
-    const names = players
-        .filter(p => p.status === 'มา')
-        .map(p => p.name)
-        .filter(Boolean)
-        .join('\n');
-
-    if (!names) {
-        alert('ไม่มีรายชื่อมาวอร์');
-        return;
-    }
-
-    navigator.clipboard.writeText(names);
-
-    alert('คัดลอกรายชื่อมาวอร์ทั้งหมดแล้ว');
+function renderAll() {
+    populateDynamicJobSelectors();
+    renderWaitingList();
+    renderParties();
+    renderMemberManagerTab();
+    renderRewardsTab();
+    renderStatsTab();
+    renderMarkers();
+    renderMarkersSettingList();
+    applyRolePermissions();
 }
-    </script>
-</body>
-    
-    <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+</script>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js';
+import { getFirestore, collection, getDocs } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBv_QQ_O8SE88WFTwro2hJJYGDRA4Jdds8",
-  authDomain: "bellona-gvg.firebaseapp.com",
-  projectId: "bellona-gvg",
-  storageBucket: "bellona-gvg.firebasestorage.app",
-  messagingSenderId: "871679564546",
-  appId: "1:871679564546:web:c4b43efd62a2d57f8c001b"
+  apiKey: 'AIzaSyBv_QQ_O8SE88WFTwro2hJJYGDRA4Jdds8',
+  authDomain: 'bellona-gvg.firebaseapp.com',
+  projectId: 'bellona-gvg',
+  storageBucket: 'bellona-gvg.firebasestorage.app',
+  messagingSenderId: '871679564546',
+  appId: '1:871679564546:web:c4b43efd62a2d57f8c001b'
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-window.bellonaFirebaseReady = true;
-window.bellonaDB = db;
-
-async function testFirebaseConnection() {
-  try {
-    const snap = await getDocs(collection(db, "players"));
-    const box = document.createElement("div");
-    box.style.position = "fixed";
-    box.style.bottom = "16px";
-    box.style.right = "16px";
-    box.style.zIndex = "9999";
-    box.style.background = "#052e16";
-    box.style.color = "#4ade80";
-    box.style.border = "1px solid #166534";
-    box.style.padding = "12px 16px";
-    box.style.borderRadius = "10px";
-    box.style.fontSize = "13px";
-    box.style.fontWeight = "700";
-    box.innerHTML = `Firebase Connected ✅<br>players: ${snap.size}`;
-    document.body.appendChild(box);
-  } catch (err) {
-    alert("Firebase error: " + err.message);
-  }
+try {
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    window.bellonaFirebaseReady = true;
+    window.bellonaDB = db;
+    getDocs(collection(db, 'players')).then(snap => console.log('Firebase Connected ✅ players:', snap.size)).catch(err => console.warn('Firebase test error:', err.message));
+} catch (err) {
+    console.warn('Firebase init error:', err.message);
 }
-
-testFirebaseConnection();
 </script>
+</body>
 </html>
