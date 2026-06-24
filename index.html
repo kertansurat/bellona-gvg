@@ -227,13 +227,6 @@
                             </select>
 
                             <div class="space-y-3 pt-2 border-t border-[#1f2838]/40">
-                                <div class="admin-only space-y-1.5">
-                                    <label class="block text-[11px] text-gray-400 font-bold">เพิ่มแผนที่ใหม่ด้วยลิงก์ URL รูปภาพ:</label>
-                                    <div class="flex gap-1.5">
-                                        <input type="text" id="map-url-input-web" placeholder="วางลิงก์รูปภาพแผนที่ (.jpg / .png)..." class="flex-grow bg-[#1c2331] text-[11px] p-2 rounded-lg text-white border border-[#2b354a] focus:outline-none">
-                                        <button onclick="addMapViaUrlManual()" class="bg-[#d4af37] text-black font-bold px-3 py-1 rounded-lg text-xs">เพิ่ม</button>
-                                    </div>
-                                </div>
                                 <div class="space-y-1.5">
                                     <span class="text-[10px] text-gray-400 uppercase tracking-wider font-bold block">จัดการและเปลี่ยนชื่อรูปภาพในคลัง:</span>
                                     <div id="saved-maps-list" class="space-y-1.5 max-h-[160px] overflow-y-auto pr-1"></div>
@@ -321,13 +314,6 @@
                                 <button onclick="manualAddMemberSubmit()" class="admin-only w-full bg-[#d4af37] text-black font-extrabold py-3 rounded-lg text-sm transition"><i class="fa-solid fa-plus-circle"></i> บันทึกรายชื่อเข้าบอร์ด</button>
                             </div>
                         </div>
-
-                        <div class="bg-[#111520] p-5 rounded-xl border border-[#1f2838] space-y-4 shadow-xl">
-                            <h3 class="text-xs font-bold text-gray-200 uppercase tracking-wider flex items-center gap-2 border-b border-[#1f2838] pb-2"><i class="fa-solid fa-file-excel text-[#d4af37]"></i> Google Sheets Live-Sync (ID Number)</h3>
-                            <div class="space-y-2.5 text-xs">
-                                <input type="text" id="sheet-url-input-members" placeholder="วางลิงก์ CSV จากกูเกิ้ลชีท..." class="w-full bg-[#1c2331] p-2.5 rounded-lg text-white border border-[#2d3748] focus:outline-none">
-                                <button onclick="fetchGoogleSheetDataFromMembers()" class="w-full bg-[#1a202c] text-[#d4af37] border border-[#2d3748] font-bold py-2.5 px-4 rounded-lg transition text-xs flex justify-center items-center gap-2"><i class="fa-solid fa-rotate"></i> ดึงรายชื่ออิง ID ทันที</button>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -435,37 +421,36 @@ class="admin-only bg-indigo-950/40 text-indigo-400 border border-indigo-900/40 p
 
     <!-- 💡 หน้าต่างควบคุมการตั้งค่ากิลด์ โลโก้ และคลาสอาชีพ -->
     <div id="guild-settings-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm flex items-center justify-center z-[100] hidden">
-        <div class="bg-[#111520] border border-[#1f2838] rounded-xl p-6 w-[540px] max-w-[90%] flex flex-col max-h-[85vh] shadow-2xl">
-            <h3 class="text-base font-bold text-[#d4af37] mb-1.5 uppercase tracking-wider flex items-center gap-2"><i class="fa-solid fa-sliders"></i> ศูนย์ตั้งค่ารูปโลโก้และคลาสอาชีพประจำกิลด์</h3>
-            
-            <div class="flex-grow overflow-y-auto pr-1 space-y-4 text-xs mt-3">
-                <div class="p-4 bg-[#181f2d] border border-[#232c3f] rounded-lg space-y-3">
-                    <span class="text-xs text-[#d4af37] font-bold block"><i class="fa-solid fa-link"></i> วางลิงก์ URL เปลี่ยนรูปโลโก้หลักของกิลด์</span>
-                    <div class="flex gap-2">
-                        <input type="text" id="guild-logo-url-input" placeholder="วางลิงก์รูปภาพโลโก้ประจำเว็บ..." class="flex-grow bg-[#111520] p-2.5 rounded-lg text-white border border-[#232c3f] focus:outline-none">
-                        <button onclick="updateGuildLogoViaUrl()" class="bg-[#d4af37] text-black font-extrabold px-4 rounded-lg transition">อัปเดต</button>
-                    </div>
-                </div>
+    <div class="bg-[#111520] border border-[#1f2838] rounded-xl p-6 w-[540px] max-w-[90%] flex flex-col max-h-[85vh] shadow-2xl">
+        <h3 class="text-base font-bold text-[#d4af37] mb-1.5 uppercase tracking-wider flex items-center gap-2">
+            <i class="fa-solid fa-sliders"></i> ศูนย์ตั้งค่ากิลด์
+        </h3>
+        
+        <div class="flex-grow overflow-y-auto pr-1 space-y-4 text-xs mt-3">
 
-                <div class="p-4 bg-[#181f2d] border border-[#232c3f] rounded-lg space-y-3">
-                    <span class="text-xs text-[#d4af37] font-bold uppercase block"><i class="fa-solid fa-plus-circle"></i> เพิ่มสายอาชีพใหม่เข้าสู่ระบบเว็บ</span>
-                    <div class="flex gap-2">
-                        <input type="text" id="new-job-input" placeholder="พิมพ์ชื่อคลาสคลาสใหม่..." class="flex-grow bg-[#111520] text-xs text-gray-100 px-3 py-2 rounded-lg border border-[#232c3f] focus:outline-none">
-                        <button onclick="addNewJobToGuild()" class="bg-[#d4af37] text-black hover:bg-yellow-500 px-4 py-2 rounded-lg font-extrabold transition">เพิ่มอาชีพ</button>
-                    </div>
-                </div>
+            <div class="p-4 bg-[#181f2d] border border-[#232c3f] rounded-lg space-y-3">
+                <span class="text-xs text-[#d4af37] font-bold uppercase block">
+                    <i class="fa-solid fa-plus-circle"></i> เพิ่มสายอาชีพใหม่เข้าสู่ระบบเว็บ
+                </span>
 
-                <div class="space-y-2">
-                    <span class="text-xs text-[#d4af37] font-bold uppercase block flex items-center justify-between">
-                        <span><i class="fa-solid fa-user-shield"></i> รายชื่ออาชีพ และช่องวางลิงก์รูปภาพไอคอนประจำคลาส</span>
-                        <button onclick="resetAllJobSettings()" class="text-red-400 hover:underline font-bold text-[10px]">คืนค่าเริ่มต้น</button>
-                    </span>
-                    <div class="space-y-2.5 max-h-[220px] overflow-y-auto pr-1" id="job-icons-settings-list"></div>
+                <div class="flex gap-2">
+                    <input type="text" id="new-job-input" placeholder="พิมพ์ชื่อคลาสใหม่..." class="flex-grow bg-[#111520] text-xs text-gray-100 px-3 py-2 rounded-lg border border-[#232c3f] focus:outline-none">
+
+                    <button onclick="addNewJobToGuild()" class="bg-[#d4af37] text-black hover:bg-yellow-500 px-4 py-2 rounded-lg font-extrabold transition">
+                        เพิ่มอาชีพ
+                    </button>
                 </div>
             </div>
-            <div class="flex justify-end pt-4 border-t border-[#1f2838] mt-4"><button onclick="closeGuildSettingsModal()" class="bg-slate-800 text-white px-4 py-2 rounded-lg text-xs font-bold">เสร็จสิ้น</button></div>
+
+        </div>
+
+        <div class="flex justify-end pt-4 border-t border-[#1f2838] mt-4">
+            <button onclick="closeGuildSettingsModal()" class="bg-slate-800 text-white px-4 py-2 rounded-lg text-xs font-bold">
+                เสร็จสิ้น
+            </button>
         </div>
     </div>
+</div>
 
     <!-- 💡 หน้าต่างป๊อปอัพยืนยันการทำรายการ -->
     <div id="custom-confirm-modal" class="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-[150] hidden">
@@ -486,7 +471,27 @@ class="admin-only bg-indigo-950/40 text-indigo-400 border border-indigo-900/40 p
     console.log(msg);
 };
         const defaultJobsList = ['Lord Knight', 'Paladin', 'High Priest', 'High Wizard', 'Sniper', 'Assassin Cross', 'Mastersmith', 'Summoner', 'Clown', 'Gypsy'];
-        let players = []; let markers = []; let availableJobsList = [...defaultJobsList]; let jobIcons = {}; let globalMaps = []; let selectedGlobalMapId = null; let selectedMap = 'default'; let googleSheetUrl = ''; let userRole = 'guest';
+        let players = []; let markers = []; 
+        let availableJobsList = [...defaultJobsList]; 
+        let jobIcons = {
+    "Lord Knight": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/lordknight.webp",
+    "High Priest": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/highpriest.webp",
+    "Sniper": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/sniper.webp",
+    "Paladin": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/Paladin.webp",
+    "Assassin Cross": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/Assasin.webp"
+};
+
+        let globalMaps = [
+    {
+        id: "vigrid",
+        name: "Vigrid",
+        image: "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/maps/vigrid.png"
+    }
+];
+        let selectedGlobalMapId = null; 
+        let selectedMap = 'default'; 
+        let googleSheetUrl = ''; 
+        let userRole = 'guest';
 
         let canvas, ctx; let isDrawing = false; let lastX = 0, lastY = 0; let drawMode = 'move'; let drawColor = '#ff4d4d'; let brushSize = 4; let drawingPaths = [];
 
@@ -496,7 +501,12 @@ class="admin-only bg-indigo-950/40 text-indigo-400 border border-indigo-900/40 p
     initPartiesGrid();
     initDrawingCanvas();
     renderAll();
-
+        
+    setTimeout(() => {
+    updateMapDropdownOptions();
+    displayGlobalMap('vigrid');
+}, 500);
+        
     setTimeout(() => {
         if (typeof window.startPlayersRealtimeSync === "function") {
             window.startPlayersRealtimeSync();
