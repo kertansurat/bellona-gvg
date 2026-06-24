@@ -218,90 +218,6 @@
             grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
             gap: 8px;
         }
-
-
-        /* v8: Fine tune party capture alignment - keep icon/name/empty text visually centered and lifted slightly */
-        .party-slot,
-        .capture-export-mode .party-slot {
-            position: relative !important;
-            overflow: hidden !important;
-            display: flex !important;
-            align-items: center !important;
-        }
-        .party-slot > div[id^="slot-"],
-        .capture-export-mode .party-slot > div[id^="slot-"] {
-            display: flex !important;
-            align-items: center !important;
-            justify-content: flex-start !important;
-            height: 100% !important;
-            min-height: 0 !important;
-            width: 100% !important;
-            padding: 0 !important;
-            margin: 0 !important;
-            overflow: hidden !important;
-        }
-        .party-player-row,
-        .capture-export-mode .party-player-row {
-            display: flex !important;
-            align-items: center !important;
-            justify-content: space-between !important;
-            width: 100% !important;
-            height: 100% !important;
-            min-height: 0 !important;
-            padding: 0 !important;
-            margin: 0 !important;
-            line-height: 1 !important;
-            transform: translateY(-4px) !important;
-        }
-        .party-player-info,
-        .capture-export-mode .party-player-info {
-            display: flex !important;
-            align-items: center !important;
-            justify-content: flex-start !important;
-            gap: 10px !important;
-            height: auto !important;
-            min-height: 0 !important;
-            padding: 0 !important;
-            margin: 0 !important;
-            line-height: 1 !important;
-        }
-        .party-player-info img,
-        .capture-export-mode .party-player-info img {
-            display: block !important;
-            width: 30px !important;
-            height: 30px !important;
-            flex: 0 0 30px !important;
-            margin: 0 !important;
-            transform: translateY(0) !important;
-        }
-        .party-player-name,
-        .capture-export-mode .party-player-name {
-            display: flex !important;
-            align-items: center !important;
-            height: auto !important;
-            min-height: 0 !important;
-            line-height: 1 !important;
-            padding: 0 !important;
-            margin: 0 !important;
-            transform: translateY(-1px) !important;
-            white-space: nowrap !important;
-            overflow: hidden !important;
-            text-overflow: ellipsis !important;
-        }
-        .party-slot-empty,
-        .capture-export-mode .party-slot-empty {
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            width: 100% !important;
-            height: 100% !important;
-            min-height: 0 !important;
-            line-height: 1 !important;
-            padding: 0 !important;
-            margin: 0 !important;
-            transform: translateY(-5px) !important;
-            text-align: center !important;
-        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col selection:bg-[#d4af37] selection:text-black">
@@ -1414,11 +1330,11 @@ function clearRewardWheelHistory() {
 }
 function spinEligibleReward() {
     // สุ่มจากคนที่เปิดสิทธิ์ + มาวอร์เท่านั้น และไม่ซ้ำจนกว่าจะกดล้างรายชื่อสุ่มวงล้อ
-    spinRewardWheel(players.filter(p => p.hasQuota !== false && String(p.status || '').trim() === 'มา'));
+    spinRewardWheel(players.filter(p => p.hasQuota !== false && p.status === 'มา'));
 }
 function spinAllReward() {
     // สุ่มจากรายชื่อมาวอร์ทั้งหมดเท่านั้น และไม่ซ้ำจนกว่าจะกดล้างรายชื่อสุ่มวงล้อ
-    spinRewardWheel(players.filter(p => String(p.status || '').trim() === 'มา'));
+    spinRewardWheel(players.filter(p => p.status === 'มา'));
 }
 function spinRewardWheel(pool) {
     if (rewardSpinLock) return;
@@ -1457,15 +1373,9 @@ async function copyTextToClipboard(text) {
     ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
 }
 function copyRewardEligibleNames() {
-    // v8: Copy เฉพาะคนที่เปิดสิทธิ์ และสถานะวันนี้เป็น "มา" เท่านั้น
-    const names = players
-        .filter(p => p.hasQuota !== false && String(p.status || '').trim() === 'มา')
-        .map(p => p.name)
-        .filter(Boolean)
-        .join('\n');
+    const names = players.filter(p => p.hasQuota !== false && p.status === 'มา').map(p => p.name).filter(Boolean).join('\n');
     if (!names) return alert('ไม่มีรายชื่อคนมีสิทธิ์ที่มาวอร์');
-    copyTextToClipboard(names);
-    alert('คัดลอกรายชื่อคนมีสิทธิ์ที่มาวอร์แล้ว');
+    copyTextToClipboard(names); alert('คัดลอกรายชื่อคนมีสิทธิ์ที่มาวอร์แล้ว');
 }
 
 function getRewardEligiblePlayers() {
