@@ -1704,68 +1704,6 @@ try {
 } catch (err) {
     console.warn('Firebase init error:', err.message);
 }
-    /* FINAL FIX: ปรับตำแหน่งรายชื่อเฉพาะตอนแคปจอ */
-.capture-export-mode {
-    --capture-slot-y: -4px;
-}
-
-.capture-export-mode .party-slot {
-    height: 56px !important;
-    min-height: 56px !important;
-    padding: 0 10px !important;
-    display: flex !important;
-    align-items: center !important;
-}
-
-.capture-export-mode .party-slot > div[id^="slot-"] {
-    height: 56px !important;
-    min-height: 56px !important;
-    display: flex !important;
-    align-items: center !important;
-    width: 100% !important;
-}
-
-.capture-export-mode .party-player-row {
-    height: 56px !important;
-    min-height: 56px !important;
-    display: flex !important;
-    align-items: center !important;
-    transform: translateY(var(--capture-slot-y)) !important;
-}
-
-.capture-export-mode .party-player-info {
-    display: flex !important;
-    align-items: center !important;
-    height: 56px !important;
-}
-
-.capture-export-mode .party-player-info img {
-    width: 30px !important;
-    height: 30px !important;
-}
-
-.capture-export-mode .party-player-name {
-    height: auto !important;
-    line-height: 1.2 !important;
-    display: flex !important;
-    align-items: center !important;
-    font-size: 15px !important;
-}
-
-.capture-export-mode .party-slot-empty {
-    width: 100% !important;
-    height: 56px !important;
-    min-height: 56px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    line-height: 1.2 !important;
-    transform: translateY(var(--capture-slot-y)) !important;
-}
-
-.capture-export-mode .party-remove-btn {
-    display: none !important;
-}
 </script>
 </body>
 </html>
