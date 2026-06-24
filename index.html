@@ -1167,22 +1167,6 @@ function releasePlayer(id) {
     initPartiesGrid();
     renderAll();
 }
-
-    const p = players.find(pl => String(pl.id) === String(id));
-
-    if (!p) return;
-
-    p.partyId = null;
-    p.slotIndex = null;
-
-    saveToLocalStorage();
-
-    if (typeof window.savePlayersToFirebaseSafe === "function") {
-        window.savePlayersToFirebaseSafe();
-    }
-
-    renderAll();
-} 
         function autoAssign() {
             players.forEach(p => { p.partyId = null; p.slotIndex = null; }); let partyIdx = 1, slotIdx = 0;
             players.filter(p => p.status === 'มา').forEach((p) => {
