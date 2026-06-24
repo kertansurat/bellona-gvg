@@ -23,10 +23,11 @@ body {
 
 .capture-mode #capture-main-zone,
 .capture-mode #capture-sub-zone {
-    width: 1700px !important;
-    max-width: none !important;
+    width: 1220px !important;
+    max-width: 1220px !important;
     height: auto !important;
     overflow: visible !important;
+    padding: 14px !important;
 }
 
 .capture-mode #parties-grid,
@@ -34,6 +35,15 @@ body {
     display: grid !important;
     grid-template-columns: repeat(4, 1fr) !important;
     gap: 12px !important;
+    width: 100% !important;
+}
+
+.capture-mode .party-slot {
+    height: 50px !important;
+    min-height: 50px !important;
+    overflow: hidden !important;
+    display: flex !important;
+    align-items: center !important;
 }
 
 .capture-mode .party-player-name {
@@ -43,11 +53,6 @@ body {
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     display: block !important;
-}
-
-.capture-mode .party-slot {
-    min-height: 58px !important;
-    overflow: visible !important;
 }
 
 /* css เดิม */
@@ -1056,7 +1061,7 @@ function createPartyCardHTML(index, partyId, prefix) {
 
     for (let s = 0; s < 5; s++) {
         slots += `
-            <div class="party-slot bg-[#121620] px-2 py-1 rounded-md border border-[#1f2838] h-[46px] flex items-center cursor-pointer overflow-hidden"
+            <div class="party-slot bg-[#121620] px-2 py-1 rounded-md border border-[#1f2838] h-[50px] min-h-[50px] flex items-center cursor-pointer overflow-hidden"
                  onclick="handleSlotClick('${partyId}', ${s})"
                  ondragover="handleSlotDragOver(event)"
                  ondrop="handleSlotDrop(event, '${partyId}', ${s})">
@@ -1149,17 +1154,17 @@ function renderParties() {
             const slot = document.getElementById(`slot-${p.partyId}-${p.slotIndex}-content`);
 
             if (slot) {
-                slot.innerHTML = `
+               slot.innerHTML = `
     <div class="grid grid-cols-[32px_1fr_22px] items-center w-full h-full gap-2 overflow-hidden">
-        <div class="w-8 h-8 flex items-center justify-center overflow-hidden">
+        <div class="w-8 h-8 flex items-center justify-center shrink-0 overflow-hidden">
             ${getJobIcon(p.job)}
         </div>
 
-        <strong class="party-player-name text-white font-extrabold text-[14px] leading-none truncate">
+        <strong class="party-player-name text-white font-extrabold text-[13px] leading-[1.35] truncate">
             ${p.name}
         </strong>
 
-        <button onclick="event.stopPropagation(); releasePlayer('${p.id}')" class="text-red-400 text-lg leading-none">
+        <button onclick="event.stopPropagation(); releasePlayer('${p.id}')" class="text-red-400 text-lg leading-none shrink-0">
             ✕
         </button>
     </div>
