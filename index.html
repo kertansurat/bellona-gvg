@@ -588,9 +588,9 @@ async function importPlayersFromFirebaseSafe() {
         saveToLocalStorage();
         renderAll();
 
-        alert("นำเข้ารายชื่อจาก Firebase สำเร็จ: " + players.length + " คน");
+        // alert("นำเข้ารายชื่อจาก Firebase สำเร็จ: " + players.length + " คน");
     } catch (err) {
-        alert("Firebase Import Error: " + err.message);
+    alert("Firebase Import Error: " + err.message);
     }
 }
 
@@ -629,7 +629,7 @@ window.savePlayersToFirebaseSafe = async function() {
             }, { merge: true });
         }
 
-        alert("บันทึกข้อมูลขึ้น Firebase สำเร็จ: " + players.length + " คน");
+        // alert("บันทึกข้อมูลขึ้น Firebase สำเร็จ: " + players.length + " คน");
     } catch (err) {
         alert("Firebase Save Error: " + err.message);
     }
@@ -965,7 +965,7 @@ console.log("Realtime Sync Started");
 
     renderAll();
 
-    alert('เพิ่มสมาชิกและบันทึก Firebase แล้ว');
+    // alert('เพิ่มสมาชิกและบันทึก Firebase แล้ว');
 }
     renderAll();
         }
@@ -1110,7 +1110,7 @@ function releasePlayer(id) {
 
     renderAll();
 
-    alert('ปลดล็อกสมาชิกออกจากปาร์ตี้แล้ว');
+   alert('ปลดล็อกสมาชิกออกจากปาร์ตี้แล้ว');
 }
         function autoAssign() {
             players.forEach(p => { p.partyId = null; p.slotIndex = null; }); let partyIdx = 1, slotIdx = 0;
@@ -1248,7 +1248,7 @@ function releasePlayer(id) {
 
     renderAll();
 
-    alert('อัปเดตสถานะ ' + status + ' สำเร็จ');
+    // alert('อัปเดตสถานะ ' + status + ' สำเร็จ');
 }
         function toggleRewardQuota(playerId) {
     if (!checkAdminAccess()) {
