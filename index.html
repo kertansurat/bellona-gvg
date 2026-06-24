@@ -1167,14 +1167,52 @@ function releasePlayer(id) {
     initPartiesGrid();
     renderAll();
 }
-        function autoAssign() {
-            players.forEach(p => { p.partyId = null; p.slotIndex = null; }); let partyIdx = 1, slotIdx = 0;
-            players.filter(p => p.status === 'มา').forEach((p) => {
-                p.partyId = `party-${partyIdx}`; p.slotIndex = slotIdx; slotIdx++; if (slotIdx >= 5) { slotIdx = 0; partyIdx++; }
-            }); saveToLocalStorage(); renderAll();
-        }
-        function triggerClearPartiesConfirmation() { players.forEach(p => { p.partyId = null; p.slotIndex = null; }); saveToLocalStorage(); renderAll(); }
+       function autoAssign() {
+    players.forEach(p => {
+        p.partyId = null;
+        p.slotIndex = null;
+    });
 
+    let partyIdx = 1;
+    let slotIdx = 0;
+
+    players.filter(p => p.status === 'มา').forEach(p => {
+        p.partyId = `party-${partyIdx}`;
+        p.slotIndex = slotIdx;
+
+        slotIdx++;
+
+        if (slotIdx >= 5) {
+            slotIdx = 0;
+            partyIdx++;
+        }
+    });
+
+    saveToLocalStorage();
+
+    if (typeof window.savePlayersToFirebaseSafe === "function") {
+        window.savePlayersToFirebaseSafe();
+    }
+
+    initPartiesGrid();
+    renderAll();
+}
+
+function triggerClearPartiesConfirmation() {
+    players.forEach(p => {
+        p.partyId = null;
+        p.slotIndex = null;
+    });
+
+    saveToLocalStorage();
+
+    if (typeof window.savePlayersToFirebaseSafe === "function") {
+        window.savePlayersToFirebaseSafe();
+    }
+
+    initPartiesGrid();
+    renderAll();
+}
         function renderMemberManagerTab() {
             const tbody = document.getElementById('member-manager-table-body');
     if (!tbody) return;
