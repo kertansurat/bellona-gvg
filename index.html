@@ -795,34 +795,9 @@ console.log("Realtime Sync Started");
             if(document.getElementById('fallback-watermark-logo')) document.getElementById('fallback-watermark-logo').src = url;
         }
 
-        function updateJobIconViaUrlManual(jobName, inputId) {
-            const url = document.getElementById(inputId).value.trim();
-            if (!url) return;
-            jobIcons[jobName] = url; saveToLocalStorage(); renderAll(); renderJobIconSettingsList();
-            alert(`🎨 อัปเดตไอคอนพรีเมียมอาชีพ ${jobName} เรียบร้อยแล้ว!`);
-        }
-
-        function renderJobIconSettingsList() {
-            const container = document.getElementById('job-icons-settings-list'); if(!container) return; container.innerHTML = '';
-            availableJobsList.forEach((job, idx) => {
-                const inputId = `job-icon-inp-${idx}`;
-                const currentUrl = jobIcons[job] || '';
-                container.innerHTML += `
-                    <div class="bg-[#111520] border border-[#1f2838] p-3 rounded-lg text-xs space-y-2">
-                        <div class="flex items-center gap-2">${getJobIcon(job)} <span class="font-bold text-gray-200">${job}</span></div>
-                        <div class="flex gap-2">
-                            <input type="text" id="${inputId}" value="${currentUrl}" placeholder="วางลิงก์รูปภาพ URL ไอคอนคลาส..." class="flex-grow bg-[#1c2331] p-1.5 rounded border border-[#2b354a] text-white focus:outline-none">
-                            <button onclick="updateJobIconViaUrlManual('${job}', '${inputId}')" class="bg-cyan-950/40 text-cyan-400 border border-cyan-900/30 px-3 py-1 rounded font-bold">บันทึก</button>
-                            <button onclick="removeJobFromGuild('${job}')" class="text-red-400 p-1">ลบ</button>
-                        </div>
-                    </div>`;
-            });
-        }
-
         function getJobIcon(jobName) {
-            if (jobIcons && jobIcons[jobName]) return `<img src="${jobIcons[jobName]}" class="w-8 h-8 rounded-full object-cover border border-[#d4af37]/50 shrink-0" />`;
-            return `<div class="w-8 h-8 rounded-full flex items-center justify-center text-xs bg-slate-700 font-bold shrink-0">🛡️</div>`;
-        }
+    return `<img src="https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/lordknight.webp" class="w-8 h-8 rounded-full object-cover border border-[#d4af37]/50 shrink-0" />`;
+}
         function addNewJobToGuild() {
             if (!checkAdminAccess()) return;
             const input = document.getElementById('new-job-input'); if (!input) return; const name = input.value.trim(); if (!name) return;
@@ -831,8 +806,6 @@ console.log("Realtime Sync Started");
         function removeJobFromGuild(jobName) {
             if (!checkAdminAccess()) return; if (confirm(`ลบอาชีพ ${jobName}?`)) { availableJobsList = availableJobsList.filter(j => j !== jobName); saveToLocalStorage(); renderAll(); renderJobIconSettingsList(); }
         }
-        function resetAllJobSettings() { jobIcons = {}; availableJobsList = [...defaultJobsList]; saveToLocalStorage(); renderAll(); renderJobIconSettingsList(); }
-
         /* ================= 🎨 ดึงระบบวาดเขียน (Drawing Engine) ดั้งเดิมกลับมาทำงานแม่นยำพรีเมียม ================= */
         function initDrawingCanvas() {
             canvas = document.getElementById('drawing-canvas'); if (!canvas) return; ctx = canvas.getContext('2d');
