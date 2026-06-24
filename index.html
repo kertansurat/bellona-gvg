@@ -183,34 +183,54 @@ body {
         <!-- แผงหน้าต่างแสดงผลหลัก -->
         <section class="flex-grow overflow-y-auto bg-[#080a0f] p-5 min-w-0">
             <!-- 1. แท็บจัดทีมปาร์ตี้ -->
-            <div id="tab-content-party" class="space-y-5">
-                <div class="flex justify-between items-center bg-[#111520] p-4 rounded-lg border border-[#1f2838] flex-wrap gap-2 shadow-xl">
-                    <div class="text-xs text-gray-400">คลิกเลือกชื่อสมาชิกในแถบซ้ายมือ แล้วกดคลิกช่องปาร์ตี้ทางขวาเพื่อจัดทีมรบได้อย่างรวดเร็ว</div>
-                    <div class="flex gap-2.5">
-                        <button onclick="captureParties()" class="bg-[#141a24] hover:bg-[#1c2433] text-[#d4af37] border border-[#2d374a] px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 shadow-md">
-                            <i class="fa-solid fa-camera"></i> แคปจอรายชื่อปาร์ตี้ (2 ภาพแยกส่วน)
-                        </button>
-                        <button onclick="triggerClearPartiesConfirmation()" class="admin-only bg-red-950/40 text-red-400 border border-red-900/40 px-3 py-1.5 rounded-lg text-xs font-bold">ล้างทีมปาร์ตี้ทั้งหมด</button>
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 xl:grid-cols-2 gap-5">
-                    <div class="space-y-4 p-5 bg-[#111520] rounded-xl border border-[#1f2838]" id="capture-main-zone">
-                        <div class="border-b border-[#1f2838] pb-2 flex justify-between items-center">
-                            <h3 class="text-xs font-bold text-[#d4af37] uppercase tracking-wider"><i class="fa-solid fa-crown"></i> ปาร์ตี้หลัก (MAIN PARTY 1 - 8)</h3>
-                            <span class="text-[10px] text-gray-500 font-bold bg-[#d4af37]/5 px-2 py-0.5 rounded border border-[#d4af37]/15">BELLONA GVG</span>
-                        </div>
-                        <div id="parties-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3.5"></div>
-                    </div>
-                    <div class="space-y-4 p-5 bg-[#111520] rounded-xl border border-[#1f2838]" id="capture-sub-zone">
-                        <div class="border-b border-[#1f2838] pb-2 flex justify-between items-center">
-                            <h3 class="text-xs font-bold text-gray-300 uppercase tracking-wider"><i class="fa-solid fa-shield-halved"></i> ปาร์ตี้รอง / กองหนุน (SUB-PARTY 1 - 8)</h3>
-                            <span class="text-[10px] text-gray-500 font-bold bg-gray-400/5 px-2 py-0.5 rounded border border-gray-400/15">BELLONA SUB</span>
-                        </div>
-                        <div id="sub-parties-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3.5"></div>
-                    </div>
-                </div>
+<div id="tab-content-party" class="space-y-4">
+
+    <div class="flex justify-between items-center bg-[#111520] p-3 rounded-lg border border-[#1f2838] flex-wrap gap-2 shadow-xl">
+        <div class="text-xs text-gray-400">
+            คลิกเลือกชื่อสมาชิกในแถบซ้ายมือ แล้วกดคลิกช่องปาร์ตี้ทางขวาเพื่อจัดทีมรบได้อย่างรวดเร็ว
+        </div>
+
+        <div class="flex gap-2.5">
+            <button onclick="captureParties()" class="bg-[#141a24] hover:bg-[#1c2433] text-[#d4af37] border border-[#2d374a] px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 shadow-md">
+                <i class="fa-solid fa-camera"></i> แคปจอรายชื่อปาร์ตี้
+            </button>
+
+            <button onclick="triggerClearPartiesConfirmation()" class="admin-only bg-red-950/40 text-red-400 border border-red-900/40 px-3 py-1.5 rounded-lg text-xs font-bold">
+                ล้างทีมปาร์ตี้ทั้งหมด
+            </button>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4">
+
+        <div class="space-y-3 p-4 bg-[#111520] rounded-xl border border-[#1f2838]" id="capture-main-zone">
+            <div class="border-b border-[#1f2838] pb-2 flex justify-between items-center">
+                <h3 class="text-xs font-bold text-[#d4af37] uppercase tracking-wider">
+                    <i class="fa-solid fa-crown"></i> ปาร์ตี้หลัก (MAIN PARTY 1 - 8)
+                </h3>
+                <span class="text-[10px] text-gray-500 font-bold bg-[#d4af37]/5 px-2 py-0.5 rounded border border-[#d4af37]/15">
+                    BELLONA GVG
+                </span>
             </div>
 
+            <div id="parties-grid" class="grid grid-cols-4 gap-3"></div>
+        </div>
+
+        <div class="space-y-3 p-4 bg-[#111520] rounded-xl border border-[#1f2838]" id="capture-sub-zone">
+            <div class="border-b border-[#1f2838] pb-2 flex justify-between items-center">
+                <h3 class="text-xs font-bold text-gray-300 uppercase tracking-wider">
+                    <i class="fa-solid fa-shield-halved"></i> ปาร์ตี้รอง / กองหนุน (SUB-PARTY 1 - 8)
+                </h3>
+                <span class="text-[10px] text-gray-500 font-bold bg-gray-400/5 px-2 py-0.5 rounded border border-gray-400/15">
+                    BELLONA SUB
+                </span>
+            </div>
+
+            <div id="sub-parties-grid" class="grid grid-cols-4 gap-3"></div>
+        </div>
+
+    </div>
+</div>
             <!-- 2. แท็บกระดานวางแผนยุทธวิธี -->
             <div id="tab-content-tactical" class="hidden space-y-5">
                 <div class="flex flex-wrap items-center justify-between gap-3 bg-[#111520] border border-[#1f2838] p-4 rounded-xl">
