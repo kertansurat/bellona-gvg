@@ -477,7 +477,7 @@ class="admin-only bg-indigo-950/40 text-indigo-400 border border-indigo-900/40 p
     "Lord Knight": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/lordknight.webp",
     "High Priest": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/highpriest.webp",
     "Sniper": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/sniper.webp",
-    "Paladin": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/Paladin.webp",
+    "Paladin": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/paladin.webp",
     "Assassin Cross": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/Assasin.webp"
 };
 
@@ -501,7 +501,7 @@ class="admin-only bg-indigo-950/40 text-indigo-400 border border-indigo-900/40 p
     initPartiesGrid();
     initDrawingCanvas();
     renderAll();
-        
+      // โหลดแผนที่หลัก    
     setTimeout(() => {
     updateMapDropdownOptions();
     displayGlobalMap('vigrid');
@@ -563,14 +563,17 @@ class="admin-only bg-indigo-950/40 text-indigo-400 border border-indigo-900/40 p
                 try {
                     const data = JSON.parse(rawData);
                     players = data.players || [];
-                    googleSheetUrl = data.googleSheetUrl || '';
-                    availableJobsList = data.availableJobsList || [...defaultJobsList];
-                    jobIcons = Object.keys(data.jobIcons || {}).length ? data.jobIcons : jobIcons;
-                    globalMaps = (data.globalMaps || []).length ? data.globalMaps : globalMaps;
-                    selectedGlobalMapId = data.selectedGlobalMapId || selectedGlobalMapId;
-                    selectedMap = data.selectedMap || selectedMap;
-                    markers = data.markers || [];
-                    drawingPaths = data.drawingPaths || [];
+googleSheetUrl = data.googleSheetUrl || '';
+availableJobsList = data.availableJobsList || [...defaultJobsList];
+
+// ใช้รูปจากโค้ดเสมอ
+// ไม่โหลด jobIcons/globalMaps จาก localStorage
+
+selectedGlobalMapId = 'vigrid';
+selectedMap = 'vigrid';
+
+markers = data.markers || [];
+drawingPaths = data.drawingPaths || [];
                     
                     const logoData = localStorage.getItem('bellona_custom_logo_data');
                     if(logoData) { displayGuildLogo(logoData); if(document.getElementById('guild-logo-url-input')) document.getElementById('guild-logo-url-input').value = logoData; }
