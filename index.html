@@ -1048,23 +1048,33 @@ function exportTacticalMap() {
         }
         function createPartyCardHTML(index, partyId, prefix) {
     const card = document.createElement('div');
-    card.className = 'glass-panel bg-[#0c0e14] border border-[#1f2838] rounded-xl p-3.5 space-y-2 text-xs';
+    card.className = 'glass-panel bg-[#0c0e14] border border-[#1f2838] rounded-lg p-2 space-y-1 text-[10px]';
 
     let slots = '';
 
     for (let s = 0; s < 5; s++) {
         slots += `
-            <div class="party-slot bg-[#121620] p-2.5 rounded-lg border border-[#1f2838] min-h-[66px] flex items-center cursor-pointer"
+            <div class="party-slot bg-[#121620] px-2 py-1 rounded-md border border-[#1f2838] min-h-[42px] flex items-center cursor-pointer"
                  onclick="handleSlotClick('${partyId}', ${s})"
                  ondragover="handleSlotDragOver(event)"
                  ondrop="handleSlotDrop(event, '${partyId}', ${s})">
                 <div class="w-full truncate" id="slot-${partyId}-${s}-content">
-                    <span class="text-gray-600">ว่างเปล่า</span>
+                    <span class="text-gray-600 text-[10px]">ว่างเปล่า</span>
                 </div>
             </div>
         `;
     }
 
+    card.innerHTML = `
+        <div class="flex justify-between pb-1 border-b border-[#1f2838]">
+            <span class="text-[#d4af37] font-bold text-[11px]">${prefix} ${index}</span>
+            <span id="${partyId}-counter" class="text-[10px]">0/5 คน</span>
+        </div>
+        <div class="space-y-1">${slots}</div>
+    `;
+
+    return card;
+}
     card.innerHTML = `
         <div class="flex justify-between pb-2 border-b border-[#1f2838]">
             <span class="text-[#d4af37] font-bold">${prefix} ${index}</span>
@@ -1153,9 +1163,9 @@ function renderParties() {
                                 ${getJobIcon(p.job)}
                             </div>
 
-                            <strong class="party-player-name text-white font-extrabold text-[18px] leading-[1.7] tracking-normal whitespace-normal overflow-visible">
-                                ${p.name}
-                            </strong>
+                            <strong class="party-player-name text-white font-extrabold text-[13px] leading-[1.45] tracking-normal whitespace-normal overflow-visible">
+    ${p.name}
+</strong>
                         </div>
 
                         <button onclick="event.stopPropagation(); releasePlayer('${p.id}')" class="text-red-400 text-2xl px-2 shrink-0">
