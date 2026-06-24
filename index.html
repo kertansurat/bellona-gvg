@@ -946,8 +946,7 @@ console.log("Realtime Sync Started");
         }
 
         /* ================= ระบบการจัดปาร์ตี้ และ การจัดการหน้าต่างสมาชิก ================= */
-        function manualAddMemberSubmit() {
-           function manualAddMemberSubmit() {
+       function manualAddMemberSubmit() {
     if (!checkAdminAccess()) return;
 
     const name = document.getElementById('manual-add-name').value.trim();
@@ -984,11 +983,7 @@ console.log("Realtime Sync Started");
     }
 
     renderAll();
-
-    // alert('เพิ่มสมาชิกและบันทึก Firebase แล้ว');
 }
-    renderAll();
-        }
         function toggleSelectAllMembers(master) { document.querySelectorAll('.member-select-chk').forEach(c => c.checked = master.checked); }
         function deleteSelectedPlayers() {
             const chks = document.querySelectorAll('.member-select-chk:checked'); if (chks.length === 0) return;
