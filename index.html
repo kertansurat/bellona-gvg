@@ -918,10 +918,16 @@ async function captureParties() {
         await new Promise(resolve => setTimeout(resolve, 300));
 
         const canvasMain = await html2canvas(mainZone, {
-            backgroundColor: '#111520',
-            scale: 2,
-            useCORS: true
-        });
+    backgroundColor: '#111520',
+    scale: 2,
+    useCORS: true,
+    scrollX: 0,
+    scrollY: 0,
+    width: mainZone.scrollWidth,
+    height: mainZone.scrollHeight,
+    windowWidth: mainZone.scrollWidth,
+    windowHeight: mainZone.scrollHeight
+});
 
         const link1 = document.createElement('a');
         link1.download = `bellona-main-party-${Date.now()}.png`;
@@ -930,11 +936,16 @@ async function captureParties() {
 
         setTimeout(async () => {
             const canvasSub = await html2canvas(subZone, {
-                backgroundColor: '#111520',
-                scale: 2,
-                useCORS: true
-            });
-
+    backgroundColor: '#111520',
+    scale: 2,
+    useCORS: true,
+    scrollX: 0,
+    scrollY: 0,
+    width: subZone.scrollWidth,
+    height: subZone.scrollHeight,
+    windowWidth: subZone.scrollWidth,
+    windowHeight: subZone.scrollHeight
+});
             const link2 = document.createElement('a');
             link2.download = `bellona-sub-party-${Date.now()}.png`;
             link2.href = canvasSub.toDataURL('image/png');
