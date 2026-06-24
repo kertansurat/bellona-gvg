@@ -570,7 +570,7 @@ const defaultJobsList = [
                     const data = JSON.parse(rawData);
                     players = data.players || [];
 googleSheetUrl = data.googleSheetUrl || '';
-availableJobsList = data.availableJobsList || [...defaultJobsList];
+availableJobsList = [...defaultJobsList];
 
 // ใช้รูปจากโค้ดเสมอ
 // ไม่โหลด jobIcons/globalMaps จาก localStorage
