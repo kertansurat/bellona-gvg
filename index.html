@@ -19,69 +19,6 @@ body {
     background:#111520;
 }
 <style>
-/* capture mode */
-
-.capture-mode #capture-main-zone,
-.capture-mode #capture-sub-zone {
-    width: 1220px !important;
-    max-width: 1220px !important;
-    height: auto !important;
-    overflow: visible !important;
-    padding: 14px !important;
-}
-
-.capture-mode #parties-grid,
-.capture-mode #sub-parties-grid {
-    display: grid !important;
-    grid-template-columns: repeat(4, 1fr) !important;
-    gap: 12px !important;
-    width: 100% !important;
-}
-
-.capture-mode .party-slot {
-    height: 50px !important;
-    min-height: 50px !important;
-    overflow: hidden !important;
-    display: flex !important;
-    align-items: center !important;
-}
-
-.capture-mode .party-player-name {
-    font-size: 14px !important;
-    line-height: 1.35 !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    display: block !important;
-}
-
-/* css เดิม */
-
-body {
-    font-family: 'Inter', 'Noto Sans Thai', sans-serif;
-    background-color: #0b0d13;
-    color: #e2e8f0;
-}
-
-...
-</style>
-        
-        /* กระดานแผนที่ขนาดใหญ่ 1:1 Scrollable */
-        .map-scroll-container {
-            width: 100%;
-            height: 75vh;
-            overflow: auto;
-            border: 2px solid #1f2838;
-            border-radius: 12px;
-            background-color: #0c0e14;
-            position: relative;
-        }
-        .map-canvas-wrapper {
-            position: relative;
-            width: 2000px;  
-            height: 1125px; 
-        }
-    </style>
 </head>
 <body class="min-h-screen flex flex-col selection:bg-[#d4af37] selection:text-black">
 
@@ -186,10 +123,6 @@ body {
         </div>
 
         <div class="flex gap-2.5">
-            <button onclick="captureParties()" class="bg-[#141a24] hover:bg-[#1c2433] text-[#d4af37] border border-[#2d374a] px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 shadow-md">
-                <i class="fa-solid fa-camera"></i> แคปจอรายชื่อปาร์ตี้
-            </button>
-
             <button onclick="triggerClearPartiesConfirmation()" class="admin-only bg-red-950/40 text-red-400 border border-red-900/40 px-3 py-1.5 rounded-lg text-xs font-bold">
                 ล้างทีมปาร์ตี้ทั้งหมด
             </button>
@@ -896,129 +829,7 @@ console.log("Realtime Sync Started");
         function clearDrawing() { drawingPaths = []; redrawCanvasPaths(); }
         function undoDrawing() { drawingPaths.splice(-25); redrawCanvasPaths(); }
         function redrawCanvasPaths() { if(!ctx) return; ctx.clearRect(0, 0, canvas.width, canvas.height); drawingPaths.forEach(p => { ctx.beginPath(); ctx.strokeStyle = p.color; ctx.lineWidth = brushSize; ctx.lineCap = 'round'; ctx.moveTo(p.x1, p.y1); ctx.lineTo(p.x2, p.y2); ctx.stroke(); }); }
-        function cropCanvas(sourceCanvas, targetW, targetH) {
-    const output = document.createElement('canvas');
-    output.width = targetW;
-    output.height = targetH;
-
-    const ctx = output.getContext('2d');
-
-    ctx.drawImage(
-        sourceCanvas,
-        0, 0,
-        targetW, targetH,
-        0, 0,
-        targetW, targetH
-    );
-
-    return output;
-}
-        /* ================= 📸 ฟังก์ชันแคปเจอร์หน้าจอผังปาร์ตี้แยก 2 ภาพ ================= */
-async function captureParties() {
-    const mainZone = document.getElementById('capture-main-zone');
-    const subZone = document.getElementById('capture-sub-zone');
-
-    if (!mainZone || !subZone) {
-        alert('ไม่พบข้อมูลกล่องผังปาร์ตี้');
-        return;
-    }
-
-    try {
-        document.body.classList.add('capture-mode');
-
-        await new Promise(resolve => setTimeout(resolve, 300));
-
-        const canvasMain = await html2canvas(mainZone, {
-    backgroundColor: '#111520',
-    scale: 2,
-    useCORS: true,
-    scrollX: 0,
-    scrollY: 0,
-    width: mainZone.scrollWidth,
-    height: mainZone.scrollHeight,
-    windowWidth: mainZone.scrollWidth,
-    windowHeight: mainZone.scrollHeight
-});
-
-        const link1 = document.createElement('a');
-        link1.download = `bellona-main-party-${Date.now()}.png`;
-        link1.href = cropCanvas(canvasMain, 2000, 1560).toDataURL('image/png');
-        link1.click();
-
-        setTimeout(async () => {
-            const canvasSub = await html2canvas(subZone, {
-    backgroundColor: '#111520',
-    scale: 2,
-    useCORS: true,
-    scrollX: 0,
-    scrollY: 0,
-    width: subZone.scrollWidth,
-    height: subZone.scrollHeight,
-    windowWidth: subZone.scrollWidth,
-    windowHeight: subZone.scrollHeight
-});
-            const link2 = document.createElement('a');
-            link2.download = `bellona-sub-party-${Date.now()}.png`;
-            link2.href = cropCanvas(canvasSub, 2000, 1560).toDataURL('image/png')
-            link2.click();
-
-            document.body.classList.remove('capture-mode');
-        }, 800);
-
-    } catch (err) {
-        document.body.classList.remove('capture-mode');
-        alert('เบราว์เซอร์ปฏิเสธคำสั่งสร้างรูปภาพ');
-    }
-}
-
-/* ================= 📸 ฟังก์ชันเซฟแผนภาพยุทธวิธี รวมเส้นวาด และ หมากรบ ================= */
-function exportTacticalMap() {
-    if (!canvas) return;
-
-    const exportCanvas = document.createElement('canvas');
-    exportCanvas.width = canvas.width;
-    exportCanvas.height = canvas.height;
-
-    const exCtx = exportCanvas.getContext('2d');
-    const bgImg = document.getElementById('battle-map-bg');
-
-    if (bgImg && bgImg.src && !bgImg.classList.contains('hidden')) {
-        exCtx.drawImage(bgImg, 0, 0, exportCanvas.width, exportCanvas.height);
-    } else {
-        exCtx.fillStyle = '#0c0e14';
-        exCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
-    }
-
-    exCtx.drawImage(canvas, 0, 0);
-
-    markers.forEach(m => {
-        const posX = (m.posX / 100) * exportCanvas.width;
-        const posY = (m.posY / 100) * exportCanvas.height;
-
-        exCtx.beginPath();
-        exCtx.arc(posX, posY, 16, 0, 2 * Math.PI);
-        exCtx.fillStyle = '#dc2626';
-        exCtx.strokeStyle = '#ffffff';
-        exCtx.lineWidth = 3;
-        exCtx.fill();
-        exCtx.stroke();
-
-        exCtx.fillStyle = '#ffffff';
-        exCtx.font = 'bold 12px Inter, sans-serif';
-        exCtx.textAlign = 'center';
-        exCtx.textBaseline = 'middle';
-        exCtx.fillText(m.name.substring(0, 3), posX, posY);
-    });
-
-    try {
-        const link = document.createElement('a');
-        link.download = `bellona-tactical-map-${Date.now()}.png`;
-        link.href = exportCanvas.toDataURL('image/png');
-        link.click();
-    } catch (e) {
-        alert('เกิดข้อผิดพลาดในการรวมสื่อบันทึกรูปภาพภาพ');
-    }
-}
+        
         /* ================= ระบบการจัดปาร์ตี้ และ การจัดการหน้าต่างสมาชิก ================= */
        function manualAddMemberSubmit() {
     if (!checkAdminAccess()) return;
@@ -1104,7 +915,13 @@ function createPartyCardHTML(index, partyId, prefix) {
     if (!container) return;
 
     container.innerHTML = '';
+    const selectedJob =
+    document.getElementById('search-job-dropdown')?.value || 'all';
 
+players
+    .filter(p => p.partyId === null)
+    .filter(p => selectedJob === 'all' || p.job === selectedJob)
+    .forEach(p => {
     players.filter(p => p.partyId === null).forEach(p => {
         const item = document.createElement('div');
 
