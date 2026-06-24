@@ -1069,11 +1069,19 @@ function renderParties() {
             const slot = document.getElementById(`slot-${p.partyId}-${p.slotIndex}-content`);
             if (slot) {
                 slot.innerHTML = `
-                    <div class="flex items-center justify-between w-full">
-                        <span>${getJobIcon(p.job)} <strong>${p.name}</strong></span>
-                        <button onclick="event.stopPropagation(); releasePlayer('${p.id}')" class="text-red-400">✕</button>
-                    </div>
-                `;
+    <div class="flex items-center justify-between w-full">
+        <span class="flex items-center gap-3 min-w-0">
+            ${getJobIcon(p.job)}
+            <strong class="text-base md:text-lg font-extrabold text-white truncate">
+                ${p.name}
+            </strong>
+        </span>
+
+        <button onclick="event.stopPropagation(); releasePlayer('${p.id}')" class="text-red-400 text-xl px-2">
+            ✕
+        </button>
+    </div>
+`;
             }
         }
     });
