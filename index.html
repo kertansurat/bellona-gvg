@@ -980,22 +980,95 @@ console.log("Realtime Sync Started");
             const sGrid = document.getElementById('sub-parties-grid'); if(sGrid) { sGrid.innerHTML = ''; for(let i=1; i<=8; i++) sGrid.appendChild(createPartyCardHTML(i, `subparty-${i}`, 'SUB-PARTY')); }
         }
         function createPartyCardHTML(index, partyId, prefix) {
-            const card = document.createElement('div'); card.className = 'glass-panel bg-[#0c0e14] border border-[#1f2838] rounded-xl p-3.5 space-y-2 text-xs';
-            let slots = ''; for(let s=0; s<5; s++) slots += `<div class="bg-[#121620] p-2.5 rounded-lg border border-[#1f2838] min-h-[50px] flex items-center cursor-pointer" onclick="handleSlotClick('${partyId}', ${s})"><div class="w-full truncate" id="slot-${partyId}-${s}-content"><span class="text-gray-600">ว่างเปล่า</span></div></div>`;
-            card.innerHTML = `<div class="flex justify-between pb-2 border-b border-[#1f2838]"><span class="text-[#d4af37] font-bold">${prefix} ${index}</span><span id="${partyId}-counter">0/5 คน</span></div><div class="space-y-1.5">${slots}</div>`;
-            return card;
-        }
-        function renderWaitingList() {
-            const container = document.getElementById('waiting-list'); if(!container) return; container.innerHTML = '';
-            players.filter(p => p.partyId === null).forEach(p => {
-                const item = document.createElement('div'); item.className = 'flex items-center gap-3 bg-[#121620] border border-[#1f2838] p-2.5 rounded-lg cursor-pointer';
-                item.setAttribute('onclick', `selectPlayer('${p.id}')`);
-                item.innerHTML = `${getJobIcon(p.job)} <span class="text-sm font-bold text-white">${p.name} <span class="text-xs text-gray-500 font-normal">(${p.job})</span></span>`;
-                container.appendChild(item);
-            });
-            document.getElementById('waitlist-badge').innerText = players.filter(p => p.partyId === null).length;
-            document.getElementById('count-waitlist').innerText = players.filter(p => p.partyId === null).length;
-        }
+    const card = document.createElement('div');
+    card.className = 'glass-panel bg-[#0c0e14] border border-[#1f2838] rounded-xl p-3.5 space-y-2 text-xs';
+
+    let slots = '';
+
+    for (let s = 0; s < 5; s++) {
+        slots += `
+            <div class="bg-[#121620] p-2.5 rounded-lg border border-[#1f2838] min-h-[50px] flex items-center cursor-pointer"
+                 onclick="handleSlotClick('${partyId}', ${s})"
+                 ondragover="handleSlotDragOver(event)"
+                 ondrop="handleSlotDrop(event, '${partyId}', ${s})">
+                <div class="w-full truncate" id="slot-${partyId}-${s}-content">
+                    <span class="text-gray-600">ว่างเปล่า</span>
+                </div>
+            </div>
+        `;
+    }
+
+    card.innerHTML = `
+        <div class="flex justify-between pb-2 border-b border-[#1f2838]">
+            <span class="text-[#d4af37] font-bold">${prefix} ${index}</span>
+            <span id="${partyId}-counter">0/5 คน</span>
+        </div>
+        <div class="space-y-1.5">${slots}</div>
+    `;
+
+    return card;
+}
+      function renderWaitingList() {
+    const container = document.getElementById('waiting-list');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    players.filter(p => p.partyId === null).forEach(p => {
+        const item = document.createElement('div');
+
+        item.className = 'flex items-center gap-3 bg-[#121620] border border-[#1f2838] p-2.5 rounded-lg cursor-pointer';
+        item.setAttribute('onclick', `selectPlayer('${p.id}')`);
+
+        item.setAttribute('draggable', 'true');
+        item.setAttribute('data-id', p.id);
+        item.setAttribute('ondragstart', `handlePlayerDragStart(event, '${p.id}')`);
+
+        item.innerHTML = `${getJobIcon(p.job)} <span class="text-sm font-bold text-white">${p.name} <span class="text-xs text-gray-500 font-normal">(${p.job})</span></span>`;
+
+        container.appendChild(item);
+    });
+
+    document.getElementById('waitlist-badge').innerText = players.filter(p => p.partyId === null).length;
+    document.getElementById('count-waitlist').innerText = players.filter(p => p.partyId === null).length;
+}
+        function handlePlayerDragStart(event, playerId) {
+    if (!checkAdminAccess()) {
+        event.preventDefault();
+        return;
+    }
+
+    event.dataTransfer.setData('text/plain', String(playerId));
+}
+
+function handleSlotDragOver(event) {
+    event.preventDefault();
+}
+
+function handleSlotDrop(event, partyId, slotIndex) {
+    event.preventDefault();
+
+    if (!checkAdminAccess()) {
+        alert('เฉพาะ Admin เท่านั้น');
+        return;
+    }
+
+    const playerId = event.dataTransfer.getData('text/plain');
+    const p = players.find(x => String(x.id) === String(playerId));
+
+    if (!p) return;
+
+    p.partyId = partyId;
+    p.slotIndex = slotIndex;
+
+    saveToLocalStorage();
+
+    if (typeof window.savePlayersToFirebaseSafe === "function") {
+        window.savePlayersToFirebaseSafe();
+    }
+
+    renderAll();
+}
         function renderParties() {
             players.forEach(p => {
                 if(p.partyId) {
