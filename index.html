@@ -18,58 +18,46 @@
 body {
     background:#111520;
 }
+<style>
+/* capture mode */
 
-/* ====== CAPTURE MODE ====== */
+.capture-mode #capture-main-zone,
+.capture-mode #capture-sub-zone {
+    width: 1700px !important;
+    max-width: none !important;
+    height: auto !important;
+    overflow: visible !important;
+}
 
 .capture-mode #parties-grid,
 .capture-mode #sub-parties-grid {
-    grid-template-columns: repeat(4, minmax(320px, 1fr)) !important;
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 12px !important;
 }
 
 .capture-mode .party-player-name {
-    font-size: 18px !important;
-    line-height: 1.7 !important;
+    font-size: 15px !important;
+    line-height: 1.8 !important;
     white-space: normal !important;
     overflow: visible !important;
-    text-overflow: unset !important;
 }
 
 .capture-mode .party-slot {
-    min-height: 66px !important;
+    min-height: 58px !important;
     overflow: visible !important;
 }
 
-/* ====== CSS เดิมของคุณ ====== */
+/* css เดิม */
 
-.glass-panel {
-    ...
+body {
+    font-family: 'Inter', 'Noto Sans Thai', sans-serif;
+    background-color: #0b0d13;
+    color: #e2e8f0;
 }
 
+...
 </style>
-    <style>
-        body {
-            font-family: 'Inter', 'Noto Sans Thai', sans-serif;
-            background-color: #0b0d13;
-            color: #e2e8f0;
-            overflow-x: hidden;
-            font-size: 15px;
-        }
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #0b0d13; }
-        ::-webkit-scrollbar-thumb { background: #1a202c; border-radius: 4px; border: 2px solid #0b0d13; }
-        ::-webkit-scrollbar-thumb:hover { background: #d4af37; }
-        .tab-btn.active {
-            border-color: #d4af37; color: #ffd700;
-            background-color: rgba(212, 175, 55, 0.08);
-            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.1);
-        }
-        .glass-panel { background-color: #111622; border: 1px solid #222b3c; }
-        .spinning-glow { animation: spinner-shimmer 3s linear infinite; }
-        @keyframes spinner-shimmer {
-            0% { transform: scale(1) rotate(0deg); filter: hue-rotate(0deg); }
-            50% { transform: scale(1.04) rotate(180deg); filter: hue-rotate(60deg); }
-            100% { transform: scale(1) rotate(360deg); filter: hue-rotate(360deg); }
-        }
         
         /* กระดานแผนที่ขนาดใหญ่ 1:1 Scrollable */
         .map-scroll-container {
@@ -1070,7 +1058,7 @@ function createPartyCardHTML(index, partyId, prefix) {
                  onclick="handleSlotClick('${partyId}', ${s})"
                  ondragover="handleSlotDragOver(event)"
                  ondrop="handleSlotDrop(event, '${partyId}', ${s})">
-                <div class="w-full truncate" id="slot-${partyId}-${s}-content">
+               <div class="w-full overflow-visible" id="slot-${partyId}-${s}-content">
                     <span class="text-gray-600 text-[10px]">ว่างเปล่า</span>
                 </div>
             </div>
@@ -1151,7 +1139,7 @@ function handleSlotDrop(event, partyId, slotIndex) {
 }
 function renderParties() {
     document.querySelectorAll('[id^="slot-"][id$="-content"]').forEach(slot => {
-        slot.innerHTML = `<span class="text-gray-600">ว่างเปล่า</span>`;
+        slot.innerHTML = `<span class="text-gray-600 text-[10px]">ว่างเปล่า</span>`;
     });
 
     players.forEach(p => {
@@ -1160,18 +1148,18 @@ function renderParties() {
 
             if (slot) {
                 slot.innerHTML = `
-                    <div class="flex items-center justify-between w-full h-full gap-3 overflow-visible">
-                        <div class="flex items-center gap-3 min-w-0 overflow-visible">
+                    <div class="flex items-center justify-between w-full h-full gap-2 overflow-visible">
+                        <div class="flex items-center gap-2 min-w-0 overflow-visible">
                             <div class="shrink-0">
                                 ${getJobIcon(p.job)}
                             </div>
 
-                            <strong class="party-player-name text-white font-extrabold text-[13px] leading-[1.45] tracking-normal whitespace-normal overflow-visible">
-    ${p.name}
-</strong>
+                            <strong class="party-player-name text-white font-extrabold text-[12px] leading-[1.75] tracking-normal whitespace-normal overflow-visible break-words">
+                                ${p.name}
+                            </strong>
                         </div>
 
-                        <button onclick="event.stopPropagation(); releasePlayer('${p.id}')" class="text-red-400 text-2xl px-2 shrink-0">
+                        <button onclick="event.stopPropagation(); releasePlayer('${p.id}')" class="text-red-400 text-xl px-1 shrink-0">
                             ✕
                         </button>
                     </div>
@@ -1180,11 +1168,12 @@ function renderParties() {
         }
     });
 
-    document.getElementById('count-total').innerText = players.length;
-    document.getElementById('count-assigned').innerText = players.filter(p => p.partyId !== null).length;
-}
-let selectedPlayerId = null;
+    const totalEl = document.getElementById('count-total');
+    const assignedEl = document.getElementById('count-assigned');
 
+    if (totalEl) totalEl.innerText = players.length;
+    if (assignedEl) assignedEl.innerText = players.filter(p => p.partyId !== null).length;
+}
 function selectPlayer(id) {
     selectedPlayerId = id;
 }
