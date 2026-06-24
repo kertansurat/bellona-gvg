@@ -1080,16 +1080,28 @@ function handleSlotDrop(event, partyId, slotIndex) {
 
     renderAll();
 }
-        function renderParties() {
-            players.forEach(p => {
-                if(p.partyId) {
-                    const slot = document.getElementById(`slot-${p.partyId}-${p.slotIndex}-content`);
-                    if(slot) slot.innerHTML = `<div class="flex items-center justify-between w-full"><span>${getJobIcon(p.job)} <strong>${p.name}</strong></span><button onclick="releasePlayer('${p.id}')" class="text-red-400">✕</button></div>`;
-                }
-            });
-            document.getElementById('count-total').innerText = players.length;
-            document.getElementById('count-assigned').innerText = players.filter(p => p.partyId !== null).length;
+function renderParties() {
+    document.querySelectorAll('[id^="slot-"][id$="-content"]').forEach(slot => {
+        slot.innerHTML = `<span class="text-gray-600">ว่างเปล่า</span>`;
+    });
+
+    players.forEach(p => {
+        if (p.partyId) {
+            const slot = document.getElementById(`slot-${p.partyId}-${p.slotIndex}-content`);
+            if (slot) {
+                slot.innerHTML = `
+                    <div class="flex items-center justify-between w-full">
+                        <span>${getJobIcon(p.job)} <strong>${p.name}</strong></span>
+                        <button onclick="event.stopPropagation(); releasePlayer('${p.id}')" class="text-red-400">✕</button>
+                    </div>
+                `;
+            }
         }
+    });
+
+    document.getElementById('count-total').innerText = players.length;
+    document.getElementById('count-assigned').innerText = players.filter(p => p.partyId !== null).length;
+}
 let selectedPlayerId = null;
 
 function selectPlayer(id) {
