@@ -796,7 +796,20 @@ console.log("Realtime Sync Started");
         }
 
         function getJobIcon(jobName) {
-    return `<img src="https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/lordknight.webp" class="w-8 h-8 rounded-full object-cover border border-[#d4af37]/50 shrink-0" />`;
+
+    const icons = {
+        "Lord Knight": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/lordknight.webp",
+        "Paladin": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/Paladin.webp",
+        "High Priest": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/highpriest.webp",
+        "Sniper": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/sniper.webp",
+        "Assassin Cross": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/job/Assasin.webp"
+    };
+
+    if (icons[jobName]) {
+        return `<img src="${icons[jobName]}" class="w-8 h-8 rounded-full object-cover border border-[#d4af37]/50 shrink-0" />`;
+    }
+
+    return `<div class="w-8 h-8 rounded-full flex items-center justify-center text-xs bg-slate-700 font-bold shrink-0">🛡️</div>`;
 }
         function addNewJobToGuild() {
             if (!checkAdminAccess()) return;
