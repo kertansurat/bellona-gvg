@@ -1058,8 +1058,7 @@ function exportTacticalMap() {
             const pGrid = document.getElementById('parties-grid'); if(pGrid) { pGrid.innerHTML = ''; for(let i=1; i<=8; i++) pGrid.appendChild(createPartyCardHTML(i, `party-${i}`, 'PARTY')); }
             const sGrid = document.getElementById('sub-parties-grid'); if(sGrid) { sGrid.innerHTML = ''; for(let i=1; i<=8; i++) sGrid.appendChild(createPartyCardHTML(i, `subparty-${i}`, 'SUB-PARTY')); }
         }
-
-        function createPartyCardHTML(index, partyId, prefix) {
+function createPartyCardHTML(index, partyId, prefix) {
     const card = document.createElement('div');
     card.className = 'glass-panel bg-[#0c0e14] border border-[#1f2838] rounded-lg p-2 space-y-1 text-[10px]';
 
@@ -1088,16 +1087,7 @@ function exportTacticalMap() {
 
     return card;
 }
-    card.innerHTML = `
-        <div class="flex justify-between pb-2 border-b border-[#1f2838]">
-            <span class="text-[#d4af37] font-bold">${prefix} ${index}</span>
-            <span id="${partyId}-counter">0/5 คน</span>
-        </div>
-        <div class="space-y-1.5">${slots}</div>
-    `;
 
-    return card;
-}
       function renderWaitingList() {
     const container = document.getElementById('waiting-list');
     if (!container) return;
