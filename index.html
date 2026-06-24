@@ -50,14 +50,14 @@
         }
         .map-canvas-wrapper {
             position: relative;
-            width: 2000px;  
-            height: 1125px; 
-            min-width: 2000px;
-            min-height: 1125px;
+            width: 1500px;  
+            height: 1500px; 
+            min-width: 1500px;
+            min-height: 1500px;
             transform: none;
         }
         .capture-export-mode {
-            width: 2000px !important;
+            width: 1500px !important;
             max-width: none !important;
         }
         .capture-export-mode #parties-grid,
@@ -65,6 +65,15 @@
             display: grid !important;
             grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
         }
+
+        .party-card-main { border-color: rgba(212,175,55,.7) !important; box-shadow: inset 0 0 0 1px rgba(212,175,55,.14); }
+        .party-card-sub { border-color: rgba(56,189,248,.65) !important; box-shadow: inset 0 0 0 1px rgba(56,189,248,.12); }
+        .party-title-main { color: #ffd64d; font-size: 14px; letter-spacing: .04em; }
+        .party-title-sub { color: #67e8f9; font-size: 14px; letter-spacing: .04em; }
+        .party-slot { min-height: 48px; }
+        .capture-export-mode .party-slot { min-height: 54px !important; padding-top: 8px !important; padding-bottom: 8px !important; }
+        .capture-export-mode .party-player-name { font-size: 16px !important; line-height: 1.35 !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .capture-export-mode .party-remove-btn { display: none !important; }
         .marker-token {
             width: 52px;
             height: 52px;
@@ -126,7 +135,7 @@
             <div class="text-center">รอคิว/สำรอง: <span class="font-bold text-gray-200 text-lg" id="count-waitlist">0</span></div>
         </div>
         <div class="flex items-center gap-2 flex-wrap">
-            <button onclick="openGuildSettingsModal()" class="admin-only bg-[#141a24] text-[#d4af37] border border-[#2b3543] px-4 py-2.5 rounded-lg text-sm font-bold"><i class="fa-solid fa-gear"></i> เพิ่มอาชีพ</button>
+            <!-- ปุ่มเพิ่มอาชีพถูกซ่อนไว้ตามการใช้งานจริง แต่ฟังก์ชั่นตั้งค่ายังคงอยู่ในโค้ด -->
             <button onclick="autoAssign()" class="admin-only bg-[#d4af37] text-black font-bold px-4 py-2.5 rounded-lg text-sm"><i class="fa-solid fa-wand-magic-sparkles"></i> จัดปาร์ตี้ออโต้</button>
             <button onclick="saveToLocalStorageManual()" class="admin-only bg-[#071911] text-emerald-400 border border-[#0d3f25] px-4 py-2.5 rounded-lg text-sm font-bold">
                 <i class="fa-solid fa-floppy-disk"></i> เซฟข้อมูล
@@ -192,11 +201,11 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 gap-4">
+    <div id="capture-party-combined-zone" class="grid grid-cols-1 gap-4">
 
-        <div class="space-y-3 p-4 bg-[#111520] rounded-xl border border-[#1f2838]" id="capture-main-zone">
+        <div class="space-y-3 p-4 bg-[#111520] rounded-xl border party-card-main" id="capture-main-zone">
             <div class="border-b border-[#1f2838] pb-2 flex justify-between items-center">
-                <h3 class="text-xs font-bold text-[#d4af37] uppercase tracking-wider">
+                <h3 class="party-title-main font-extrabold uppercase tracking-wider">
                     <i class="fa-solid fa-crown"></i> ปาร์ตี้หลัก (MAIN PARTY 1 - 8)
                 </h3>
                 <span class="text-[10px] text-gray-500 font-bold bg-[#d4af37]/5 px-2 py-0.5 rounded border border-[#d4af37]/15">
@@ -207,9 +216,9 @@
             <div id="parties-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3"></div>
         </div>
 
-        <div class="space-y-3 p-4 bg-[#111520] rounded-xl border border-[#1f2838]" id="capture-sub-zone">
+        <div class="space-y-3 p-4 bg-[#111520] rounded-xl border party-card-sub" id="capture-sub-zone">
             <div class="border-b border-[#1f2838] pb-2 flex justify-between items-center">
-                <h3 class="text-xs font-bold text-gray-300 uppercase tracking-wider">
+                <h3 class="party-title-sub font-extrabold uppercase tracking-wider">
                     <i class="fa-solid fa-shield-halved"></i> ปาร์ตี้รอง / กองหนุน (SUB-PARTY 1 - 8)
                 </h3>
                 <span class="text-[10px] text-gray-500 font-bold bg-gray-400/5 px-2 py-0.5 rounded border border-gray-400/15">
@@ -332,7 +341,7 @@
                                         <th class="p-3 font-bold">อาชีพคลาส</th>
                                         <th class="p-3 font-bold">สถานะวันนี้</th>
                                         <th class="p-3 font-bold text-center">สิทธิ์สุ่มรางวัล</th>
-                                        <th class="p-3 font-bold text-right">ดำเนินการ</th>
+                                        <th class="p-3 font-bold text-center">เช็คชื่อ Manual</th>
                                     </tr>
                                 </thead>
                                 <tbody id="member-manager-table-body" class="divide-y divide-[#1c2331]"></tbody>
@@ -400,6 +409,9 @@
                 <button onclick="spinAllReward()" class="admin-only w-full bg-[#1c2331] hover:bg-[#263249] text-cyan-300 border border-cyan-900/50 font-bold py-3 px-4 rounded-lg text-sm">
                     <i class="fa-solid fa-users"></i> สุ่มจากรายชื่อทั้งหมด
                 </button>
+                <button onclick="clearRewardWheelHistory()" class="admin-only w-full bg-red-950/30 hover:bg-red-950/50 text-red-300 border border-red-900/50 font-bold py-3 px-4 rounded-lg text-sm">
+                    <i class="fa-solid fa-eraser"></i> ล้างรายชื่อสุ่มวงล้อ
+                </button>
             </div>
         </div>
 
@@ -440,9 +452,9 @@
                 </button>
             </div>
 
-            <div id="reward-eligible-name-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2 text-xs"></div>
+            <div id="reward-eligible-name-grid" class="hidden"></div>
 
-            <div class="overflow-x-auto hidden">
+            <div class="overflow-x-auto">
                 <table class="w-full text-left text-sm border-collapse">
                     <thead>
                         <tr class="bg-[#1c2331] text-gray-300">
@@ -467,6 +479,16 @@
                         <div class="bg-[#0c0e14] p-5 text-center border rounded border-[#1f2838]"><span class="text-xs text-gray-400">มาร่วมรบสะสม</span><h3 class="text-2xl font-bold text-green-400 mt-1" id="stat-avg-present">0 ครั้ง</h3></div>
                         <div class="bg-[#0c0e14] p-5 text-center border rounded border-[#1f2838]"><span class="text-xs text-gray-400">ขอลาหยุดสะสม</span><h3 class="text-2xl font-bold text-[#e2a03f] mt-1" id="stat-avg-leave">0 ครั้ง</h3></div>
                         <div class="bg-[#0c0e14] p-5 text-center border rounded border-[#1f2838]"><span class="text-xs text-gray-400">ขาดวอร์สะสม</span><h3 class="text-2xl font-bold text-red-400 mt-1" id="stat-avg-absent">0 ครั้ง</h3></div>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                        <div class="bg-[#0c0e14] p-5 border rounded border-[#1f2838]">
+                            <h3 class="text-sm font-bold text-amber-400 mb-3"><i class="fa-solid fa-clock"></i> ผู้ลาวอร์มากที่สุด 5 อันดับแรก</h3>
+                            <div id="top-leave-list" class="space-y-2 text-sm"></div>
+                        </div>
+                        <div class="bg-[#0c0e14] p-5 border rounded border-[#1f2838]">
+                            <h3 class="text-sm font-bold text-red-400 mb-3"><i class="fa-solid fa-circle-xmark"></i> ผู้ขาดวอร์มากที่สุด 5 อันดับแรก</h3>
+                            <div id="top-absent-list" class="space-y-2 text-sm"></div>
+                        </div>
                     </div>
                     <div class="overflow-x-auto"><table class="w-full text-left text-sm border-collapse"><thead><tr class="bg-[#1c2331] text-gray-300"><th class="p-3 font-bold">ชื่อตัวละคร</th><th class="p-3 font-bold">อาชีพ</th><th class="p-3 text-center font-bold">มา (ครั้ง)</th><th class="p-3 text-center font-bold">ลา (ครั้ง)</th><th class="p-3 text-center font-bold">ขาด (ครั้ง)</th></tr></thead><tbody id="stats-table-body" class="divide-y divide-[#1c2331]"></tbody></table></div>
                 </div>
@@ -856,17 +878,19 @@ function initPartiesGrid() {
 
 function createPartyCardHTML(index, partyId, prefix) {
     const card = document.createElement('div');
-    card.className = 'glass-panel bg-[#0c0e14] border border-[#1f2838] rounded-lg p-2 space-y-1 text-[10px]';
+    const isSub = String(partyId).startsWith('subparty');
+    card.className = `glass-panel bg-[#0c0e14] rounded-lg p-2.5 space-y-1.5 text-[11px] ${isSub ? 'party-card-sub' : 'party-card-main'}`;
     let slots = '';
-    for (let s=0; s<5; s++) {
-        slots += `<div class="party-slot bg-[#121620] px-2 py-1 rounded-md border border-[#1f2838] min-h-[42px] flex items-center cursor-pointer hover:border-[#d4af37]/50"
-            onclick="handleSlotClick('${partyId}', ${s})"
+    for (let slotIndex=0; slotIndex<5; slotIndex++) {
+        slots += `<div class="party-slot bg-[#121620] px-2.5 py-2 rounded-md border border-[#1f2838] min-h-[48px] flex items-center cursor-pointer hover:border-[#d4af37]/50"
+            onclick="handleSlotClick('${partyId}', ${slotIndex})"
             ondragover="handleSlotDragOver(event)"
-            ondrop="handleSlotDrop(event, '${partyId}', ${s})">
-            <div class="w-full min-w-0" id="slot-${partyId}-${s}-content"><span class="text-gray-600 text-[10px]">ว่างเปล่า</span></div>
+            ondrop="handleSlotDrop(event, '${partyId}', ${slotIndex})">
+            <div class="w-full min-w-0" id="slot-${partyId}-${slotIndex}-content"><span class="text-gray-600 text-[11px]">ว่างเปล่า</span></div>
         </div>`;
     }
-    card.innerHTML = `<div class="flex justify-between pb-1 border-b border-[#1f2838]"><span class="text-[#d4af37] font-bold text-[11px]">${prefix} ${index}</span><span id="${partyId}-counter" class="text-[10px]">0/5 คน</span></div><div class="space-y-1">${slots}</div>`;
+    const titleClass = isSub ? 'party-title-sub' : 'party-title-main';
+    card.innerHTML = `<div class="flex justify-between pb-1.5 border-b border-[#1f2838]"><span class="${titleClass} font-extrabold">${prefix} ${index}</span><span id="${partyId}-counter" class="text-[11px] font-bold text-gray-300">0/5 คน</span></div><div class="space-y-1.5">${slots}</div>`;
     return card;
 }
 
@@ -909,8 +933,8 @@ function renderParties() {
         if (!slot) return;
         counters[p.partyId] = (counters[p.partyId] || 0) + 1;
         slot.innerHTML = `<div class="flex items-center justify-between w-full h-full gap-2 min-w-0">
-            <div class="flex items-center gap-2 min-w-0">${getJobIcon(p.job)}<div class="text-white font-extrabold text-[14px] leading-snug truncate">${escapeHtml(p.name)}</div></div>
-            <button onclick="event.stopPropagation(); releasePlayer('${escapeHtml(p.id)}')" class="admin-only text-red-400 text-lg px-1 shrink-0">✕</button>
+            <div class="flex items-center gap-2 min-w-0">${getJobIcon(p.job)}<div class="party-player-name text-white font-extrabold text-[15px] leading-snug truncate">${escapeHtml(p.name)}</div></div>
+            <button onclick="event.stopPropagation(); releasePlayer('${escapeHtml(p.id)}')" class="party-remove-btn admin-only text-red-400 text-lg px-1 shrink-0">✕</button>
         </div>`;
     });
     for (let i=1; i<=8; i++) {
@@ -992,18 +1016,45 @@ function bulkSetAttendanceStatus(status) {
     renderAll();
 }
 
+function setSingleAttendanceStatus(playerId, status) {
+    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
+    const p = players.find(x => String(x.id) === String(playerId));
+    if (!p) return alert('ไม่พบสมาชิก');
+    p.status = status;
+    if (status === 'มา') p.presentCount = (p.presentCount || 0) + 1;
+    if (status === 'ลา') p.leaveCount = (p.leaveCount || 0) + 1;
+    if (status === 'ขาด') { p.absentCount = (p.absentCount || 0) + 1; p.hasQuota = false; }
+    if (status === 'มา' && p.hasQuota === false) p.hasQuota = true;
+    saveToLocalStorage();
+    if (typeof window.savePlayersToFirebaseSafe === 'function') window.savePlayersToFirebaseSafe(false);
+    renderAll();
+}
+
 function renderMemberManagerTab() {
     const tbody = safeEl('member-manager-table-body');
     if (!tbody) return;
     tbody.innerHTML = '';
     players.forEach(p => {
+        const statusBadge = p.status === 'มา'
+            ? '<span class="text-green-400 font-bold">มาวอร์</span>'
+            : p.status === 'ลา'
+                ? '<span class="text-amber-400 font-bold">ลา</span>'
+                : p.status === 'ขาด'
+                    ? '<span class="text-red-400 font-bold">ขาด</span>'
+                    : '<span class="text-gray-400">-</span>';
         tbody.innerHTML += `<tr class="border-b border-[#1c2331] text-xs">
             <td class="p-3 text-center"><input type="checkbox" value="${escapeHtml(p.id)}" class="member-select-chk accent-[#d4af37]"></td>
             <td class="p-3 font-bold text-white">${escapeHtml(p.name)} <span class="text-xs text-gray-500">(ID: ${escapeHtml(p.id)})</span></td>
             <td class="p-3">${escapeHtml(p.job)}</td>
-            <td class="p-3">${escapeHtml(p.status || '-')}</td>
+            <td class="p-3">${statusBadge}</td>
             <td class="p-3 text-center"><button onclick="toggleRewardQuota('${escapeHtml(p.id)}')" class="admin-only ${p.hasQuota ? 'bg-green-950/40 text-green-400 border-green-900/40' : 'bg-red-950/40 text-red-400 border-red-900/40'} border px-3 py-1.5 rounded-lg text-xs font-bold">${p.hasQuota ? 'เปิด' : 'ปิด'}</button></td>
-            <td class="p-3 text-right"><button onclick="releasePlayer('${escapeHtml(p.id)}')" class="admin-only text-gray-400 hover:text-white bg-[#1c2331] px-2 py-1 rounded">ปลดปาร์ตี้</button></td>
+            <td class="p-3 text-center">
+                <div class="flex justify-center gap-1.5 flex-wrap">
+                    <button onclick="setSingleAttendanceStatus('${escapeHtml(p.id)}','มา')" class="admin-only bg-green-950/40 text-green-400 border border-green-900/40 px-2.5 py-1.5 rounded text-[11px] font-bold">มาวอร์</button>
+                    <button onclick="setSingleAttendanceStatus('${escapeHtml(p.id)}','ลา')" class="admin-only bg-amber-950/40 text-amber-400 border border-amber-900/40 px-2.5 py-1.5 rounded text-[11px] font-bold">ลา</button>
+                    <button onclick="setSingleAttendanceStatus('${escapeHtml(p.id)}','ขาด')" class="admin-only bg-red-950/40 text-red-400 border border-red-900/40 px-2.5 py-1.5 rounded text-[11px] font-bold">ขาด</button>
+                </div>
+            </td>
         </tr>`;
     });
 }
@@ -1022,6 +1073,18 @@ function renderStatsTab() {
     if (safeEl('stat-avg-present')) safeEl('stat-avg-present').innerText = totalP + ' ครั้ง';
     if (safeEl('stat-avg-leave')) safeEl('stat-avg-leave').innerText = totalL + ' ครั้ง';
     if (safeEl('stat-avg-absent')) safeEl('stat-avg-absent').innerText = totalA + ' ครั้ง';
+    renderTopStatList('top-leave-list', 'leaveCount', 'ลา');
+    renderTopStatList('top-absent-list', 'absentCount', 'ขาด');
+}
+function renderTopStatList(elementId, key, label) {
+    const box = safeEl(elementId);
+    if (!box) return;
+    const top = [...players].sort((a,b) => (b[key] || 0) - (a[key] || 0)).filter(p => (p[key] || 0) > 0).slice(0,5);
+    if (!top.length) {
+        box.innerHTML = `<div class="text-xs text-gray-500">ยังไม่มีข้อมูล${label}วอร์</div>`;
+        return;
+    }
+    box.innerHTML = top.map((p,i) => `<div class="flex justify-between items-center bg-[#111520] border border-[#1f2838] rounded-lg px-3 py-2"><span class="font-bold text-white">${i+1}. ${escapeHtml(p.name || '-')}</span><span class="font-extrabold ${key === 'absentCount' ? 'text-red-400' : 'text-amber-400'}">${p[key] || 0} ครั้ง</span></div>`).join('');
 }
 
 function toggleRewardQuota(playerId) {
@@ -1049,36 +1112,30 @@ function resetAllRewardQuota() {
 }
 
 async function captureParties() {
-    const zones = [
-        { el: safeEl('capture-main-zone'), name: 'main-party' },
-        { el: safeEl('capture-sub-zone'), name: 'sub-party' }
-    ];
+    const zone = safeEl('capture-party-combined-zone');
+    if (!zone) return alert('ไม่พบกล่องปาร์ตี้สำหรับแคปภาพ');
     if (!window.html2canvas) return alert('ไม่พบระบบ html2canvas สำหรับแคปภาพ');
-    for (const zone of zones) {
-        if (!zone.el) continue;
-        zone.el.classList.add('capture-export-mode');
-        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-        try {
-            const canvasShot = await html2canvas(zone.el, {
-                backgroundColor: '#111520',
-                scale: 2,
-                useCORS: true,
-                allowTaint: true,
-                scrollX: 0,
-                scrollY: 0,
-                windowWidth: 2200
-            });
-            const link = document.createElement('a');
-            link.download = `bellona-${zone.name}-${Date.now()}.png`;
-            link.href = canvasShot.toDataURL('image/png');
-            link.click();
-        } catch (err) {
-            console.warn('capture error:', err);
-            alert('แคปภาพไม่สำเร็จ กรุณาลองใหม่อีกครั้ง');
-        } finally {
-            zone.el.classList.remove('capture-export-mode');
-        }
-        await new Promise(r => setTimeout(r, 450));
+    zone.classList.add('capture-export-mode');
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+    try {
+        const canvasShot = await html2canvas(zone, {
+            backgroundColor: '#080a0f',
+            scale: 1.6,
+            useCORS: true,
+            allowTaint: true,
+            scrollX: 0,
+            scrollY: 0,
+            windowWidth: 1700
+        });
+        const link = document.createElement('a');
+        link.download = `bellona-party-all-${Date.now()}.png`;
+        link.href = canvasShot.toDataURL('image/png');
+        link.click();
+    } catch (err) {
+        console.warn('capture error:', err);
+        alert('แคปภาพไม่สำเร็จ กรุณาลองใหม่อีกครั้ง');
+    } finally {
+        zone.classList.remove('capture-export-mode');
     }
 }
 
@@ -1088,26 +1145,11 @@ function renderRewardsTab() {
     if (tbody) tbody.innerHTML = '';
     if (grid) grid.innerHTML = '';
     const totalMembers = players.length;
-    const eligiblePlayers = players.filter(p => p.status === 'มา' && p.hasQuota !== false);
-    const activeMembers = eligiblePlayers.length;
+    const activeMembers = players.filter(p => p.status === 'มา' && p.hasQuota !== false).length;
     const inactiveMembers = totalMembers - activeMembers;
     if (safeEl('reward-total-members')) safeEl('reward-total-members').innerText = totalMembers;
     if (safeEl('reward-active-members')) safeEl('reward-active-members').innerText = activeMembers;
     if (safeEl('reward-inactive-members')) safeEl('reward-inactive-members').innerText = inactiveMembers;
-
-    if (grid) {
-        if (eligiblePlayers.length === 0) {
-            grid.innerHTML = '<div class="col-span-full text-center text-gray-500 bg-[#0c0e14] border border-[#1f2838] rounded-lg p-6">ยังไม่มีรายชื่อผู้มีสิทธิ์สุ่ม</div>';
-        } else {
-            eligiblePlayers.forEach((p, idx) => {
-                const card = document.createElement('div');
-                card.className = 'bg-[#0c0e14] border border-[#1f2838] rounded-lg px-3 py-2 font-bold text-white truncate';
-                card.textContent = `${idx + 1}. ${p.name || '-'}`;
-                grid.appendChild(card);
-            });
-        }
-    }
-
     if (tbody) {
         players.forEach(p => {
             tbody.innerHTML += `<tr class="text-xs border-b border-[#1c2331]"><td class="p-3 font-bold text-white">${escapeHtml(p.name || '-')}</td><td class="p-3">${escapeHtml(p.rewardName || 'ยังไม่ระบุ')}</td><td class="p-3 text-center">${p.hasQuota && p.status !== 'ขาด' ? '<span class="text-green-400 font-bold">เปิดสิทธิ์</span>' : '<span class="text-red-400 font-bold">ปิดสิทธิ์</span>'}</td><td class="p-3 text-right"><button onclick="toggleRewardQuota('${escapeHtml(p.id)}')" class="admin-only bg-[#1c2331] text-[#d4af37] border border-[#2d3748] px-3 py-1.5 rounded-lg text-xs font-bold">เปิด/ปิดสิทธิ์</button></td></tr>`;
@@ -1125,6 +1167,14 @@ function renderRewardWinnerHistory() {
     box.innerHTML = rewardWinnerHistory.slice(0, 5).map((w, i) => `<div class="flex justify-between items-center bg-[#111520] border border-[#1f2838] rounded px-2 py-1"><span>${i + 1}. ${escapeHtml(w.name)}</span><span class="text-[#d4af37] text-xs">${escapeHtml(w.job || '')}</span></div>`).join('');
 }
 
+function clearRewardWheelHistory() {
+    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
+    rewardWinnerHistory = [];
+    if (safeEl('lucky-winner-name')) safeEl('lucky-winner-name').innerText = '???';
+    if (safeEl('lucky-winner-job')) safeEl('lucky-winner-job').innerText = 'พร้อมรับรางวัล';
+    saveToLocalStorage();
+    renderRewardWinnerHistory();
+}
 function spinEligibleReward() { spinRewardWheel(players.filter(p => p.status === 'มา' && p.hasQuota !== false)); }
 function spinAllReward() { spinRewardWheel(players.filter(p => p.status === 'มา')); }
 function spinRewardWheel(pool) {
@@ -1287,7 +1337,7 @@ function initDrawingCanvas() {
     setTimeout(resizeCanvas, 100);
 }
 function getCanvasMousePos(e) { const rect = canvas.getBoundingClientRect(); return [((e.clientX - rect.left) / rect.width) * canvas.width, ((e.clientY - rect.top) / rect.height) * canvas.height]; }
-function resizeCanvas() { if (!canvas) return; canvas.width = 2000; canvas.height = 1125; redrawCanvasPaths(); }
+function resizeCanvas() { if (!canvas) return; canvas.width = 1500; canvas.height = 1500; redrawCanvasPaths(); }
 function setDrawMode(mode) {
     drawMode = mode;
     document.querySelectorAll('.draw-tool').forEach(b => {
@@ -1333,11 +1383,38 @@ function redrawCanvasPaths() {
     drawingPaths.forEach(p => drawShapeOnContext(ctx, p));
 }
 function exportTacticalMap() {
-    if (!canvas) return;
     const board = safeEl('tactical-board-wrapper');
+    if (!board) return alert('ไม่พบกระดานแผนที่');
+    if (window.html2canvas) {
+        html2canvas(board, {
+            backgroundColor: '#0c0e14',
+            scale: 1.5,
+            useCORS: true,
+            allowTaint: true,
+            width: 1500,
+            height: 1500,
+            windowWidth: 1600,
+            windowHeight: 1600,
+            scrollX: 0,
+            scrollY: 0
+        }).then(c => {
+            const link = document.createElement('a');
+            link.download = `bellona-tactical-map-${Date.now()}.png`;
+            link.href = c.toDataURL('image/png');
+            link.click();
+        }).catch(err => {
+            console.warn('html2canvas tactical export error:', err);
+            exportTacticalMapManualFallback();
+        });
+        return;
+    }
+    exportTacticalMapManualFallback();
+}
+function exportTacticalMapManualFallback() {
+    if (!canvas) return;
     const exportCanvas = document.createElement('canvas');
-    exportCanvas.width = 2000;
-    exportCanvas.height = 1125;
+    exportCanvas.width = 1500;
+    exportCanvas.height = 1500;
     const exCtx = exportCanvas.getContext('2d');
     const bgImg = safeEl('battle-map-bg');
     try {
@@ -1350,16 +1427,8 @@ function exportTacticalMap() {
         link.href = exportCanvas.toDataURL('image/png');
         link.click();
     } catch (err) {
-        if (window.html2canvas && board) {
-            html2canvas(board, { backgroundColor:'#0c0e14', scale:1, useCORS:true, allowTaint:true, width:2000, height:1125 }).then(c => {
-                const link = document.createElement('a');
-                link.download = `bellona-tactical-map-${Date.now()}.png`;
-                link.href = c.toDataURL('image/png');
-                link.click();
-            }).catch(() => alert('เซฟรูปภาพไม่สำเร็จ'));
-        } else {
-            alert('เซฟรูปภาพไม่สำเร็จ');
-        }
+        console.warn('manual tactical export error:', err);
+        alert('เซฟรูปภาพไม่สำเร็จ อาจเกิดจากรูปแผนที่ภายนอกไม่อนุญาตให้บันทึก');
     }
 }
 function drawMarkerOnContext(targetCtx, m, width, height) {
