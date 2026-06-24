@@ -1082,21 +1082,23 @@ function handleSlotDrop(event, partyId, slotIndex) {
 }
 function renderParties() {
     document.querySelectorAll('[id^="slot-"][id$="-content"]').forEach(slot => {
-        slot.innerHTML = `<span class="text-gray-600">ว่างเปล่า</span>`;
-    });
+slot.innerHTML = `
+    <div class="flex items-center justify-between w-full h-full gap-3 overflow-visible">
+        <div class="flex items-center gap-3 min-w-0 overflow-visible">
+            <div class="shrink-0">
+                ${getJobIcon(p.job)}
+            </div>
 
-    players.forEach(p => {
-        if (p.partyId) {
-            const slot = document.getElementById(`slot-${p.partyId}-${p.slotIndex}-content`);
-            if (slot) {
-                slot.innerHTML = `
-                    <div class="flex items-center justify-between w-full">
-                        <span>${getJobIcon(p.job)} <strong class="party-player-name text-white font-extrabold text-[13px] leading-[1.45] tracking-normal whitespace-normal overflow-visible">
-    ${p.name}
-</strong>
-                        <button onclick="event.stopPropagation(); releasePlayer('${p.id}')" class="text-red-400">✕</button>
-                    </div>
-                `;
+            <div class="text-white font-extrabold text-[16px] leading-[1.7] tracking-normal truncate overflow-visible">
+                ${p.name}
+            </div>
+        </div>
+
+        <button onclick="event.stopPropagation(); releasePlayer('${p.id}')" class="text-red-400 text-2xl px-2 shrink-0">
+            ✕
+        </button>
+    </div>
+`;
             }
         }
     });
