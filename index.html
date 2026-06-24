@@ -37,10 +37,12 @@ body {
 }
 
 .capture-mode .party-player-name {
-    font-size: 15px !important;
-    line-height: 1.8 !important;
-    white-space: normal !important;
-    overflow: visible !important;
+    font-size: 14px !important;
+    line-height: 1.35 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    display: block !important;
 }
 
 .capture-mode .party-slot {
@@ -1054,11 +1056,11 @@ function createPartyCardHTML(index, partyId, prefix) {
 
     for (let s = 0; s < 5; s++) {
         slots += `
-            <div class="party-slot bg-[#121620] px-2 py-1 rounded-md border border-[#1f2838] min-h-[42px] flex items-center cursor-pointer"
+            <div class="party-slot bg-[#121620] px-2 py-1 rounded-md border border-[#1f2838] h-[46px] flex items-center cursor-pointer overflow-hidden"
                  onclick="handleSlotClick('${partyId}', ${s})"
                  ondragover="handleSlotDragOver(event)"
                  ondrop="handleSlotDrop(event, '${partyId}', ${s})">
-               <div class="w-full overflow-visible" id="slot-${partyId}-${s}-content">
+               <div class="w-full h-full overflow-hidden" id="slot-${partyId}-${s}-content">
                     <span class="text-gray-600 text-[10px]">ว่างเปล่า</span>
                 </div>
             </div>
@@ -1148,22 +1150,20 @@ function renderParties() {
 
             if (slot) {
                 slot.innerHTML = `
-                    <div class="flex items-center justify-between w-full h-full gap-2 overflow-visible">
-                        <div class="flex items-center gap-2 min-w-0 overflow-visible">
-                            <div class="shrink-0">
-                                ${getJobIcon(p.job)}
-                            </div>
+    <div class="grid grid-cols-[32px_1fr_22px] items-center w-full h-full gap-2 overflow-hidden">
+        <div class="w-8 h-8 flex items-center justify-center overflow-hidden">
+            ${getJobIcon(p.job)}
+        </div>
 
-                            <strong class="party-player-name text-white font-extrabold text-[12px] leading-[1.75] tracking-normal whitespace-normal overflow-visible break-words">
-                                ${p.name}
-                            </strong>
-                        </div>
+        <strong class="party-player-name text-white font-extrabold text-[14px] leading-none truncate">
+            ${p.name}
+        </strong>
 
-                        <button onclick="event.stopPropagation(); releasePlayer('${p.id}')" class="text-red-400 text-xl px-1 shrink-0">
-                            ✕
-                        </button>
-                    </div>
-                `;
+        <button onclick="event.stopPropagation(); releasePlayer('${p.id}')" class="text-red-400 text-lg leading-none">
+            ✕
+        </button>
+    </div>
+`;
             }
         }
     });
