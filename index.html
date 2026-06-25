@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบวางแผนกิลด์วอร์ GVG - BELLONA ULTIMATE SUITE</title>
+    <title>BELLONA ROOC</title>
+    <meta name="application-name" content="BELLONA ROOC">
+    <meta property="og:title" content="BELLONA ROOC">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -218,6 +220,41 @@
             grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
             gap: 8px;
         }
+
+
+        /* FINAL PRODUCTION: Backup / Activity Log */
+        .activity-log-row {
+            background: #0c0e14;
+            border: 1px solid #1f2838;
+            border-radius: 10px;
+            padding: 10px 12px;
+        }
+        .activity-log-time {
+            color: #94a3b8;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .activity-log-action {
+            color: #d4af37;
+            font-size: 12px;
+            font-weight: 900;
+        }
+        .bellona-version-pill {
+            position: fixed;
+            right: 14px;
+            bottom: 14px;
+            z-index: 40;
+            background: rgba(9,11,16,.88);
+            border: 1px solid rgba(212,175,55,.28);
+            color: #d4af37;
+            border-radius: 999px;
+            padding: 7px 11px;
+            font-size: 11px;
+            font-weight: 900;
+            letter-spacing: .04em;
+            backdrop-filter: blur(8px);
+        }
+
     </style>
 </head>
 <body class="min-h-screen flex flex-col selection:bg-[#d4af37] selection:text-black">
@@ -270,6 +307,16 @@
             <button onclick="saveToLocalStorageManual()" class="admin-only bg-[#071911] text-emerald-400 border border-[#0d3f25] px-4 py-2.5 rounded-lg text-sm font-bold">
                 <i class="fa-solid fa-floppy-disk"></i> เซฟข้อมูล
             </button>
+            <button onclick="exportBellonaBackup()" class="admin-only bg-[#101826] text-emerald-300 border border-emerald-900/60 px-4 py-2.5 rounded-lg text-sm font-bold">
+                <i class="fa-solid fa-file-export"></i> Export Backup
+            </button>
+            <button onclick="triggerBellonaBackupImport()" class="admin-only bg-[#101826] text-amber-300 border border-amber-900/60 px-4 py-2.5 rounded-lg text-sm font-bold">
+                <i class="fa-solid fa-file-import"></i> Import Backup
+            </button>
+            <button onclick="openActivityLogModal()" class="bg-[#141a24] text-[#d4af37] border border-[#2b3543] px-4 py-2.5 rounded-lg text-sm font-bold">
+                <i class="fa-solid fa-clock-rotate-left"></i> Activity Log
+            </button>
+            <input id="bellona-backup-file-input" type="file" accept="application/json,.json" class="hidden" onchange="importBellonaBackupFile(event)">
             <button onclick="importPlayersFromFirebaseSafe()" class="admin-only bg-[#111827] text-cyan-400 border border-cyan-900/60 px-4 py-2.5 rounded-lg text-sm font-bold">
     <i class="fa-solid fa-cloud-arrow-down"></i> ดึง Firebase
 </button>
@@ -669,6 +716,27 @@
         </div>
     </div>
 
+
+
+    <!-- 📜 Activity Log Modal -->
+    <div id="activity-log-modal" class="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-[148] hidden">
+        <div class="bg-[#111520] border border-[#1f2838] rounded-xl p-6 w-[760px] max-w-[94%] max-h-[82vh] shadow-2xl flex flex-col">
+            <div class="flex items-center justify-between gap-3 border-b border-[#1f2838] pb-3 mb-4">
+                <div>
+                    <h3 class="text-base font-bold text-[#d4af37]"><i class="fa-solid fa-clock-rotate-left"></i> Activity Log</h3>
+                    <div class="text-[11px] text-gray-500 mt-1">แสดง 120 รายการล่าสุดของการจัดการระบบ</div>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="clearActivityLogs()" class="admin-only bg-red-950/30 text-red-300 border border-red-900/50 px-3 py-1.5 rounded-lg text-xs font-bold">ล้าง Log</button>
+                    <button onclick="closeActivityLogModal()" class="bg-slate-800 text-white px-3 py-1.5 rounded-lg text-xs font-bold">ปิด</button>
+                </div>
+            </div>
+            <div id="activity-log-list" class="space-y-2 overflow-y-auto pr-1 text-sm"></div>
+        </div>
+    </div>
+
+    <div class="bellona-version-pill">BELLONA ROOC · v1.0 Production</div>
+
     <!-- 💡 หน้าต่างป๊อปอัพยืนยันการทำรายการ -->
     <div id="custom-confirm-modal" class="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-[150] hidden">
         <div class="bg-[#111520] border border-[#1f2838] rounded-xl p-6 w-[420px] max-w-[90%] shadow-2xl text-center">
@@ -726,6 +794,7 @@ let rewardWinnerHistory = [];
 let rewardDrawnIds = [];
 let rewardSpinLock = false;
 let attendanceLogs = {};
+let activityLogs = [];
 let unsubPlayersRealtime = null;
 let unsubAttendanceRealtime = null;
 
@@ -927,6 +996,154 @@ async function setAttendanceStatusNoDuplicate(playerId, newStatus, options = {})
     return true;
 }
 
+
+/* ================= BACKUP / RESTORE / ACTIVITY LOG ================= */
+function formatActivityTime(iso) {
+    try {
+        return new Intl.DateTimeFormat('th-TH', {
+            timeZone: 'Asia/Bangkok',
+            day: '2-digit', month: '2-digit', year: 'numeric',
+            hour: '2-digit', minute: '2-digit', second: '2-digit'
+        }).format(new Date(iso));
+    } catch (e) {
+        return iso || '-';
+    }
+}
+
+function logActivity(action, detail = '', meta = {}) {
+    const row = {
+        id: 'log_' + Date.now() + '_' + Math.random().toString(16).slice(2),
+        action: String(action || 'SYSTEM'),
+        detail: String(detail || ''),
+        meta: meta || {},
+        role: userRole || 'guest',
+        at: new Date().toISOString()
+    };
+    activityLogs.unshift(row);
+    activityLogs = activityLogs.slice(0, 120);
+    saveToLocalStorage();
+    renderActivityLogList();
+}
+
+function renderActivityLogList() {
+    const box = safeEl('activity-log-list');
+    if (!box) return;
+    if (!activityLogs || activityLogs.length === 0) {
+        box.innerHTML = '<div class="text-gray-500 text-xs text-center py-6">ยังไม่มี Activity Log</div>';
+        return;
+    }
+    box.innerHTML = activityLogs.map(log => `
+        <div class="activity-log-row">
+            <div class="flex items-center justify-between gap-2 mb-1">
+                <span class="activity-log-action">${escapeHtml(log.action)}</span>
+                <span class="activity-log-time">${escapeHtml(formatActivityTime(log.at))}</span>
+            </div>
+            <div class="text-gray-200 text-xs leading-relaxed">${escapeHtml(log.detail || '-')}</div>
+        </div>
+    `).join('');
+}
+
+function openActivityLogModal() {
+    renderActivityLogList();
+    safeEl('activity-log-modal')?.classList.remove('hidden');
+}
+
+function closeActivityLogModal() {
+    safeEl('activity-log-modal')?.classList.add('hidden');
+}
+
+function clearActivityLogs() {
+    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
+    activityLogs = [];
+    saveToLocalStorage();
+    renderActivityLogList();
+}
+
+function buildBellonaBackupPayload() {
+    return {
+        app: 'BELLONA ROOC',
+        version: '1.0-production',
+        exportedAt: new Date().toISOString(),
+        storageKey: STORAGE_KEY,
+        data: {
+            players,
+            googleSheetUrl,
+            availableJobsList,
+            globalMaps,
+            selectedGlobalMapId,
+            selectedMap,
+            markers,
+            drawingPaths,
+            rewardWinnerHistory,
+            rewardDrawnIds,
+            attendanceLogs,
+            activityLogs
+        }
+    };
+}
+
+function exportBellonaBackup() {
+    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
+    const payload = buildBellonaBackupPayload();
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `bellona_rooc_backup_${getBangkokDateString()}_${Date.now()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    logActivity('EXPORT BACKUP', 'ส่งออกไฟล์ Backup สำเร็จ');
+}
+
+function triggerBellonaBackupImport() {
+    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
+    safeEl('bellona-backup-file-input')?.click();
+}
+
+function importBellonaBackupFile(event) {
+    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
+    const file = event?.target?.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const parsed = JSON.parse(String(e.target.result || '{}'));
+            const data = parsed.data || parsed;
+            if (!data || !Array.isArray(data.players)) {
+                alert('ไฟล์ Backup ไม่ถูกต้อง');
+                return;
+            }
+            players = (data.players || []).map(normalizePlayer);
+            googleSheetUrl = data.googleSheetUrl || '';
+            availableJobsList = Array.isArray(data.availableJobsList) && data.availableJobsList.length ? data.availableJobsList : [...defaultJobsList];
+            globalMaps = Array.isArray(data.globalMaps) && data.globalMaps.length ? data.globalMaps : globalMaps;
+            selectedGlobalMapId = data.selectedGlobalMapId || 'vigrid';
+            selectedMap = data.selectedMap || selectedGlobalMapId || 'vigrid';
+            markers = Array.isArray(data.markers) ? data.markers : [];
+            drawingPaths = Array.isArray(data.drawingPaths) ? data.drawingPaths : [];
+            rewardWinnerHistory = Array.isArray(data.rewardWinnerHistory) ? data.rewardWinnerHistory : [];
+            rewardDrawnIds = Array.isArray(data.rewardDrawnIds) ? data.rewardDrawnIds.map(String) : [];
+            attendanceLogs = data.attendanceLogs && typeof data.attendanceLogs === 'object' ? data.attendanceLogs : {};
+        activityLogs = Array.isArray(data.activityLogs) ? data.activityLogs : [];
+            activityLogs = Array.isArray(data.activityLogs) ? data.activityLogs : [];
+            logActivity('IMPORT BACKUP', `นำเข้า Backup จากไฟล์ ${file.name}`);
+            saveToLocalStorage();
+            initPartiesGrid();
+            updateMapDropdownOptions();
+            displayGlobalMap(selectedGlobalMapId || 'vigrid');
+            renderAll();
+            if (typeof window.savePlayersToFirebaseSafe === 'function') window.savePlayersToFirebaseSafe(false);
+        } catch (err) {
+            alert('Import Backup Error: ' + err.message);
+        } finally {
+            if (event.target) event.target.value = '';
+        }
+    };
+    reader.readAsText(file);
+}
+
 window.onload = function() {
     checkLoginSession();
     loadFromLocalStorage();
@@ -1013,6 +1230,7 @@ function loadFromLocalStorage() {
         rewardWinnerHistory = Array.isArray(data.rewardWinnerHistory) ? data.rewardWinnerHistory : [];
         rewardDrawnIds = Array.isArray(data.rewardDrawnIds) ? data.rewardDrawnIds.map(String) : [];
         attendanceLogs = data.attendanceLogs && typeof data.attendanceLogs === 'object' ? data.attendanceLogs : {};
+        activityLogs = Array.isArray(data.activityLogs) ? data.activityLogs : [];
         selectedGlobalMapId = data.selectedGlobalMapId || 'vigrid';
         selectedMap = data.selectedMap || selectedGlobalMapId || 'vigrid';
         const logoData = localStorage.getItem('bellona_custom_logo_data');
@@ -1023,7 +1241,7 @@ function loadFromLocalStorage() {
 }
 
 function saveToLocalStorage() {
-    const data = { players, googleSheetUrl, availableJobsList, globalMaps, selectedGlobalMapId, selectedMap, markers, drawingPaths, rewardWinnerHistory, rewardDrawnIds, attendanceLogs };
+    const data = { players, googleSheetUrl, availableJobsList, globalMaps, selectedGlobalMapId, selectedMap, markers, drawingPaths, rewardWinnerHistory, rewardDrawnIds, attendanceLogs, activityLogs };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
 function saveToLocalStorageManual() { saveToLocalStorage(); alert('💾 บันทึกฐานข้อมูลกิลด์สำเร็จ!'); }
@@ -1041,6 +1259,7 @@ async function importPlayersFromFirebaseSafe() {
             attendanceLogs[docSnap.id] = { id: docSnap.id, ...docSnap.data() };
         });
 
+        logActivity('IMPORT FIREBASE', `ดึงข้อมูลจาก Firebase สำเร็จ: ${players.length} คน`);
         saveToLocalStorage();
         updateAttendanceRoundDisplay();
         renderAll();
@@ -1148,13 +1367,15 @@ function manualAddMemberSubmit() {
     const job = safeEl('manual-add-job')?.value || availableJobsList[0] || 'ไม่ระบุอาชีพ';
     const status = 'ยังไม่เช็คชื่อ';
     if (!name) return alert('กรุณาใส่ชื่อตัวละคร');
-    players.push(normalizePlayer({
+    const newPlayer = normalizePlayer({
         id: String(Date.now()), name, job, status,
         presentCount: 0,
         leaveCount: 0,
         absentCount: 0,
         hasQuota: true
-    }));
+    });
+    players.push(newPlayer);
+    logActivity('ADD MEMBER', `เพิ่มสมาชิก ${newPlayer.name} (${newPlayer.job})`);
     safeEl('manual-add-name').value = '';
     saveToLocalStorage();
     if (typeof window.savePlayersToFirebaseSafe === 'function') window.savePlayersToFirebaseSafe(false);
@@ -1317,14 +1538,41 @@ function triggerClearPartiesConfirmation() {
 }
 
 function toggleSelectAllMembers(master) { document.querySelectorAll('.member-select-chk').forEach(c => c.checked = master.checked); }
-function deleteSelectedPlayers() {
+async function deleteSelectedPlayers() {
     if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
     const chks = document.querySelectorAll('.member-select-chk:checked');
     if (chks.length === 0) return alert('กรุณาติ๊กเลือกสมาชิกก่อน');
     const ids = Array.from(chks).map(c => String(c.value));
+    const names = players.filter(p => ids.includes(String(p.id))).map(p => p.name).join(', ');
     players = players.filter(p => !ids.includes(String(p.id)));
+
+    // ลบ attendanceLogs ของสมาชิกคนนั้นออกจาก local cache ด้วย เพื่อให้ถือว่าออกกิลด์แล้วเริ่มใหม่เมื่อกลับมา
+    Object.keys(attendanceLogs || {}).forEach(logId => {
+        const log = attendanceLogs[logId];
+        if (ids.includes(String(log?.playerId))) delete attendanceLogs[logId];
+    });
+
     saveToLocalStorage();
-    if (typeof window.savePlayersToFirebaseSafe === 'function') window.savePlayersToFirebaseSafe(false);
+
+    if (window.bellonaDB) {
+        try {
+            const { doc, deleteDoc, collection, getDocs } = await import('https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js');
+            for (const id of ids) {
+                await deleteDoc(doc(window.bellonaDB, 'players', String(id)));
+            }
+            const logSnap = await getDocs(collection(window.bellonaDB, 'attendanceLogs'));
+            for (const logDoc of logSnap.docs) {
+                const data = logDoc.data();
+                if (ids.includes(String(data.playerId))) {
+                    await deleteDoc(doc(window.bellonaDB, 'attendanceLogs', logDoc.id));
+                }
+            }
+        } catch (err) {
+            alert('Delete Firebase Error: ' + err.message);
+        }
+    }
+
+    logActivity('DELETE MEMBER', `ลบสมาชิก ${ids.length} คน${names ? ': ' + names : ''}`);
     renderAll();
 }
 
@@ -1380,6 +1628,7 @@ async function updatePlayerJob(playerId, newJob) {
 
     if (p.job === cleanJob) return;
 
+    const oldJob = p.job || '-';
     p.job = cleanJob;
     if (!availableJobsList.includes(cleanJob)) {
         availableJobsList.push(cleanJob);
@@ -1406,6 +1655,7 @@ async function updatePlayerJob(playerId, newJob) {
         }
     }
 
+    logActivity('UPDATE JOB', `${p.name} เปลี่ยนอาชีพ ${oldJob} → ${cleanJob}`);
     renderAll();
 }
 
@@ -1607,6 +1857,7 @@ function clearRewardWheelHistory() {
     rewardDrawnIds = [];
     if (safeEl('lucky-winner-name')) safeEl('lucky-winner-name').innerText = '???';
     if (safeEl('lucky-winner-job')) safeEl('lucky-winner-job').innerText = 'พร้อมรับรางวัล';
+    logActivity('CLEAR REWARD WHEEL', 'ล้างรายชื่อสุ่มวงล้อและประวัติผู้ชนะล่าสุด');
     saveToLocalStorage();
     renderRewardWinnerHistory();
 }
@@ -1643,6 +1894,7 @@ function spinRewardWheel(pool) {
             rewardDrawnIds.push(String(winner.id));
             rewardWinnerHistory.unshift({ id: String(winner.id), name: winner.name || '-', job: winner.job || '-', time: new Date().toISOString() });
             rewardWinnerHistory = rewardWinnerHistory.slice(0, 20);
+            logActivity('REWARD WINNER', `สุ่มได้ ${winner.name || '-'} (${winner.job || '-'})`);
             saveToLocalStorage();
             renderRewardWinnerHistory();
             rewardSpinLock = false;
