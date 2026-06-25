@@ -255,6 +255,38 @@
             backdrop-filter: blur(8px);
         }
 
+
+        /* v1.0.3 PARTY LAYOUT FIX: แยก Scroll รายชื่อซ้ายกับพื้นที่ปาร์ตี้ขวา */
+        @media (min-width: 1024px) {
+            main {
+                height: calc(100vh - 126px);
+                overflow: hidden;
+            }
+
+            main > section:first-child {
+                height: calc(100vh - 126px);
+                position: sticky;
+                top: 126px;
+                overflow: hidden;
+            }
+
+            main > section:first-child > div:first-child {
+                flex-shrink: 0;
+            }
+
+            #waiting-list {
+                max-height: calc(100vh - 260px);
+                overflow-y: auto;
+                overscroll-behavior: contain;
+            }
+
+            main > section:last-child {
+                height: calc(100vh - 126px);
+                overflow-y: auto;
+                overscroll-behavior: contain;
+            }
+        }
+
     </style>
 </head>
 <body class="min-h-screen flex flex-col selection:bg-[#d4af37] selection:text-black">
