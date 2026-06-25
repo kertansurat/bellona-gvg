@@ -443,6 +443,7 @@
                         <div class="flex flex-wrap justify-between items-center border-b border-[#1f2838] pb-3.5 gap-2">
                             <div>
                                 <h2 class="text-base font-bold text-gray-200 flex items-center gap-2"><i class="fa-solid fa-users-gear text-[#d4af37]"></i> ทะเบียนและสิทธิ์จัดการสมาชิกกิลด์</h2>
+                                <div class="text-[11px] text-gray-400 mt-1">รอบวอร์อัตโนมัติวันนี้: <span id="attendance-round-badge" class="text-[#d4af37] font-bold">-</span> · กดแก้สถานะในรอบเดิมได้โดยไม่นับซ้ำ</div>
                             </div>
                             <div class="flex flex-wrap items-center gap-2">
     <button onclick="bulkSetAttendanceStatus('มา')" class="admin-only bg-green-950/40 text-green-400 border border-green-900/40 px-3 py-2 rounded-lg text-xs font-bold">
@@ -616,7 +617,7 @@
                             <div id="top-absent-list" class="space-y-2 text-sm"></div>
                         </div>
                     </div>
-                    <div class="overflow-x-auto"><table class="w-full text-left text-sm border-collapse"><thead><tr class="bg-[#1c2331] text-gray-300"><th class="p-3 font-bold">ชื่อตัวละคร</th><th class="p-3 font-bold">อาชีพ</th><th class="p-3 text-center font-bold">มา (ครั้ง)</th><th class="p-3 text-center font-bold">ลา (ครั้ง)</th><th class="p-3 text-center font-bold">ขาด (ครั้ง)</th></tr></thead><tbody id="stats-table-body" class="divide-y divide-[#1c2331]"></tbody></table></div>
+                    <div class="overflow-x-auto"><table class="w-full text-left text-sm border-collapse"><thead><tr class="bg-[#1c2331] text-gray-300"><th class="p-3 font-bold">ชื่อตัวละคร</th><th class="p-3 font-bold">อาชีพ</th><th class="p-3 text-center font-bold">มา (ครั้ง)</th><th class="p-3 text-center font-bold">ลา (ครั้ง)</th><th class="p-3 text-center font-bold">ขาด (ครั้ง)</th><th class="p-3 text-center font-bold">ขาดติดกันล่าสุด</th></tr></thead><tbody id="stats-table-body" class="divide-y divide-[#1c2331]"></tbody></table></div>
                 </div>
             </div>
         </section>
@@ -724,11 +725,20 @@ let previewSnapshot = null;
 let rewardWinnerHistory = [];
 let rewardDrawnIds = [];
 let rewardSpinLock = false;
+let attendanceLogs = {};
 let unsubPlayersRealtime = null;
+let unsubAttendanceRealtime = null;
 
 function safeEl(id) { return document.getElementById(id); }
 function escapeHtml(value) {
     return String(value ?? '').replace(/[&<>"]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s]));
+}
+function escapeInlineJs(value) {
+    return String(value ?? '')
+        .replace(/\\/g, '\\\\')
+        .replace(/'/g, "\\'")
+        .replace(/\r/g, '\\r')
+        .replace(/\n/g, '\\n');
 }
 function normalizePlayer(raw) {
     const status = raw.status || 'ยังไม่เช็คชื่อ';
@@ -745,8 +755,176 @@ function normalizePlayer(raw) {
         hasQuota: raw.hasQuota ?? true,
         rewardName: raw.rewardName || '',
         rewardClaimed: raw.rewardClaimed || false,
-        discordId: raw.discordId || raw.DiscordID || ''
+        discordId: raw.discordId || raw.DiscordID || '',
+        lastAttendanceWarId: raw.lastAttendanceWarId || '',
+        lastAttendanceStatus: raw.lastAttendanceStatus || '',
+        lastAttendanceUpdatedAt: raw.lastAttendanceUpdatedAt || ''
     };
+}
+
+
+/* ================= BELLONA PRODUCTION ATTENDANCE CORE =================
+   ระบบเช็คชื่อแบบไม่นับซ้ำ: 1 รอบวอร์ / 1 ตัวละคร / 1 สถานะล่าสุด
+   - รอบวอร์สร้างอัตโนมัติจากวันที่ประเทศไทย
+   - กดผิดแก้ได้: ระบบลบสถิติเก่าออก แล้วบวกสถานะใหม่แทน
+   - ใช้ Firebase collection: attendanceLogs
+====================================================================== */
+function getBangkokDateString(date = new Date()) {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Bangkok',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    }).formatToParts(date).reduce((acc, part) => {
+        acc[part.type] = part.value;
+        return acc;
+    }, {});
+    return `${parts.year}-${parts.month}-${parts.day}`;
+}
+
+function getCurrentWarId() {
+    return `gvg-${getBangkokDateString()}`;
+}
+
+function getCurrentWarLabel() {
+    return getCurrentWarId().replace('gvg-', '');
+}
+
+function makeAttendanceLogId(warId, playerId) {
+    return `${String(warId).replace(/[^a-zA-Z0-9_-]/g, '-')}_${String(playerId).replace(/[^a-zA-Z0-9_-]/g, '-')}`;
+}
+
+function statusToCounterKey(status) {
+    if (status === 'มา') return 'presentCount';
+    if (status === 'ลา') return 'leaveCount';
+    if (status === 'ขาด') return 'absentCount';
+    return null;
+}
+
+function adjustAttendanceCounter(player, status, delta) {
+    const key = statusToCounterKey(status);
+    if (!key || !player) return;
+    player[key] = Math.max(0, Number(player[key] || 0) + delta);
+}
+
+function updateAttendanceRoundDisplay() {
+    const el = safeEl('attendance-round-badge');
+    if (el) el.innerText = getCurrentWarLabel();
+}
+
+async function fetchAttendanceLogFromFirebase(logId) {
+    if (!window.bellonaDB) return null;
+    try {
+        const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js');
+        const ref = doc(window.bellonaDB, 'attendanceLogs', logId);
+        const snap = await getDoc(ref);
+        return snap.exists() ? { id: snap.id, ...snap.data() } : null;
+    } catch (err) {
+        console.warn('fetchAttendanceLogFromFirebase error:', err);
+        return null;
+    }
+}
+
+async function saveAttendanceLogToFirebase(logId, logData, playerData) {
+    if (!window.bellonaDB) return;
+    const { doc, setDoc } = await import('https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js');
+    await setDoc(doc(window.bellonaDB, 'attendanceLogs', logId), logData, { merge: true });
+    await setDoc(doc(window.bellonaDB, 'players', String(playerData.id)), playerData, { merge: true });
+}
+
+function buildPlayerFirebasePayload(p) {
+    return {
+        name: p.name || '',
+        job: p.job || '',
+        status: p.status || 'ยังไม่เช็คชื่อ',
+        partyId: p.partyId ?? null,
+        slotIndex: p.slotIndex ?? null,
+        presentCount: Number(p.presentCount || 0),
+        leaveCount: Number(p.leaveCount || 0),
+        absentCount: Number(p.absentCount || 0),
+        hasQuota: p.hasQuota ?? true,
+        rewardName: p.rewardName || '',
+        rewardClaimed: p.rewardClaimed || false,
+        discordId: p.discordId || '',
+        lastAttendanceWarId: p.lastAttendanceWarId || '',
+        lastAttendanceStatus: p.lastAttendanceStatus || '',
+        lastAttendanceUpdatedAt: p.lastAttendanceUpdatedAt || '',
+        updatedAt: new Date().toISOString()
+    };
+}
+
+async function setAttendanceStatusNoDuplicate(playerId, newStatus, options = {}) {
+    if (!checkAdminAccess()) {
+        if (!options.silent) alert('เฉพาะ Admin เท่านั้น');
+        return false;
+    }
+
+    const p = players.find(x => String(x.id) === String(playerId));
+    if (!p) {
+        if (!options.silent) alert('ไม่พบสมาชิก');
+        return false;
+    }
+
+    const warId = getCurrentWarId();
+    const logId = makeAttendanceLogId(warId, p.id);
+
+    let existingLog = attendanceLogs[logId] || null;
+    if (!existingLog && window.bellonaDB) {
+        existingLog = await fetchAttendanceLogFromFirebase(logId);
+    }
+
+    let oldStatus = existingLog?.status || null;
+
+    // fallback สำหรับข้อมูลจาก players เดิม กรณีเพิ่งเริ่มใช้ระบบ attendanceLogs
+    if (!oldStatus && p.lastAttendanceWarId === warId && p.lastAttendanceStatus) {
+        oldStatus = p.lastAttendanceStatus;
+    }
+
+    if (oldStatus && oldStatus !== newStatus) {
+        adjustAttendanceCounter(p, oldStatus, -1);
+    }
+
+    if (!oldStatus) {
+        adjustAttendanceCounter(p, newStatus, +1);
+    } else if (oldStatus !== newStatus) {
+        adjustAttendanceCounter(p, newStatus, +1);
+    }
+    // ถ้า oldStatus === newStatus ไม่บวกซ้ำ
+
+    const now = new Date().toISOString();
+    p.status = newStatus;
+    p.lastAttendanceWarId = warId;
+    p.lastAttendanceStatus = newStatus;
+    p.lastAttendanceUpdatedAt = now;
+
+    const logData = {
+        id: logId,
+        warId,
+        warDate: getCurrentWarLabel(),
+        playerId: String(p.id),
+        playerName: p.name || '',
+        job: p.job || '',
+        status: newStatus,
+        checkedBy: 'web-admin',
+        source: 'web',
+        createdAt: existingLog?.createdAt || now,
+        updatedAt: now
+    };
+
+    attendanceLogs[logId] = logData;
+    saveToLocalStorage();
+
+    try {
+        if (window.bellonaDB) {
+            await saveAttendanceLogToFirebase(logId, logData, { id: p.id, ...buildPlayerFirebasePayload(p) });
+        }
+    } catch (err) {
+        alert('Attendance Save Error: ' + err.message);
+        return false;
+    }
+
+    if (!options.skipRender) renderAll();
+    return true;
 }
 
 window.onload = function() {
@@ -756,6 +934,7 @@ window.onload = function() {
     initDrawingCanvas();
     updateMapDropdownOptions();
     displayGlobalMap(selectedGlobalMapId || 'vigrid');
+    updateAttendanceRoundDisplay();
     renderAll();
     switchTab('members');
     setTimeout(() => {
@@ -833,6 +1012,7 @@ function loadFromLocalStorage() {
         drawingPaths = Array.isArray(data.drawingPaths) ? data.drawingPaths : [];
         rewardWinnerHistory = Array.isArray(data.rewardWinnerHistory) ? data.rewardWinnerHistory : [];
         rewardDrawnIds = Array.isArray(data.rewardDrawnIds) ? data.rewardDrawnIds.map(String) : [];
+        attendanceLogs = data.attendanceLogs && typeof data.attendanceLogs === 'object' ? data.attendanceLogs : {};
         selectedGlobalMapId = data.selectedGlobalMapId || 'vigrid';
         selectedMap = data.selectedMap || selectedGlobalMapId || 'vigrid';
         const logoData = localStorage.getItem('bellona_custom_logo_data');
@@ -843,7 +1023,7 @@ function loadFromLocalStorage() {
 }
 
 function saveToLocalStorage() {
-    const data = { players, googleSheetUrl, availableJobsList, globalMaps, selectedGlobalMapId, selectedMap, markers, drawingPaths, rewardWinnerHistory, rewardDrawnIds };
+    const data = { players, googleSheetUrl, availableJobsList, globalMaps, selectedGlobalMapId, selectedMap, markers, drawingPaths, rewardWinnerHistory, rewardDrawnIds, attendanceLogs };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
 function saveToLocalStorageManual() { saveToLocalStorage(); alert('💾 บันทึกฐานข้อมูลกิลด์สำเร็จ!'); }
@@ -852,9 +1032,17 @@ async function importPlayersFromFirebaseSafe() {
     if (!window.bellonaDB) return alert('Firebase ยังไม่พร้อม');
     try {
         const { collection, getDocs } = await import('https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js');
-        const snap = await getDocs(collection(window.bellonaDB, 'players'));
-        players = snap.docs.map(doc => normalizePlayer({ id: doc.id, ...doc.data() }));
+        const playerSnap = await getDocs(collection(window.bellonaDB, 'players'));
+        players = playerSnap.docs.map(doc => normalizePlayer({ id: doc.id, ...doc.data() }));
+
+        const logSnap = await getDocs(collection(window.bellonaDB, 'attendanceLogs'));
+        attendanceLogs = {};
+        logSnap.docs.forEach(docSnap => {
+            attendanceLogs[docSnap.id] = { id: docSnap.id, ...docSnap.data() };
+        });
+
         saveToLocalStorage();
+        updateAttendanceRoundDisplay();
         renderAll();
     } catch (err) { alert('Firebase Import Error: ' + err.message); }
 }
@@ -866,21 +1054,7 @@ window.savePlayersToFirebaseSafe = async function(showMessage = false) {
         const { doc, setDoc } = await import('https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js');
         for (const raw of players) {
             const p = normalizePlayer(raw);
-            await setDoc(doc(window.bellonaDB, 'players', String(p.id)), {
-                name: p.name,
-                job: p.job,
-                status: p.status,
-                partyId: p.partyId ?? null,
-                slotIndex: p.slotIndex ?? null,
-                presentCount: p.presentCount || 0,
-                leaveCount: p.leaveCount || 0,
-                absentCount: p.absentCount || 0,
-                hasQuota: p.hasQuota ?? true,
-                rewardName: p.rewardName || '',
-                rewardClaimed: p.rewardClaimed || false,
-                discordId: p.discordId || '',
-                updatedAt: new Date().toISOString()
-            }, { merge: true });
+            await setDoc(doc(window.bellonaDB, 'players', String(p.id)), buildPlayerFirebasePayload(p), { merge: true });
         }
         if (showMessage) alert('บันทึกข้อมูลขึ้น Firebase สำเร็จ');
     } catch (err) { alert('Firebase Save Error: ' + err.message); }
@@ -891,12 +1065,26 @@ window.startPlayersRealtimeSync = async function(showMessage = true) {
     try {
         const { collection, onSnapshot } = await import('https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js');
         if (typeof unsubPlayersRealtime === 'function') unsubPlayersRealtime();
+        if (typeof unsubAttendanceRealtime === 'function') unsubAttendanceRealtime();
+
         unsubPlayersRealtime = onSnapshot(collection(window.bellonaDB, 'players'), snapshot => {
             players = snapshot.docs.map(doc => normalizePlayer({ id: doc.id, ...doc.data() }));
             saveToLocalStorage();
+            updateAttendanceRoundDisplay();
             renderAll();
             console.log('Realtime players synced:', players.length);
         });
+
+        unsubAttendanceRealtime = onSnapshot(collection(window.bellonaDB, 'attendanceLogs'), snapshot => {
+            attendanceLogs = {};
+            snapshot.docs.forEach(docSnap => {
+                attendanceLogs[docSnap.id] = { id: docSnap.id, ...docSnap.data() };
+            });
+            saveToLocalStorage();
+            updateAttendanceRoundDisplay();
+            console.log('Realtime attendance logs synced:', Object.keys(attendanceLogs).length);
+        });
+
         if (showMessage) alert('Realtime Sync Started');
     } catch (err) { alert('Realtime Sync Error: ' + err.message); }
 };
@@ -1140,33 +1328,84 @@ function deleteSelectedPlayers() {
     renderAll();
 }
 
-function bulkSetAttendanceStatus(status) {
+async function bulkSetAttendanceStatus(status) {
     if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
     const checked = document.querySelectorAll('.member-select-chk:checked');
     if (checked.length === 0) return alert('กรุณาติ๊กเลือกสมาชิกก่อน');
-    checked.forEach(chk => {
-        const p = players.find(x => String(x.id) === String(chk.value));
-        if (!p) return;
-        p.status = status;
-        if (status === 'มา') p.presentCount = (p.presentCount || 0) + 1;
-        if (status === 'ลา') p.leaveCount = (p.leaveCount || 0) + 1;
-        if (status === 'ขาด') p.absentCount = (p.absentCount || 0) + 1;
-    });
+    const ids = Array.from(checked).map(chk => String(chk.value));
+    for (const id of ids) {
+        await setAttendanceStatusNoDuplicate(id, status, { silent: true, skipRender: true });
+    }
     saveToLocalStorage();
-    if (typeof window.savePlayersToFirebaseSafe === 'function') window.savePlayersToFirebaseSafe(false);
     renderAll();
 }
 
-function setSingleAttendanceStatus(playerId, status) {
-    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
+async function setSingleAttendanceStatus(playerId, status) {
+    await setAttendanceStatusNoDuplicate(playerId, status, { silent: false, skipRender: false });
+}
+
+
+function renderPlayerJobSelector(p) {
+    const jobs = [...new Set([...(availableJobsList || []), p.job].filter(Boolean))];
+    const disabled = checkAdminAccess() ? '' : 'disabled';
+    const options = jobs.map(job => {
+        const selected = job === p.job ? 'selected' : '';
+        return `<option value="${escapeHtml(job)}" ${selected}>${escapeHtml(job)}</option>`;
+    }).join('');
+
+    return `<select onchange="updatePlayerJob('${escapeInlineJs(p.id)}', this.value)" ${disabled}
+        class="admin-only w-full min-w-[150px] bg-[#1c2331] text-gray-200 border border-[#2d3748] rounded-lg px-2.5 py-1.5 text-xs font-bold focus:outline-none focus:border-[#d4af37]">
+        ${options}
+    </select>`;
+}
+
+async function updatePlayerJob(playerId, newJob) {
+    if (!checkAdminAccess()) {
+        alert('เฉพาะ Admin เท่านั้น');
+        return;
+    }
+
     const p = players.find(x => String(x.id) === String(playerId));
-    if (!p) return alert('ไม่พบสมาชิก');
-    p.status = status;
-    if (status === 'มา') p.presentCount = (p.presentCount || 0) + 1;
-    if (status === 'ลา') p.leaveCount = (p.leaveCount || 0) + 1;
-    if (status === 'ขาด') p.absentCount = (p.absentCount || 0) + 1;
+    if (!p) {
+        alert('ไม่พบสมาชิก');
+        return;
+    }
+
+    const cleanJob = String(newJob || '').trim();
+    if (!cleanJob) {
+        alert('กรุณาเลือกอาชีพ');
+        renderAll();
+        return;
+    }
+
+    if (p.job === cleanJob) return;
+
+    p.job = cleanJob;
+    if (!availableJobsList.includes(cleanJob)) {
+        availableJobsList.push(cleanJob);
+    }
+
+    const currentLogId = makeAttendanceLogId(getCurrentWarId(), p.id);
+    if (attendanceLogs[currentLogId]) {
+        attendanceLogs[currentLogId].job = cleanJob;
+        attendanceLogs[currentLogId].updatedAt = new Date().toISOString();
+    }
+
     saveToLocalStorage();
-    if (typeof window.savePlayersToFirebaseSafe === 'function') window.savePlayersToFirebaseSafe(false);
+
+    if (window.bellonaDB) {
+        try {
+            const { doc, setDoc } = await import('https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js');
+            await setDoc(doc(window.bellonaDB, 'players', String(p.id)), buildPlayerFirebasePayload(p), { merge: true });
+
+            if (attendanceLogs[currentLogId]) {
+                await setDoc(doc(window.bellonaDB, 'attendanceLogs', currentLogId), attendanceLogs[currentLogId], { merge: true });
+            }
+        } catch (err) {
+            alert('Update Job Firebase Error: ' + err.message);
+        }
+    }
+
     renderAll();
 }
 
@@ -1185,7 +1424,7 @@ function renderMemberManagerTab() {
         tbody.innerHTML += `<tr class="border-b border-[#1c2331] text-xs">
             <td class="p-3 text-center"><input type="checkbox" value="${escapeHtml(p.id)}" class="member-select-chk accent-[#d4af37]"></td>
             <td class="p-3 font-bold text-white">${escapeHtml(p.name)} <span class="text-xs text-gray-500">(ID: ${escapeHtml(p.id)})</span></td>
-            <td class="p-3">${escapeHtml(p.job)}</td>
+            <td class="p-3 min-w-[170px]">${renderPlayerJobSelector(p)}</td>
             <td class="p-3">${statusBadge}</td>
             <td class="p-3 text-center"><button onclick="toggleRewardQuota('${escapeHtml(p.id)}')" class="admin-only ${p.hasQuota ? 'bg-green-950/40 text-green-400 border-green-900/40' : 'bg-red-950/40 text-red-400 border-red-900/40'} border px-3 py-1.5 rounded-lg text-xs font-bold">${p.hasQuota ? 'เปิด' : 'ปิด'}</button></td>
             <td class="p-3 text-center">
@@ -1199,6 +1438,39 @@ function renderMemberManagerTab() {
     });
 }
 
+
+function getAttendanceLogSortKey(log) {
+    return String(log?.warId || log?.warDate || log?.updatedAt || log?.id || '');
+}
+
+function getPlayerAttendanceHistory(playerId) {
+    return Object.values(attendanceLogs || {})
+        .filter(log => String(log.playerId) === String(playerId))
+        .sort((a, b) => getAttendanceLogSortKey(b).localeCompare(getAttendanceLogSortKey(a)));
+}
+
+function getConsecutiveAbsentCount(playerId) {
+    const history = getPlayerAttendanceHistory(playerId);
+    let count = 0;
+
+    for (const log of history) {
+        if (log.status === 'ขาด') {
+            count++;
+            continue;
+        }
+        if (log.status === 'มา' || log.status === 'ลา') {
+            break;
+        }
+    }
+
+    if (history.length === 0) {
+        const p = players.find(x => String(x.id) === String(playerId));
+        return p && p.status === 'ขาด' ? 1 : 0;
+    }
+
+    return count;
+}
+
 function renderStatsTab() {
     const tbody = safeEl('stats-table-body');
     if (!tbody) return;
@@ -1208,7 +1480,9 @@ function renderStatsTab() {
         totalP += p.presentCount || 0;
         totalL += p.leaveCount || 0;
         totalA += p.absentCount || 0;
-        tbody.innerHTML += `<tr><td class="p-3 font-bold">${escapeHtml(p.name)}</td><td class="p-3 text-gray-400">${escapeHtml(p.job)}</td><td class="p-3 text-center text-green-400">${p.presentCount || 0}</td><td class="p-3 text-center text-amber-400">${p.leaveCount || 0}</td><td class="p-3 text-center text-red-400">${p.absentCount || 0}</td></tr>`;
+        const consecutiveAbsent = getConsecutiveAbsentCount(p.id);
+        const consecutiveClass = consecutiveAbsent >= 3 ? 'text-red-300 font-extrabold' : consecutiveAbsent > 0 ? 'text-red-400 font-bold' : 'text-gray-500';
+        tbody.innerHTML += `<tr><td class="p-3 font-bold">${escapeHtml(p.name)}</td><td class="p-3 text-gray-400">${escapeHtml(p.job)}</td><td class="p-3 text-center text-green-400">${p.presentCount || 0}</td><td class="p-3 text-center text-amber-400">${p.leaveCount || 0}</td><td class="p-3 text-center text-red-400">${p.absentCount || 0}</td><td class="p-3 text-center ${consecutiveClass}">${consecutiveAbsent} ครั้ง</td></tr>`;
     });
     if (safeEl('stat-avg-present')) safeEl('stat-avg-present').innerText = totalP + ' ครั้ง';
     if (safeEl('stat-avg-leave')) safeEl('stat-avg-leave').innerText = totalL + ' ครั้ง';
@@ -1670,6 +1944,7 @@ function resetMarkersToDefault() {
 }
 
 function renderAll() {
+    updateAttendanceRoundDisplay();
     populateDynamicJobSelectors();
     renderWaitingList();
     renderParties();
