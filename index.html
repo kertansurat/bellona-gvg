@@ -875,6 +875,7 @@ let renderDebounceTimer = null;
 let lastFirebaseSyncAt = null;
 let isRealtimeSyncEnabled = false;
 let isLocalPartyMutationInProgress = false;
+let isLocalRewardMutationInProgress = false;
 
 function safeEl(id) { return document.getElementById(id); }
 function escapeHtml(value) {
@@ -899,7 +900,7 @@ function normalizePlayer(raw) {
         presentCount: Number(raw.presentCount || 0),
         leaveCount: Number(raw.leaveCount || 0),
         absentCount: Number(raw.absentCount || 0),
-        hasQuota: raw.hasQuota ?? true,
+        hasQuota: (raw.hasQuota === false || raw.hasQuota === 'false') ? false : true,
         rewardName: raw.rewardName || '',
         rewardClaimed: raw.rewardClaimed || false,
         discordId: raw.discordId || raw.DiscordID || '',
@@ -907,6 +908,31 @@ function normalizePlayer(raw) {
         lastAttendanceStatus: raw.lastAttendanceStatus || '',
         lastAttendanceUpdatedAt: raw.lastAttendanceUpdatedAt || ''
     };
+}
+
+function hasRewardQuota(player) {
+    return player && player.hasQuota !== false && player.hasQuota !== 'false';
+}
+
+async function persistRewardQuotaChangesAndRender(reason = 'REWARD QUOTA') {
+    isLocalRewardMutationInProgress = true;
+    saveToLocalStorage();
+    renderRewardsTab();
+    renderHeaderCounts();
+
+    try {
+        if (typeof window.savePlayersToFirebaseSafe === 'function' && window.bellonaDB) {
+            await window.savePlayersToFirebaseSafe(false);
+        }
+        if (typeof logActivity === 'function') {
+            logActivity(reason, 'อัปเดตสิทธิ์สุ่มรางวัลสำเร็จ');
+        }
+    } catch (err) {
+        alert('Reward Quota Save Error: ' + err.message);
+    } finally {
+        setTimeout(() => { isLocalRewardMutationInProgress = false; }, 900);
+        scheduleRenderAll('reward quota updated', 250);
+    }
 }
 
 
@@ -1371,8 +1397,8 @@ window.startPlayersRealtimeSync = async function(showMessage = true) {
         isRealtimeSyncEnabled = true;
 
         unsubPlayersRealtime = onSnapshot(collection(window.bellonaDB, 'players'), snapshot => {
-            if (isLocalPartyMutationInProgress) {
-                setTimeout(() => scheduleRenderAll('skip realtime during local mutation', 400), 400);
+            if (isLocalPartyMutationInProgress || isLocalRewardMutationInProgress) {
+                setTimeout(() => scheduleRenderAll('skip realtime during local mutation', 500), 500);
                 return;
             }
             players = snapshot.docs.map(doc => normalizePlayer({ id: doc.id, ...doc.data() }));
@@ -1939,28 +1965,22 @@ function renderTopStatList(elementId, key, label) {
     box.innerHTML = top.map((p,i) => `<div class="flex justify-between items-center bg-[#111520] border border-[#1f2838] rounded-lg px-3 py-2"><span class="font-bold text-white">${i+1}. ${escapeHtml(p.name || '-')}</span><span class="font-extrabold ${key === 'absentCount' ? 'text-red-400' : 'text-amber-400'}">${p[key] || 0} ครั้ง</span></div>`).join('');
 }
 
-function toggleRewardQuota(playerId) {
+async function toggleRewardQuota(playerId) {
     if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
     const p = players.find(x => String(x.id) === String(playerId));
     if (!p) return;
-    p.hasQuota = !p.hasQuota;
-    saveToLocalStorage();
-    if (typeof window.savePlayersToFirebaseSafe === 'function') window.savePlayersToFirebaseSafe(false);
-    renderAll();
+    p.hasQuota = !hasRewardQuota(p);
+    await persistRewardQuotaChangesAndRender('TOGGLE REWARD QUOTA');
 }
 function setAllRewardQuota(value) {
     if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
-    players.forEach(p => { p.hasQuota = value; });
-    saveToLocalStorage();
-    if (typeof window.savePlayersToFirebaseSafe === 'function') window.savePlayersToFirebaseSafe(false);
-    renderAll();
+    players.forEach(p => { p.hasQuota = !!value; });
+    persistRewardQuotaChangesAndRender(value ? 'OPEN ALL REWARD QUOTA' : 'CLOSE ALL REWARD QUOTA');
 }
 function resetAllRewardQuota() {
     if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
     players.forEach(p => { p.hasQuota = true; });
-    saveToLocalStorage();
-    if (typeof window.savePlayersToFirebaseSafe === 'function') window.savePlayersToFirebaseSafe(false);
-    renderAll();
+    persistRewardQuotaChangesAndRender('RESET ALL REWARD QUOTA');
 }
 
 async function captureParties() {
@@ -2006,14 +2026,14 @@ function renderRewardsTab() {
     const grid = safeEl('reward-eligible-name-grid');
     if (grid) grid.innerHTML = '';
     const totalMembers = players.length;
-    const activeMembers = players.filter(p => p.hasQuota !== false && p.status === 'มา').length;
+    const activeMembers = players.filter(p => hasRewardQuota(p) && p.status === 'มา').length;
     const inactiveMembers = totalMembers - activeMembers;
     if (safeEl('reward-total-members')) safeEl('reward-total-members').innerText = totalMembers;
     if (safeEl('reward-active-members')) safeEl('reward-active-members').innerText = activeMembers;
     if (safeEl('reward-inactive-members')) safeEl('reward-inactive-members').innerText = inactiveMembers;
     if (tbody) {
         tbody.innerHTML = players.map(p => {
-            const quotaLabel = p.hasQuota !== false ? '<span class="text-green-400 font-bold">เปิดสิทธิ์</span>' : '<span class="text-red-400 font-bold">ปิดสิทธิ์</span>';
+            const quotaLabel = hasRewardQuota(p) ? '<span class="text-green-400 font-bold">เปิดสิทธิ์</span>' : '<span class="text-red-400 font-bold">ปิดสิทธิ์</span>';
             return `<tr class="text-xs border-b border-[#1c2331]"><td class="p-3 font-bold text-white">${escapeHtml(p.name || '-')}</td><td class="p-3">${escapeHtml(p.rewardName || 'ยังไม่ระบุ')}</td><td class="p-3 text-center">${quotaLabel}</td><td class="p-3 text-center">${getAttendanceBadge(p.status)}</td><td class="p-3 text-right"><button onclick="toggleRewardQuota('${escapeInlineJs(p.id)}')" class="admin-only bg-[#1c2331] text-[#d4af37] border border-[#2d3748] px-3 py-1.5 rounded-lg text-xs font-bold">เปิด/ปิดสิทธิ์</button></td></tr>`;
         }).join('');
     }
@@ -2042,7 +2062,7 @@ function clearRewardWheelHistory() {
 }
 function spinEligibleReward() {
     // สุ่มจากคนที่เปิดสิทธิ์ + มาวอร์เท่านั้น และไม่ซ้ำจนกว่าจะกดล้างรายชื่อสุ่มวงล้อ
-    spinRewardWheel(players.filter(p => p.hasQuota !== false && p.status === 'มา'));
+    spinRewardWheel(players.filter(p => hasRewardQuota(p) && p.status === 'มา'));
 }
 function spinAllReward() {
     // สุ่มจากรายชื่อมาวอร์ทั้งหมดเท่านั้น และไม่ซ้ำจนกว่าจะกดล้างรายชื่อสุ่มวงล้อ
@@ -2086,13 +2106,13 @@ async function copyTextToClipboard(text) {
     ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
 }
 function copyRewardEligibleNames() {
-    const names = players.filter(p => p.hasQuota !== false && p.status === 'มา').map(p => p.name).filter(Boolean).join('\n');
+    const names = players.filter(p => hasRewardQuota(p) && p.status === 'มา').map(p => p.name).filter(Boolean).join('\n');
     if (!names) return alert('ไม่มีรายชื่อคนมีสิทธิ์ที่มาวอร์');
     copyTextToClipboard(names); alert('คัดลอกรายชื่อคนมีสิทธิ์ที่มาวอร์แล้ว');
 }
 
 function getRewardEligiblePlayers() {
-    return players.filter(p => p.hasQuota !== false);
+    return players.filter(p => hasRewardQuota(p));
 }
 function openRewardEligiblePopup() {
     const popup = safeEl('reward-eligible-popup');
