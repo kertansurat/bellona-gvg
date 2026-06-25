@@ -809,7 +809,7 @@
         </div>
     </div>
 
-    <div class="bellona-version-pill">BELLONA ROOC · v1.0 Production</div>
+    <div class="bellona-version-pill">BELLONA ROOC · v1.0.6 Firebase Stable</div>
 
     <!-- 💡 หน้าต่างป๊อปอัพยืนยันการทำรายการ -->
     <div id="custom-confirm-modal" class="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-[150] hidden">
@@ -871,6 +871,9 @@ let attendanceLogs = {};
 let activityLogs = [];
 let unsubPlayersRealtime = null;
 let unsubAttendanceRealtime = null;
+let firebaseWriteChain = Promise.resolve();
+let isLocalFirebaseMutationInProgress = false;
+let localFirebaseMutationReleaseTimer = null;
 let renderDebounceTimer = null;
 let lastFirebaseSyncAt = null;
 let isRealtimeSyncEnabled = false;
@@ -1000,9 +1003,13 @@ async function fetchAttendanceLogFromFirebase(logId) {
 
 async function saveAttendanceLogToFirebase(logId, logData, playerData) {
     if (!window.bellonaDB) return;
-    const { doc, setDoc } = await import('https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js');
-    await setDoc(doc(window.bellonaDB, 'attendanceLogs', logId), logData, { merge: true });
-    await setDoc(doc(window.bellonaDB, 'players', String(playerData.id)), playerData, { merge: true });
+    return queueFirebaseWrite(async () => {
+        const { doc, writeBatch } = await import('https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js');
+        const batch = writeBatch(window.bellonaDB);
+        batch.set(doc(window.bellonaDB, 'attendanceLogs', logId), logData, { merge: true });
+        batch.set(doc(window.bellonaDB, 'players', String(playerData.id)), playerData, { merge: true });
+        await batch.commit();
+    });
 }
 
 function buildPlayerFirebasePayload(p) {
@@ -1024,6 +1031,66 @@ function buildPlayerFirebasePayload(p) {
         lastAttendanceUpdatedAt: p.lastAttendanceUpdatedAt || '',
         updatedAt: new Date().toISOString()
     };
+}
+
+/* ================= FIREBASE WRITE STABILITY v1.0.6 =================
+   ลด Firestore 400 / write channel overload โดยใช้คิวเขียนทีละชุด
+   - เพิ่มสมาชิก: เขียนเฉพาะคนใหม่
+   - แก้ปาร์ตี้/อาชีพ/สิทธิ์: เขียนเฉพาะรายการที่เกี่ยวข้องเมื่อทำได้
+   - Save ทั้งหมด: ใช้ writeBatch เป็นชุด ไม่ Promise.all ยิงถี่พร้อมกัน
+====================================================================== */
+function beginLocalFirebaseMutation() {
+    isLocalFirebaseMutationInProgress = true;
+    if (localFirebaseMutationReleaseTimer) clearTimeout(localFirebaseMutationReleaseTimer);
+}
+
+function endLocalFirebaseMutation(delay = 900) {
+    if (localFirebaseMutationReleaseTimer) clearTimeout(localFirebaseMutationReleaseTimer);
+    localFirebaseMutationReleaseTimer = setTimeout(() => {
+        isLocalFirebaseMutationInProgress = false;
+        localFirebaseMutationReleaseTimer = null;
+    }, delay);
+}
+
+function queueFirebaseWrite(task) {
+    const run = async () => {
+        beginLocalFirebaseMutation();
+        try {
+            return await task();
+        } finally {
+            endLocalFirebaseMutation();
+        }
+    };
+    firebaseWriteChain = firebaseWriteChain.then(run, run);
+    return firebaseWriteChain;
+}
+
+function getPlayerById(playerId) {
+    return players.find(p => String(p.id) === String(playerId)) || null;
+}
+
+async function saveSpecificPlayersToFirebaseSafe(playerIds, showMessage = false) {
+    if (!window.bellonaDB) return;
+    const ids = [...new Set((Array.isArray(playerIds) ? playerIds : [playerIds]).map(String).filter(Boolean))];
+    const targets = ids.map(getPlayerById).filter(Boolean).map(normalizePlayer);
+    if (!targets.length) return;
+
+    return queueFirebaseWrite(async () => {
+        const { doc, writeBatch } = await import('https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js');
+        const chunkSize = 450;
+        for (let i = 0; i < targets.length; i += chunkSize) {
+            const batch = writeBatch(window.bellonaDB);
+            targets.slice(i, i + chunkSize).forEach(p => {
+                batch.set(doc(window.bellonaDB, 'players', String(p.id)), buildPlayerFirebasePayload(p), { merge: true });
+            });
+            await batch.commit();
+        }
+        if (showMessage) alert('บันทึกข้อมูลขึ้น Firebase สำเร็จ');
+    });
+}
+
+async function saveSinglePlayerToFirebaseSafe(playerId, showMessage = false) {
+    return saveSpecificPlayersToFirebaseSafe([playerId], showMessage);
 }
 
 async function setAttendanceStatusNoDuplicate(playerId, newStatus, options = {}) {
@@ -1374,18 +1441,25 @@ async function importPlayersFromFirebaseSafe() {
 window.savePlayersToFirebaseSafe = async function(showMessage = false) {
     if (!window.bellonaDB) return alert('Firebase ยังไม่พร้อม');
     if (!Array.isArray(players) || players.length === 0) return alert('ยังไม่มีรายชื่อให้บันทึก');
-    try {
-        const { doc, setDoc } = await import('https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js');
-        const chunkSize = 30;
-        for (let i = 0; i < players.length; i += chunkSize) {
-            const chunk = players.slice(i, i + chunkSize);
-            await Promise.all(chunk.map(raw => {
-                const p = normalizePlayer(raw);
-                return setDoc(doc(window.bellonaDB, 'players', String(p.id)), buildPlayerFirebasePayload(p), { merge: true });
-            }));
+
+    return queueFirebaseWrite(async () => {
+        try {
+            const { doc, writeBatch } = await import('https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js');
+            const chunkSize = 450;
+            for (let i = 0; i < players.length; i += chunkSize) {
+                const batch = writeBatch(window.bellonaDB);
+                players.slice(i, i + chunkSize).forEach(raw => {
+                    const p = normalizePlayer(raw);
+                    batch.set(doc(window.bellonaDB, 'players', String(p.id)), buildPlayerFirebasePayload(p), { merge: true });
+                });
+                await batch.commit();
+            }
+            if (showMessage) alert('บันทึกข้อมูลขึ้น Firebase สำเร็จ');
+        } catch (err) {
+            alert('Firebase Save Error: ' + err.message);
+            throw err;
         }
-        if (showMessage) alert('บันทึกข้อมูลขึ้น Firebase สำเร็จ');
-    } catch (err) { alert('Firebase Save Error: ' + err.message); }
+    });
 };
 
 window.startPlayersRealtimeSync = async function(showMessage = true) {
@@ -1397,7 +1471,7 @@ window.startPlayersRealtimeSync = async function(showMessage = true) {
         isRealtimeSyncEnabled = true;
 
         unsubPlayersRealtime = onSnapshot(collection(window.bellonaDB, 'players'), snapshot => {
-            if (isLocalPartyMutationInProgress || isLocalRewardMutationInProgress) {
+            if (isLocalFirebaseMutationInProgress || isLocalPartyMutationInProgress || isLocalRewardMutationInProgress) {
                 setTimeout(() => scheduleRenderAll('skip realtime during local mutation', 500), 500);
                 return;
             }
@@ -1503,7 +1577,9 @@ function manualAddMemberSubmit() {
     logActivity('ADD MEMBER', `เพิ่มสมาชิก ${newPlayer.name} (${newPlayer.job})`);
     safeEl('manual-add-name').value = '';
     saveToLocalStorage();
-    if (typeof window.savePlayersToFirebaseSafe === 'function') window.savePlayersToFirebaseSafe(false);
+    if (typeof saveSinglePlayerToFirebaseSafe === 'function') {
+        saveSinglePlayerToFirebaseSafe(newPlayer.id, false).catch(err => alert('Add Member Firebase Error: ' + err.message));
+    }
     renderAll();
 }
 
@@ -1603,7 +1679,9 @@ async function assignPlayerToSlot(playerId, partyId, slotIndex) {
     saveToLocalStorage();
     isLocalPartyMutationInProgress = true;
     try {
-        if (typeof window.savePlayersToFirebaseSafe === 'function') await window.savePlayersToFirebaseSafe(false);
+        const changedIds = [p.id];
+        if (occupant) changedIds.push(occupant.id);
+        if (typeof saveSpecificPlayersToFirebaseSafe === 'function') await saveSpecificPlayersToFirebaseSafe(changedIds, false);
     } finally {
         isLocalPartyMutationInProgress = false;
     }
@@ -1668,7 +1746,7 @@ async function releasePlayer(id) {
     saveToLocalStorage();
     isLocalPartyMutationInProgress = true;
     try {
-        if (typeof window.savePlayersToFirebaseSafe === 'function') await window.savePlayersToFirebaseSafe(false);
+        if (typeof saveSinglePlayerToFirebaseSafe === 'function') await saveSinglePlayerToFirebaseSafe(p.id, false);
     } finally {
         isLocalPartyMutationInProgress = false;
     }
@@ -1736,17 +1814,19 @@ async function deleteSelectedPlayers() {
 
     if (window.bellonaDB) {
         try {
-            const { doc, deleteDoc, collection, getDocs } = await import('https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js');
-            for (const id of ids) {
-                await deleteDoc(doc(window.bellonaDB, 'players', String(id)));
-            }
-            const logSnap = await getDocs(collection(window.bellonaDB, 'attendanceLogs'));
-            for (const logDoc of logSnap.docs) {
-                const data = logDoc.data();
-                if (ids.includes(String(data.playerId))) {
-                    await deleteDoc(doc(window.bellonaDB, 'attendanceLogs', logDoc.id));
+            await queueFirebaseWrite(async () => {
+                const { doc, deleteDoc, collection, getDocs } = await import('https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js');
+                for (const id of ids) {
+                    await deleteDoc(doc(window.bellonaDB, 'players', String(id)));
                 }
-            }
+                const logSnap = await getDocs(collection(window.bellonaDB, 'attendanceLogs'));
+                for (const logDoc of logSnap.docs) {
+                    const data = logDoc.data();
+                    if (ids.includes(String(data.playerId))) {
+                        await deleteDoc(doc(window.bellonaDB, 'attendanceLogs', logDoc.id));
+                    }
+                }
+            });
         } catch (err) {
             alert('Delete Firebase Error: ' + err.message);
         }
