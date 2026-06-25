@@ -800,6 +800,7 @@ let unsubAttendanceRealtime = null;
 let renderDebounceTimer = null;
 let lastFirebaseSyncAt = null;
 let isRealtimeSyncEnabled = false;
+let isLocalPartyMutationInProgress = false;
 
 function safeEl(id) { return document.getElementById(id); }
 function escapeHtml(value) {
@@ -1296,6 +1297,10 @@ window.startPlayersRealtimeSync = async function(showMessage = true) {
         isRealtimeSyncEnabled = true;
 
         unsubPlayersRealtime = onSnapshot(collection(window.bellonaDB, 'players'), snapshot => {
+            if (isLocalPartyMutationInProgress) {
+                setTimeout(() => scheduleRenderAll('skip realtime during local mutation', 400), 400);
+                return;
+            }
             players = snapshot.docs.map(doc => normalizePlayer({ id: doc.id, ...doc.data() }));
             lastFirebaseSyncAt = new Date().toISOString();
             saveToLocalStorage();
@@ -1488,7 +1493,7 @@ function handleSlotClick(partyId, slotIndex) {
     assignPlayerToSlot(selectedPlayerId, partyId, slotIndex);
     selectedPlayerId = null;
 }
-function assignPlayerToSlot(playerId, partyId, slotIndex) {
+async function assignPlayerToSlot(playerId, partyId, slotIndex) {
     const p = players.find(x => String(x.id) === String(playerId));
     if (!p) return;
     const occupant = players.find(x => x.partyId === partyId && Number(x.slotIndex) === Number(slotIndex) && String(x.id) !== String(playerId));
@@ -1496,8 +1501,38 @@ function assignPlayerToSlot(playerId, partyId, slotIndex) {
     p.partyId = partyId;
     p.slotIndex = slotIndex;
     saveToLocalStorage();
-    if (typeof window.savePlayersToFirebaseSafe === 'function') window.savePlayersToFirebaseSafe(false);
-    renderAll();
+    isLocalPartyMutationInProgress = true;
+    try {
+        if (typeof window.savePlayersToFirebaseSafe === 'function') await window.savePlayersToFirebaseSafe(false);
+    } finally {
+        isLocalPartyMutationInProgress = false;
+    }
+    forceRenderPartyAndCurrentTab();
+}
+
+
+function hardClearPartySlotsDom() {
+    document.querySelectorAll('[id^="slot-"][id$="-content"]').forEach(slot => {
+        slot.innerHTML = '<span class="party-slot-empty text-gray-600 text-[11px]">ว่างเปล่า</span>';
+    });
+    for (let i = 1; i <= 8; i++) {
+        const mainId = `party-${i}`;
+        const subId = `subparty-${i}`;
+        if (safeEl(`${mainId}-counter`)) safeEl(`${mainId}-counter`).innerText = '0/5 คน';
+        if (safeEl(`${subId}-counter`)) safeEl(`${subId}-counter`).innerText = '0/5 คน';
+    }
+    renderHeaderCounts();
+}
+
+function forceRenderPartyAndCurrentTab() {
+    hardClearPartySlotsDom();
+    renderParties();
+    renderWaitingList();
+    const activeTab = getCurrentActiveTab();
+    if (activeTab === 'members') renderMemberManagerTab();
+    if (activeTab === 'rewards') renderRewardsTab();
+    if (activeTab === 'stats') renderStatsTab();
+    applyRolePermissions();
 }
 
 function renderParties() {
@@ -1524,18 +1559,23 @@ function renderParties() {
     renderHeaderCounts();
 }
 
-function releasePlayer(id) {
+async function releasePlayer(id) {
     if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
     const p = players.find(pl => String(pl.id) === String(id));
     if (!p) return;
     p.partyId = null;
     p.slotIndex = null;
     saveToLocalStorage();
-    if (typeof window.savePlayersToFirebaseSafe === 'function') window.savePlayersToFirebaseSafe(false);
-    renderAll();
+    isLocalPartyMutationInProgress = true;
+    try {
+        if (typeof window.savePlayersToFirebaseSafe === 'function') await window.savePlayersToFirebaseSafe(false);
+    } finally {
+        isLocalPartyMutationInProgress = false;
+    }
+    forceRenderPartyAndCurrentTab();
 }
 
-function autoAssign() {
+async function autoAssign() {
     if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
     players.forEach(p => { p.partyId = null; p.slotIndex = null; });
     let partyIdx = 1;
@@ -1550,16 +1590,28 @@ function autoAssign() {
         if (slotIdx >= 5) { slotIdx = 0; partyIdx++; }
     });
     saveToLocalStorage();
-    if (typeof window.savePlayersToFirebaseSafe === 'function') window.savePlayersToFirebaseSafe(false);
-    renderAll();
+    isLocalPartyMutationInProgress = true;
+    try {
+        if (typeof window.savePlayersToFirebaseSafe === 'function') await window.savePlayersToFirebaseSafe(false);
+    } finally {
+        isLocalPartyMutationInProgress = false;
+    }
+    forceRenderPartyAndCurrentTab();
 }
 
-function triggerClearPartiesConfirmation() {
+async function triggerClearPartiesConfirmation() {
     if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
     players.forEach(p => { p.partyId = null; p.slotIndex = null; });
     saveToLocalStorage();
-    if (typeof window.savePlayersToFirebaseSafe === 'function') window.savePlayersToFirebaseSafe(false);
-    renderAll();
+    hardClearPartySlotsDom();
+    isLocalPartyMutationInProgress = true;
+    try {
+        if (typeof window.savePlayersToFirebaseSafe === 'function') await window.savePlayersToFirebaseSafe(false);
+    } finally {
+        isLocalPartyMutationInProgress = false;
+    }
+    forceRenderPartyAndCurrentTab();
+    logActivity('CLEAR PARTIES', 'ล้างตำแหน่งปาร์ตี้หลัก/รองทั้งหมด');
 }
 
 function toggleSelectAllMembers(master) { document.querySelectorAll('.member-select-chk').forEach(c => c.checked = master.checked); }
@@ -1570,6 +1622,8 @@ async function deleteSelectedPlayers() {
     const ids = Array.from(chks).map(c => String(c.value));
     const names = players.filter(p => ids.includes(String(p.id))).map(p => p.name).join(', ');
     players = players.filter(p => !ids.includes(String(p.id)));
+    selectedPlayerId = ids.includes(String(selectedPlayerId)) ? null : selectedPlayerId;
+    hardClearPartySlotsDom();
 
     // ลบ attendanceLogs ของสมาชิกคนนั้นออกจาก local cache ด้วย เพื่อให้ถือว่าออกกิลด์แล้วเริ่มใหม่เมื่อกลับมา
     Object.keys(attendanceLogs || {}).forEach(logId => {
@@ -1578,6 +1632,7 @@ async function deleteSelectedPlayers() {
     });
 
     saveToLocalStorage();
+    isLocalPartyMutationInProgress = true;
 
     if (window.bellonaDB) {
         try {
@@ -1597,9 +1652,11 @@ async function deleteSelectedPlayers() {
         }
     }
 
+    isLocalPartyMutationInProgress = false;
     logActivity('DELETE MEMBER', `ลบสมาชิก ${ids.length} คน${names ? ': ' + names : ''}`);
-    renderAll();
+    forceRenderPartyAndCurrentTab();
 }
+
 
 async function bulkSetAttendanceStatus(status) {
     if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
