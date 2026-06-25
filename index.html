@@ -287,6 +287,48 @@
             }
         }
 
+
+        /* v1.0.4 REWARD LAYOUT FIX: กันกล่องวงล้อสุ่มยืดตามตารางรายชื่อ */
+        #tab-content-rewards > .grid {
+            align-items: flex-start !important;
+        }
+
+        #tab-content-rewards > .grid > div:first-child {
+            align-self: flex-start !important;
+            height: auto !important;
+            min-height: 560px !important;
+            max-height: none !important;
+            position: sticky;
+            top: 14px;
+        }
+
+        #tab-content-rewards .relative.w-72.h-72 {
+            width: 18rem !important;
+            height: 18rem !important;
+            min-width: 18rem !important;
+            min-height: 18rem !important;
+            max-width: 18rem !important;
+            max-height: 18rem !important;
+            flex: 0 0 18rem !important;
+        }
+
+        #reward-quota-table-body td:first-child {
+            max-width: 220px;
+            white-space: normal;
+            word-break: break-word;
+        }
+
+        #reward-quota-table-body td {
+            vertical-align: middle;
+        }
+
+        @media (max-width: 1023px) {
+            #tab-content-rewards > .grid > div:first-child {
+                position: static;
+            }
+        }
+
+
     </style>
 </head>
 <body class="min-h-screen flex flex-col selection:bg-[#d4af37] selection:text-black">
