@@ -222,6 +222,35 @@
         }
 
 
+        /* MEMBER EDIT v1.0.7: inline name + power */
+        .member-edit-input {
+            background: rgba(28,35,49,.78);
+            border: 1px solid #2d3748;
+            color: #f8fafc;
+            border-radius: 8px;
+            padding: 6px 9px;
+            font-weight: 800;
+            outline: none;
+            transition: border-color .15s ease, background .15s ease;
+        }
+        .member-edit-input:focus {
+            border-color: #d4af37;
+            background: #111827;
+        }
+        .member-power-input {
+            width: 88px;
+            text-align: center;
+            color: #facc15;
+            letter-spacing: .02em;
+        }
+        .member-id-label {
+            color: #64748b;
+            font-size: 10px;
+            line-height: 1.1;
+            margin-top: 3px;
+        }
+
+
         /* FINAL PRODUCTION: Backup / Activity Log */
         .activity-log-row {
             background: #0c0e14;
@@ -590,6 +619,7 @@
                                     <tr class="bg-[#1c2331] text-gray-300 border-b border-[#1f2838]">
                                         <th class="p-3 text-center w-10"><input type="checkbox" id="select-all-members-chk" onchange="toggleSelectAllMembers(this)" class="w-4.5 h-4.5 rounded accent-[#d4af37]"></th>
                                         <th class="p-3 font-bold">ชื่อตัวละคร (ID ระบบ)</th>
+                                        <th class="p-3 font-bold text-center">Power</th>
                                         <th class="p-3 font-bold">อาชีพคลาส</th>
                                         <th class="p-3 font-bold">สถานะวันนี้</th>
                                         <th class="p-3 font-bold text-center">สิทธิ์สุ่มรางวัล</th>
@@ -608,6 +638,10 @@
                                 <div>
                                     <label class="block text-gray-300 mb-1 font-semibold">ชื่อตัวละครในเกม</label>
                                     <input type="text" id="manual-add-name" placeholder="ระบุชื่อ..." class="w-full bg-[#1c2331] text-gray-100 px-4 py-2.5 rounded-lg border border-[#2d3748] focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-300 mb-1 font-semibold">Power ตัวละคร</label>
+                                    <input type="text" id="manual-add-power" placeholder="เช่น 300K / 1.2M" class="w-full bg-[#1c2331] text-[#facc15] font-bold px-4 py-2.5 rounded-lg border border-[#2d3748] focus:outline-none">
                                 </div>
                                 <div>
                                     <label class="block text-gray-300 mb-1 font-semibold">สายอาชีพตัวละคร (Job)</label>
@@ -891,12 +925,35 @@ function escapeInlineJs(value) {
         .replace(/\r/g, '\\r')
         .replace(/\n/g, '\\n');
 }
+
+function parsePowerValue(value) {
+    const raw = String(value ?? '').trim().toUpperCase().replace(/,/g, '');
+    if (!raw) return 0;
+    const match = raw.match(/^([0-9]+(?:\.[0-9]+)?)([KMB])?$/);
+    if (!match) {
+        const numeric = Number(raw.replace(/[^0-9.]/g, ''));
+        return Number.isFinite(numeric) ? Math.round(numeric) : 0;
+    }
+    const num = Number(match[1]);
+    const unit = match[2] || '';
+    const multiplier = unit === 'K' ? 1000 : unit === 'M' ? 1000000 : unit === 'B' ? 1000000000 : 1;
+    return Math.round(num * multiplier);
+}
+
+function normalizePowerLabel(value) {
+    const raw = String(value ?? '').trim().toUpperCase();
+    if (!raw) return '';
+    return raw.replace(/\s+/g, '');
+}
+
 function normalizePlayer(raw) {
     const status = raw.status || 'ยังไม่เช็คชื่อ';
     return {
         id: String(raw.id || raw.name || Date.now() + Math.random()),
         name: raw.name || 'ไม่ระบุชื่อ',
         job: raw.job || 'ไม่ระบุอาชีพ',
+        power: normalizePowerLabel(raw.power || ''),
+        powerValue: Number(raw.powerValue || parsePowerValue(raw.power || '') || 0),
         status,
         partyId: raw.partyId ?? null,
         slotIndex: raw.slotIndex ?? null,
@@ -1016,6 +1073,8 @@ function buildPlayerFirebasePayload(p) {
     return {
         name: p.name || '',
         job: p.job || '',
+        power: normalizePowerLabel(p.power || ''),
+        powerValue: Number(p.powerValue || parsePowerValue(p.power || '') || 0),
         status: p.status || 'ยังไม่เช็คชื่อ',
         partyId: p.partyId ?? null,
         slotIndex: p.slotIndex ?? null,
@@ -1144,6 +1203,8 @@ async function setAttendanceStatusNoDuplicate(playerId, newStatus, options = {})
         playerId: String(p.id),
         playerName: p.name || '',
         job: p.job || '',
+        power: normalizePowerLabel(p.power || ''),
+        powerValue: Number(p.powerValue || 0),
         status: newStatus,
         checkedBy: 'web-admin',
         source: 'web',
@@ -1564,10 +1625,13 @@ function manualAddMemberSubmit() {
     if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
     const name = (safeEl('manual-add-name')?.value || '').trim();
     const job = safeEl('manual-add-job')?.value || availableJobsList[0] || 'ไม่ระบุอาชีพ';
+    const power = normalizePowerLabel(safeEl('manual-add-power')?.value || '');
     const status = 'ยังไม่เช็คชื่อ';
     if (!name) return alert('กรุณาใส่ชื่อตัวละคร');
     const newPlayer = normalizePlayer({
         id: String(Date.now()), name, job, status,
+        power,
+        powerValue: parsePowerValue(power),
         presentCount: 0,
         leaveCount: 0,
         absentCount: 0,
@@ -1576,6 +1640,7 @@ function manualAddMemberSubmit() {
     players.push(newPlayer);
     logActivity('ADD MEMBER', `เพิ่มสมาชิก ${newPlayer.name} (${newPlayer.job})`);
     safeEl('manual-add-name').value = '';
+    if (safeEl('manual-add-power')) safeEl('manual-add-power').value = '';
     saveToLocalStorage();
     if (typeof saveSinglePlayerToFirebaseSafe === 'function') {
         saveSinglePlayerToFirebaseSafe(newPlayer.id, false).catch(err => alert('Add Member Firebase Error: ' + err.message));
@@ -1924,6 +1989,113 @@ async function updatePlayerJob(playerId, newJob) {
     renderAll();
 }
 
+async function updatePlayerName(playerId, newName) {
+    if (!checkAdminAccess()) {
+        alert('เฉพาะ Admin เท่านั้น');
+        renderAll();
+        return;
+    }
+
+    const p = players.find(x => String(x.id) === String(playerId));
+    if (!p) {
+        alert('ไม่พบสมาชิก');
+        return;
+    }
+
+    const cleanName = String(newName || '').trim();
+    if (!cleanName) {
+        alert('ชื่อตัวละครห้ามว่าง');
+        renderAll();
+        return;
+    }
+
+    if (p.name === cleanName) return;
+
+    const oldName = p.name || '-';
+    p.name = cleanName;
+
+    Object.keys(attendanceLogs || {}).forEach(key => {
+        const log = attendanceLogs[key];
+        if (log && String(log.playerId) === String(p.id)) {
+            log.playerName = cleanName;
+            log.updatedAt = new Date().toISOString();
+        }
+    });
+
+    saveToLocalStorage();
+
+    try {
+        if (typeof saveSinglePlayerToFirebaseSafe === 'function') {
+            await saveSinglePlayerToFirebaseSafe(p.id, false);
+        }
+        const currentLogId = makeAttendanceLogId(getCurrentWarId(), p.id);
+        if (window.bellonaDB && attendanceLogs[currentLogId]) {
+            const { doc, setDoc } = await import('https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js');
+            await setDoc(doc(window.bellonaDB, 'attendanceLogs', currentLogId), attendanceLogs[currentLogId], { merge: true });
+        }
+    } catch (err) {
+        alert('Update Name Firebase Error: ' + err.message);
+    }
+
+    logActivity('UPDATE NAME', `${oldName} เปลี่ยนชื่อเป็น ${cleanName}`);
+    renderAll();
+}
+
+async function updatePlayerPower(playerId, newPower) {
+    if (!checkAdminAccess()) {
+        alert('เฉพาะ Admin เท่านั้น');
+        renderAll();
+        return;
+    }
+
+    const p = players.find(x => String(x.id) === String(playerId));
+    if (!p) {
+        alert('ไม่พบสมาชิก');
+        return;
+    }
+
+    const cleanPower = normalizePowerLabel(newPower);
+    const nextPowerValue = parsePowerValue(cleanPower);
+    const oldPower = p.power || '-';
+
+    if ((p.power || '') === cleanPower && Number(p.powerValue || 0) === nextPowerValue) return;
+
+    p.power = cleanPower;
+    p.powerValue = nextPowerValue;
+
+    const currentLogId = makeAttendanceLogId(getCurrentWarId(), p.id);
+    if (attendanceLogs[currentLogId]) {
+        attendanceLogs[currentLogId].power = cleanPower;
+        attendanceLogs[currentLogId].powerValue = nextPowerValue;
+        attendanceLogs[currentLogId].updatedAt = new Date().toISOString();
+    }
+
+    saveToLocalStorage();
+
+    try {
+        if (typeof saveSinglePlayerToFirebaseSafe === 'function') {
+            await saveSinglePlayerToFirebaseSafe(p.id, false);
+        }
+        if (window.bellonaDB && attendanceLogs[currentLogId]) {
+            const { doc, setDoc } = await import('https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js');
+            await setDoc(doc(window.bellonaDB, 'attendanceLogs', currentLogId), attendanceLogs[currentLogId], { merge: true });
+        }
+    } catch (err) {
+        alert('Update Power Firebase Error: ' + err.message);
+    }
+
+    logActivity('UPDATE POWER', `${p.name} Power ${oldPower} → ${cleanPower || '-'}`);
+    renderAll();
+}
+
+function handleInlineEditKey(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        event.currentTarget.blur();
+    }
+}
+
+
 function renderMemberManagerTab() {
     const tbody = safeEl('member-manager-table-body');
     if (!tbody) return;
@@ -1937,14 +2109,19 @@ function renderMemberManagerTab() {
                     : '<span class="text-gray-400">-</span>';
         return `<tr class="border-b border-[#1c2331] text-xs">
             <td class="p-3 text-center"><input type="checkbox" value="${escapeHtml(p.id)}" class="member-select-chk accent-[#d4af37]"></td>
-            <td class="p-3 font-bold text-white min-w-[220px]">
+            <td class="p-3 font-bold text-white min-w-[260px]">
                 <div class="flex items-center gap-3">
                     <div class="shrink-0">${getJobIcon(p.job)}</div>
-                    <div class="min-w-0">
-                        <div class="text-sm font-extrabold text-white leading-tight truncate">${escapeHtml(p.name)}</div>
-                        <div class="text-[11px] text-gray-500 leading-tight mt-0.5">ID: ${escapeHtml(p.id)}</div>
+                    <div class="min-w-0 flex-1">
+                        <input value="${escapeHtml(p.name)}" onkeydown="handleInlineEditKey(event)" onchange="updatePlayerName('${escapeInlineJs(p.id)}', this.value)"
+                            class="member-edit-input w-full text-sm" title="แก้ไขชื่อตัวละคร">
+                        <div class="member-id-label">ID: ${escapeHtml(p.id)}</div>
                     </div>
                 </div>
+            </td>
+            <td class="p-3 text-center min-w-[110px]">
+                <input value="${escapeHtml(p.power || '')}" placeholder="300K" onkeydown="handleInlineEditKey(event)" onchange="updatePlayerPower('${escapeInlineJs(p.id)}', this.value)"
+                    class="member-edit-input member-power-input" title="ระบุ Power เช่น 300K หรือ 1.2M">
             </td>
             <td class="p-3 min-w-[170px]">${renderPlayerJobSelector(p)}</td>
             <td class="p-3">${statusBadge}</td>
