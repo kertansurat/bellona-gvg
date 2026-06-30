@@ -358,6 +358,55 @@
         }
 
 
+
+        /* v1.0.8 ADMIN TOOLS / SECURITY PATCH */
+        .admin-tool-card {
+            background: #0c0e14;
+            border: 1px solid #1f2838;
+            border-radius: 14px;
+            padding: 16px;
+        }
+        .admin-tool-card h4 {
+            color: #d4af37;
+            font-size: 13px;
+            font-weight: 900;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+        .admin-tool-card p {
+            color: #94a3b8;
+            font-size: 12px;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+        .admin-danger-note {
+            border: 1px solid rgba(239,68,68,.35);
+            background: rgba(127,29,29,.18);
+            color: #fecaca;
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+
+        /* v1.1.0 REWARD QUEUE + SECURITY API LOGIN PATCH */
+        .rq-main-layout { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(300px, .65fr); gap: 16px; }
+        @media (max-width: 1280px) { .rq-main-layout { grid-template-columns: 1fr; } }
+        .rq-admin-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+        @media (max-width: 820px) { .rq-admin-grid { grid-template-columns: 1fr; } }
+        .rq-member-tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+        .rq-row { background:#0c0e14; border:1px solid #1f2838; }
+        .rq-row.today { border-color:rgba(34,197,94,.45); background:rgba(20,83,45,.18); }
+        .rq-row.next { border-color:rgba(234,179,8,.30); }
+        .rq-row.done { opacity:.82; border-color:rgba(56,189,248,.35); background:rgba(8,47,73,.14); }
+        .rq-row.skip { border-color:rgba(249,115,22,.38); background:rgba(124,45,18,.15); }
+        .rq-row.absent { border-color:rgba(239,68,68,.34); background:rgba(127,29,29,.13); }
+        .rq-active-tab { background:#d4af37 !important; color:#000 !important; border-color:#d4af37 !important; }
+        .rq-modal-backdrop { background:rgba(0,0,0,.84); backdrop-filter:blur(8px); }
+        .rq-dragging { opacity:.45; outline:2px dashed #d4af37; }
+
     </style>
 </head>
 <body class="min-h-screen flex flex-col selection:bg-[#d4af37] selection:text-black">
@@ -419,6 +468,9 @@
             <button onclick="openActivityLogModal()" class="bg-[#141a24] text-[#d4af37] border border-[#2b3543] px-4 py-2.5 rounded-lg text-sm font-bold">
                 <i class="fa-solid fa-clock-rotate-left"></i> Activity Log
             </button>
+            <button onclick="openAdminToolsModal()" class="admin-only bg-[#141a24] text-amber-300 border border-amber-900/60 px-4 py-2.5 rounded-lg text-sm font-bold">
+                <i class="fa-solid fa-screwdriver-wrench"></i> Admin Tools
+            </button>
             <input id="bellona-backup-file-input" type="file" accept="application/json,.json" class="hidden" onchange="importBellonaBackupFile(event)">
             <button onclick="importPlayersFromFirebaseSafe()" class="admin-only bg-[#111827] text-cyan-400 border border-cyan-900/60 px-4 py-2.5 rounded-lg text-sm font-bold">
     <i class="fa-solid fa-cloud-arrow-down"></i> ดึง Firebase
@@ -439,6 +491,7 @@
         <button onclick="switchTab('party')" id="tab-btn-party" class="tab-btn px-6 py-4 text-sm font-bold flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-users"></i> จัดปาร์ตี้กิลด์วอ</button>
         <button onclick="switchTab('tactical')" id="tab-btn-tactical" class="tab-btn px-6 py-4 text-sm font-bold flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-map-location-dot"></i> วางแผนกลยุทธ</button>
         <button onclick="switchTab('rewards')" id="tab-btn-rewards" class="tab-btn px-6 py-4 text-sm font-bold flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-gift text-amber-400"></i> สุ่มของรางวัล</button>
+        <button onclick="switchTab('auction')" id="tab-btn-auction" class="tab-btn px-6 py-4 text-sm font-bold flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-list-ol text-cyan-400"></i> คิวรับรางวัล</button>
         <button onclick="switchTab('stats')" id="tab-btn-stats" class="tab-btn px-6 py-4 text-sm font-bold flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-chart-line text-emerald-400"></i> สถิติ</button>
     </nav>
 
@@ -754,6 +807,46 @@
     </div>
 </div>
 
+
+
+            <!-- 4.5 แท็บคิวรับรางวัล -->
+            <div id="tab-content-auction" class="hidden space-y-4">
+                <div class="bg-[#111520] border border-[#1f2838] rounded-xl p-4 flex flex-wrap items-center justify-between gap-3 shadow-xl">
+                    <div>
+                        <h2 class="text-base font-black text-[#d4af37]"><i class="fa-solid fa-list-ol"></i> คิวรับรางวัล BELLONA</h2>
+                        <p class="text-xs text-gray-400 mt-1">คิวแยก 4 รางวัล · ดึงเฉพาะคนมาวอร์ · สมุด/กล่องเลข 1-4 ต่อหน้า · ขนนกแสดงเลขหน้า</p>
+                    </div>
+                    <div class="flex flex-wrap gap-2 text-xs">
+                        <button onclick="openRewardQueueSettings()" class="admin-only bg-[#d4af37] text-black font-black px-3 py-2 rounded-lg"><i class="fa-solid fa-gear"></i> ตั้งค่ารางวัล</button>
+                        <button onclick="copyRewardQueueSummary()" class="bg-[#141a24] text-[#d4af37] border border-[#2d374a] px-3 py-2 rounded-lg font-bold"><i class="fa-regular fa-copy"></i> Copy สรุป</button>
+                        <button onclick="openRewardQueuePreview()" class="admin-only bg-[#141a24] text-cyan-300 border border-cyan-900/50 px-3 py-2 rounded-lg font-bold"><i class="fa-solid fa-eye"></i> Preview</button>
+                        <button onclick="undoRewardQueueLastAction()" class="admin-only bg-[#141a24] text-amber-300 border border-amber-900/50 px-3 py-2 rounded-lg font-bold"><i class="fa-solid fa-rotate-left"></i> Undo</button>
+                        <button onclick="saveRewardQueueTodayRound()" class="admin-only bg-green-950/40 text-green-300 border border-green-800/50 px-3 py-2 rounded-lg font-bold"><i class="fa-solid fa-check-double"></i> บันทึกรอบวันนี้</button>
+                    </div>
+                </div>
+
+                <div class="rq-main-layout h-[calc(100vh-235px)] min-h-[640px]">
+                    <div class="bg-[#111520] border border-[#1f2838] rounded-2xl p-4 overflow-hidden flex flex-col shadow-xl">
+                        <div class="flex items-center justify-between gap-2 mb-3 shrink-0">
+                            <div>
+                                <h3 class="text-sm font-black text-[#d4af37]"><i class="fa-solid fa-user-shield"></i> Admin View: ดึงของวันนี้</h3>
+                                <p class="text-[11px] text-gray-400">แต่ละกล่องแสดงคนถึงคิว + คิวถัดไป 4 คน สามารถสลับ/เลื่อน/ข้ามคิวได้</p>
+                            </div>
+                        </div>
+                        <div id="reward-queue-admin-board" class="rq-admin-grid overflow-y-auto pr-1"></div>
+                    </div>
+
+                    <div class="bg-[#111520] border border-[#1f2838] rounded-2xl p-4 overflow-hidden flex flex-col shadow-xl">
+                        <div class="mb-3 shrink-0">
+                            <h3 class="text-sm font-black text-[#d4af37]"><i class="fa-solid fa-users-viewfinder"></i> Member View</h3>
+                            <p class="text-[11px] text-gray-400">ลูกกิลด์เลือกแท็บเพื่อดูคิวตัวเอง</p>
+                        </div>
+                        <div id="reward-queue-member-tabs" class="rq-member-tabs mb-3 shrink-0"></div>
+                        <div id="reward-queue-member-board" class="space-y-2 overflow-y-auto pr-1"></div>
+                    </div>
+                </div>
+            </div>
+
             <!-- 5. แท็บหน้าวิเคราะห์ข้อมูลประวัติการมาวอร์สะสม -->
             <div id="tab-content-stats" class="hidden space-y-5">
                 <div class="bg-[#111520] p-6 rounded-xl border border-[#1f2838] space-y-5 shadow-2xl">
@@ -843,7 +936,68 @@
         </div>
     </div>
 
-    <div class="bellona-version-pill">BELLONA ROOC · v1.0.6 Firebase Stable</div>
+    <div class="bellona-version-pill">BELLONA ROOC · v1.1.0 Production</div>
+
+
+
+    <!-- 🎁 Reward Queue Settings Modal -->
+    <div id="reward-queue-settings-modal" class="fixed inset-0 rq-modal-backdrop flex items-center justify-center z-[149] hidden p-4">
+        <div class="bg-[#111520] border border-[#1f2838] rounded-xl p-6 w-[820px] max-w-[96vw] max-h-[92vh] overflow-y-auto shadow-2xl">
+            <div class="flex justify-between items-start border-b border-[#1f2838] pb-3 mb-4">
+                <div>
+                    <h3 class="text-base font-black text-[#d4af37]"><i class="fa-solid fa-gear"></i> ตั้งค่ารางวัลวอร์วันนี้</h3>
+                    <p class="text-xs text-gray-400 mt-1">ติ๊กว่ามี/ไม่มีรางวัล และระบุช่วงหน้า ระบบคำนวณจำนวนให้อัตโนมัติ</p>
+                </div>
+                <button onclick="closeRewardQueueSettings()" class="bg-[#141a24] text-[#d4af37] border border-[#2d374a] px-3 py-1.5 rounded-lg text-xs font-bold">ปิด</button>
+            </div>
+            <div id="reward-queue-settings-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            <div class="flex justify-end gap-2 pt-5">
+                <button onclick="closeRewardQueueSettings()" class="bg-[#141a24] text-gray-300 border border-[#2d374a] px-5 py-2.5 rounded-lg text-sm font-bold">ยกเลิก</button>
+                <button onclick="saveRewardQueueSettings()" class="bg-[#d4af37] text-black px-5 py-2.5 rounded-lg text-sm font-black">คำนวณใหม่</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎁 Reward Queue Action Modal -->
+    <div id="reward-queue-action-modal" class="fixed inset-0 rq-modal-backdrop flex items-center justify-center z-[149] hidden p-4">
+        <div class="bg-[#111520] border border-[#1f2838] rounded-xl p-5 w-[480px] max-w-[94vw] shadow-2xl">
+            <div class="border-b border-[#1f2838] pb-3 mb-4">
+                <h3 id="reward-queue-action-title" class="text-base font-black text-[#d4af37]">จัดการคิว</h3>
+                <p id="reward-queue-action-sub" class="text-xs text-gray-400 mt-1"></p>
+            </div>
+            <div class="space-y-2 text-sm">
+                <button onclick="markRewardQueueReceived()" class="admin-only w-full text-left bg-green-950/30 text-green-300 border border-green-800/50 px-4 py-3 rounded-lg font-bold"><i class="fa-solid fa-check"></i> รับของแล้ว / ไปท้ายคิว</button>
+                <button onclick="undoRewardQueueReceivedForPlayer()" class="admin-only w-full text-left bg-cyan-950/30 text-cyan-300 border border-cyan-800/50 px-4 py-3 rounded-lg font-bold"><i class="fa-solid fa-rotate-left"></i> ยกเลิกรับแล้ว</button>
+                <button onclick="skipRewardQueuePlayer()" class="admin-only w-full text-left bg-orange-950/30 text-orange-300 border border-orange-800/50 px-4 py-3 rounded-lg font-bold"><i class="fa-solid fa-forward"></i> ข้ามคิว / ไปท้ายคิว</button>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="moveRewardQueue(-1)" class="admin-only bg-[#141a24] text-[#d4af37] border border-[#2d374a] px-4 py-3 rounded-lg font-bold"><i class="fa-solid fa-arrow-up"></i> เลื่อนขึ้น</button>
+                    <button onclick="moveRewardQueue(1)" class="admin-only bg-[#141a24] text-[#d4af37] border border-[#2d374a] px-4 py-3 rounded-lg font-bold"><i class="fa-solid fa-arrow-down"></i> เลื่อนลง</button>
+                </div>
+                <div class="bg-[#0c0e14] border border-[#1f2838] rounded-lg p-3">
+                    <label class="text-xs text-gray-400 font-bold block mb-2">สลับคิวกับสมาชิก</label>
+                    <div class="flex gap-2">
+                        <select id="reward-queue-swap-target" class="flex-1 bg-[#090b10] border border-[#263245] rounded-lg px-3 py-2"></select>
+                        <button onclick="swapRewardQueue()" class="admin-only bg-[#d4af37] text-black px-4 py-2 rounded-lg font-black text-sm">สลับ</button>
+                    </div>
+                </div>
+                <button onclick="closeRewardQueueAction()" class="w-full bg-[#1c2331] text-white px-4 py-3 rounded-lg font-bold">ปิด</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎁 Reward Queue Preview Modal -->
+    <div id="reward-queue-preview-modal" class="fixed inset-0 rq-modal-backdrop flex items-center justify-center z-[149] hidden p-4">
+        <div class="bg-[#111520] border border-[#1f2838] rounded-xl p-5 w-[760px] max-w-[94vw] max-h-[82vh] overflow-y-auto shadow-2xl">
+            <div class="flex justify-between items-start border-b border-[#1f2838] pb-3 mb-4">
+                <div>
+                    <h3 class="text-base font-black text-[#d4af37]"><i class="fa-solid fa-eye"></i> Preview บันทึกรอบวันนี้</h3>
+                    <p class="text-xs text-gray-400 mt-1">แสดงคิวก่อนและหลังบันทึก โดยคนที่รับของแล้วจะไปท้ายคิวของรางวัลนั้น</p>
+                </div>
+                <button onclick="closeRewardQueuePreview()" class="bg-[#141a24] text-[#d4af37] border border-[#2d374a] px-3 py-1.5 rounded-lg text-xs font-bold">ปิด</button>
+            </div>
+            <div id="reward-queue-preview-body" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </div>
+    </div>
 
     <!-- 💡 หน้าต่างป๊อปอัพยืนยันการทำรายการ -->
     <div id="custom-confirm-modal" class="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-[150] hidden">
@@ -863,6 +1017,12 @@
 
 const STORAGE_KEY = 'bellona_gvg_v14_clean';
 const LEGACY_STORAGE_KEY = 'bellona_gvg_v13_final';
+
+/* v1.0.8: ไม่เก็บรหัส Admin แบบ plaintext ใน HTML
+   หมายเหตุ: ฝั่ง Browser ซ่อนความลับ 100% ไม่ได้ แต่ Hash ช่วยไม่ให้เห็นรหัสจริงในโค้ด
+   สำหรับ Production Security จริง ควรอัปเกรดเป็น Firebase Authentication + Firestore Rules */
+const ADMIN_LOGIN_USER_HASH = 'cf2de8a9c92433954ccf446b112f5330e0a937e7743f05c04720f166e628930a';
+const ADMIN_LOGIN_PASS_HASH = '0f8eb4b72b6e0c9e88b388eb967b49e067ef1004bf07bffc22c3acb13b43580a';
 
 window.alert = function(msg) {
     console.log(msg);
@@ -914,6 +1074,20 @@ let isRealtimeSyncEnabled = false;
 let isLocalPartyMutationInProgress = false;
 let isLocalRewardMutationInProgress = false;
 
+let rewardQueueSettings = {
+    cardBook: { enabled: true, icon: '📘', name: 'สมุดการ์ด', unit: 'เล่ม', startPage: 1, endPage: 2, perPage: 4, mode: 'slot' },
+    goldBox: { enabled: true, icon: '📦', name: 'กล่องเศษการ์ด', unit: 'กล่อง', startPage: 3, endPage: 4, perPage: 4, mode: 'slot' },
+    whiteFeather: { enabled: true, icon: '🪶', name: 'ขนนกขาว', unit: 'หน้า', startPage: 5, endPage: 9, perPage: 4, mode: 'page' },
+    redFeather: { enabled: true, icon: '🔴', name: 'ขนนกแดง', unit: 'หน้า', startPage: 10, endPage: 14, perPage: 4, mode: 'page' }
+};
+let rewardQueues = { cardBook: [], goldBox: [], whiteFeather: [], redFeather: [] };
+let rewardQueueAssignments = {};
+let rewardQueueHistory = [];
+let rewardQueueUndoStack = [];
+let activeRewardQueueType = 'cardBook';
+let activeRewardQueueAction = null;
+let rewardQueueDragData = null;
+
 function safeEl(id) { return document.getElementById(id); }
 function escapeHtml(value) {
     return String(value ?? '').replace(/[&<>"]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s]));
@@ -924,6 +1098,15 @@ function escapeInlineJs(value) {
         .replace(/'/g, "\\'")
         .replace(/\r/g, '\\r')
         .replace(/\n/g, '\\n');
+}
+
+async function sha256Text(value) {
+    if (!window.crypto || !window.crypto.subtle) {
+        throw new Error('เบราว์เซอร์นี้ไม่รองรับ Secure Hash กรุณาเปิดผ่าน HTTPS หรือ Vercel');
+    }
+    const data = new TextEncoder().encode(String(value || ''));
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 function parsePowerValue(value) {
@@ -1291,6 +1474,90 @@ function clearActivityLogs() {
     renderActivityLogList();
 }
 
+function openAdminToolsModal() {
+    safeEl('admin-tools-modal')?.classList.remove('hidden');
+}
+
+function closeAdminToolsModal() {
+    safeEl('admin-tools-modal')?.classList.add('hidden');
+}
+
+function resetAttendanceFieldsForPlayer(player) {
+    player.presentCount = 0;
+    player.leaveCount = 0;
+    player.absentCount = 0;
+    player.status = 'ยังไม่เช็คชื่อ';
+    player.lastAttendanceWarId = '';
+    player.lastAttendanceStatus = '';
+    player.lastAttendanceUpdatedAt = '';
+    player.rewardClaimed = false;
+    player.rewardName = '';
+    return player;
+}
+
+async function resetWarHistoryKeepMembers() {
+    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
+
+    const ok = window.confirm(
+        'ยืนยันรีเซ็ตประวัติวอร์ทั้งหมด?\n\n' +
+        '- ล้าง attendanceLogs ทั้งหมด\n' +
+        '- รีเซ็ต มา/ลา/ขาด ของสมาชิกทุกคนเป็น 0\n' +
+        '- ไม่ลบสมาชิก อาชีพ Power สิทธิ์สุ่ม และปาร์ตี้\n\n' +
+        'แนะนำให้ Export Backup ก่อนดำเนินการ'
+    );
+    if (!ok) return;
+
+    const ok2 = window.confirm('ยืนยันอีกครั้ง: ต้องการรีเซ็ตประวัติวอร์จริง ๆ ใช่ไหม?');
+    if (!ok2) return;
+
+    players = players.map(p => resetAttendanceFieldsForPlayer(p));
+    attendanceLogs = {};
+    rewardWinnerHistory = [];
+    rewardDrawnIds = [];
+
+    saveToLocalStorage();
+    renderAll();
+
+    if (window.bellonaDB) {
+        try {
+            await queueFirebaseWrite(async () => {
+                const { doc, collection, getDocs, writeBatch } = await import('https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js');
+
+                const logSnap = await getDocs(collection(window.bellonaDB, 'attendanceLogs'));
+                let batch = writeBatch(window.bellonaDB);
+                let count = 0;
+                for (const logDoc of logSnap.docs) {
+                    batch.delete(logDoc.ref);
+                    count++;
+                    if (count >= 450) {
+                        await batch.commit();
+                        batch = writeBatch(window.bellonaDB);
+                        count = 0;
+                    }
+                }
+                if (count > 0) await batch.commit();
+
+                const chunkSize = 450;
+                for (let i = 0; i < players.length; i += chunkSize) {
+                    const playerBatch = writeBatch(window.bellonaDB);
+                    players.slice(i, i + chunkSize).forEach(raw => {
+                        const p = normalizePlayer(raw);
+                        playerBatch.set(doc(window.bellonaDB, 'players', String(p.id)), buildPlayerFirebasePayload(p), { merge: true });
+                    });
+                    await playerBatch.commit();
+                }
+            });
+        } catch (err) {
+            alert('Reset War History Error: ' + err.message);
+            return;
+        }
+    }
+
+    logActivity('RESET WAR HISTORY', 'รีเซ็ตประวัติวอร์และสถิติ มา/ลา/ขาด ทั้งหมด โดยคงข้อมูลสมาชิกไว้');
+    saveToLocalStorage();
+    renderAll();
+}
+
 function buildBellonaBackupPayload() {
     return {
         app: 'BELLONA ROOC',
@@ -1309,7 +1576,11 @@ function buildBellonaBackupPayload() {
             rewardWinnerHistory,
             rewardDrawnIds,
             attendanceLogs,
-            activityLogs
+            activityLogs,
+            rewardQueueSettings,
+            rewardQueues,
+            rewardQueueAssignments,
+            rewardQueueHistory
         }
     };
 }
@@ -1359,7 +1630,10 @@ function importBellonaBackupFile(event) {
             rewardDrawnIds = Array.isArray(data.rewardDrawnIds) ? data.rewardDrawnIds.map(String) : [];
             attendanceLogs = data.attendanceLogs && typeof data.attendanceLogs === 'object' ? data.attendanceLogs : {};
             activityLogs = Array.isArray(data.activityLogs) ? data.activityLogs : [];
-            activityLogs = Array.isArray(data.activityLogs) ? data.activityLogs : [];
+            rewardQueueSettings = data.rewardQueueSettings && typeof data.rewardQueueSettings === 'object' ? mergeRewardQueueSettings(data.rewardQueueSettings) : rewardQueueSettings;
+            rewardQueues = data.rewardQueues && typeof data.rewardQueues === 'object' ? data.rewardQueues : rewardQueues;
+            rewardQueueAssignments = data.rewardQueueAssignments && typeof data.rewardQueueAssignments === 'object' ? data.rewardQueueAssignments : {};
+            rewardQueueHistory = Array.isArray(data.rewardQueueHistory) ? data.rewardQueueHistory : [];
             logActivity('IMPORT BACKUP', `นำเข้า Backup จากไฟล์ ${file.name}`);
             saveToLocalStorage();
             initPartiesGrid();
@@ -1389,6 +1663,7 @@ window.onload = function() {
     // Performance v1.0.1: เปิด Realtime แบบหน่วงเวลาและใช้ debounced render เพื่อลดอาการค้างเมื่อสมาชิกเยอะ
     setTimeout(() => {
         if (typeof window.startPlayersRealtimeSync === 'function') window.startPlayersRealtimeSync(false);
+        if (typeof window.importRewardQueueFromFirebaseSafe === 'function') window.importRewardQueueFromFirebaseSafe().then(() => renderAll());
     }, 1800);
 };
 
@@ -1402,18 +1677,30 @@ function checkLoginSession() {
     applyRolePermissions();
 }
 
-function attemptAdminLogin() {
-    const userInp = (safeEl('login-username')?.value || '').trim();
-    const passInp = (safeEl('login-password')?.value || '').trim();
-    if (userInp === 'admin-bellona' && passInp === '5000') {
-        userRole = 'admin';
-        sessionStorage.setItem('bellona_role', 'admin');
-        sessionStorage.setItem('bellona_is_logged_in', 'true');
-        safeEl('login-overlay-screen')?.classList.add('hidden');
-        applyRolePermissions();
-        renderAll();
-    } else {
-        alert('รหัสผ่านไม่ถูกต้อง');
+async function attemptAdminLogin() {
+    try {
+        const userInp = (safeEl('login-username')?.value || '').trim();
+        const passInp = (safeEl('login-password')?.value || '').trim();
+        const res = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: userInp, password: passInp })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.ok === true) {
+            userRole = 'admin';
+            sessionStorage.setItem('bellona_role', 'admin');
+            sessionStorage.setItem('bellona_is_logged_in', 'true');
+            sessionStorage.setItem('bellona_admin_session', data.session || 'vercel-api');
+            safeEl('login-overlay-screen')?.classList.add('hidden');
+            applyRolePermissions();
+            logActivity('ADMIN LOGIN', 'เข้าสู่ระบบด้วย Vercel API Login');
+            renderAll();
+        } else {
+            alert(data.message || 'รหัสผ่านไม่ถูกต้อง');
+        }
+    } catch (err) {
+        alert('Login API Error: ตรวจสอบว่าเพิ่มไฟล์ /api/login.js และตั้งค่า Environment Variables ใน Vercel แล้ว');
     }
 }
 
@@ -1464,6 +1751,10 @@ function loadFromLocalStorage() {
         rewardDrawnIds = Array.isArray(data.rewardDrawnIds) ? data.rewardDrawnIds.map(String) : [];
         attendanceLogs = data.attendanceLogs && typeof data.attendanceLogs === 'object' ? data.attendanceLogs : {};
         activityLogs = Array.isArray(data.activityLogs) ? data.activityLogs : [];
+        rewardQueueSettings = data.rewardQueueSettings && typeof data.rewardQueueSettings === 'object' ? mergeRewardQueueSettings(data.rewardQueueSettings) : rewardQueueSettings;
+        rewardQueues = data.rewardQueues && typeof data.rewardQueues === 'object' ? data.rewardQueues : rewardQueues;
+        rewardQueueAssignments = data.rewardQueueAssignments && typeof data.rewardQueueAssignments === 'object' ? data.rewardQueueAssignments : {};
+        rewardQueueHistory = Array.isArray(data.rewardQueueHistory) ? data.rewardQueueHistory : [];
         selectedGlobalMapId = data.selectedGlobalMapId || 'vigrid';
         selectedMap = data.selectedMap || selectedGlobalMapId || 'vigrid';
         const logoData = localStorage.getItem('bellona_custom_logo_data');
@@ -1474,7 +1765,7 @@ function loadFromLocalStorage() {
 }
 
 function saveToLocalStorage() {
-    const data = { players, googleSheetUrl, availableJobsList, globalMaps, selectedGlobalMapId, selectedMap, markers, drawingPaths, rewardWinnerHistory, rewardDrawnIds, attendanceLogs, activityLogs };
+    const data = { players, googleSheetUrl, availableJobsList, globalMaps, selectedGlobalMapId, selectedMap, markers, drawingPaths, rewardWinnerHistory, rewardDrawnIds, attendanceLogs, activityLogs, rewardQueueSettings, rewardQueues, rewardQueueAssignments, rewardQueueHistory };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
 function saveToLocalStorageManual() { saveToLocalStorage(); alert('💾 บันทึกฐานข้อมูลกิลด์สำเร็จ!'); }
@@ -1774,6 +2065,7 @@ function forceRenderPartyAndCurrentTab() {
     const activeTab = getCurrentActiveTab();
     if (activeTab === 'members') renderMemberManagerTab();
     if (activeTab === 'rewards') renderRewardsTab();
+    if (activeTab === 'auction') renderRewardQueueTab();
     if (activeTab === 'stats') renderStatsTab();
     applyRolePermissions();
 }
@@ -2387,6 +2679,384 @@ function closeRewardEligiblePopup() {
     safeEl('reward-eligible-popup')?.classList.add('hidden');
 }
 
+
+
+/* ================= REWARD QUEUE SYSTEM v1.1.0 DEMO-PRODUCTION CORE ================= */
+function rewardQueueTypes() { return Object.keys(rewardQueueSettings || {}); }
+function mergeRewardQueueSettings(saved) {
+    const base = JSON.parse(JSON.stringify(rewardQueueSettings));
+    Object.keys(base).forEach(k => { if (saved && saved[k]) base[k] = { ...base[k], ...saved[k] }; });
+    return base;
+}
+function rewardQueuePageAmount(cfg) {
+    const start = Math.max(1, Number(cfg.startPage || 1));
+    const end = Math.max(start, Number(cfg.endPage || start));
+    return cfg.mode === 'page' ? (end - start + 1) : (end - start + 1) * Number(cfg.perPage || 4);
+}
+function ensureRewardQueues() {
+    const activeIds = players.map(p => String(p.id));
+    rewardQueueTypes().forEach(type => {
+        let q = Array.isArray(rewardQueues[type]) ? rewardQueues[type].map(String) : [];
+        q = q.filter(id => activeIds.includes(id));
+        activeIds.forEach(id => { if (!q.includes(id)) q.push(id); });
+        rewardQueues[type] = q;
+    });
+}
+function getRewardQueuePlayer(id) { return players.find(p => String(p.id) === String(id)); }
+function rewardQueueSnapshot() { return JSON.stringify({ rewardQueueSettings, rewardQueues, rewardQueueAssignments, rewardQueueHistory }); }
+function pushRewardQueueUndo(label) {
+    rewardQueueUndoStack.push({ label, state: rewardQueueSnapshot() });
+    rewardQueueUndoStack = rewardQueueUndoStack.slice(-20);
+}
+function undoRewardQueueLastAction() {
+    const last = rewardQueueUndoStack.pop();
+    if (!last) return alert('ยังไม่มีรายการให้ Undo');
+    const data = JSON.parse(last.state);
+    rewardQueueSettings = mergeRewardQueueSettings(data.rewardQueueSettings || {});
+    rewardQueues = data.rewardQueues || rewardQueues;
+    rewardQueueAssignments = data.rewardQueueAssignments || {};
+    rewardQueueHistory = Array.isArray(data.rewardQueueHistory) ? data.rewardQueueHistory : [];
+    saveToLocalStorage();
+    saveRewardQueueToFirebaseSafe(false);
+    renderAll();
+}
+function calculateRewardQueueType(type) {
+    const cfg = rewardQueueSettings[type];
+    if (!cfg || cfg.enabled === false) { rewardQueueAssignments[type] = []; return; }
+    const q = rewardQueues[type] || [];
+    const old = rewardQueueAssignments[type] || [];
+    const amount = rewardQueuePageAmount(cfg);
+    const result = [];
+    let count = 0;
+    let waitCount = 0;
+    q.forEach(id => {
+        const p = getRewardQueuePlayer(id);
+        if (!p) return;
+        const manual = old.find(a => String(a.playerId) === String(id))?.manualStatus || null;
+        if (manual === 'received') { result.push({ playerId: String(id), player: p, status: 'received', manualStatus: manual, label: 'ได้รับแล้ว' }); return; }
+        if (manual === 'skipped') { result.push({ playerId: String(id), player: p, status: 'skipped', manualStatus: manual, label: 'ข้ามคิว' }); return; }
+        if (p.status === 'ลา') { result.push({ playerId: String(id), player: p, status: 'leave', label: 'ลาวอร์' }); return; }
+        if (p.status === 'ขาด') { result.push({ playerId: String(id), player: p, status: 'absent', label: 'ขาดวอร์' }); return; }
+        if (p.status !== 'มา') { result.push({ playerId: String(id), player: p, status: 'unknown', label: 'ยังไม่เช็คชื่อ' }); return; }
+        if (count < amount) {
+            if (cfg.mode === 'slot') {
+                const perPage = Number(cfg.perPage || 4);
+                const page = Number(cfg.startPage || 1) + Math.floor(count / perPage);
+                const slot = (count % perPage) + 1;
+                result.push({ playerId: String(id), player: p, status: 'today', page, slot, label: `หน้า ${page} · ${cfg.unit || 'ชิ้น'} ${slot}` });
+            } else {
+                const page = Number(cfg.startPage || 1) + count;
+                result.push({ playerId: String(id), player: p, status: 'today', page, label: `หน้า ${page}` });
+            }
+            count++;
+        } else {
+            waitCount++;
+            result.push({ playerId: String(id), player: p, status: 'wait', wait: waitCount, label: `อีก ${waitCount} คิว` });
+        }
+    });
+    rewardQueueAssignments[type] = result;
+}
+function calculateRewardQueues() { ensureRewardQueues(); rewardQueueTypes().forEach(calculateRewardQueueType); }
+function rewardQueueClass(st) { return st === 'today' ? 'today' : st === 'wait' ? 'next' : st === 'received' ? 'done' : (st === 'skipped' || st === 'leave' || st === 'absent' || st === 'unknown') ? 'skip' : ''; }
+function rewardQueueBadge(a) {
+    const map = { today:['🟢','ถึงคิว','text-green-300'], wait:['🟡',a.label,'text-amber-300'], received:['🔵','รับแล้ว','text-cyan-300'], skipped:['🟠','ข้าม','text-orange-300'], leave:['🔴','ลา','text-red-300'], absent:['⚫','ขาด','text-gray-300'], unknown:['⚪','ยังไม่เช็คชื่อ','text-gray-400'] };
+    const b = map[a.status] || ['⚪', a.label, 'text-gray-300'];
+    return `<span class="${b[2]} font-black text-[11px]">${b[0]} ${b[1]}</span>`;
+}
+function rewardQueueTodayList(type) { return (rewardQueueAssignments[type] || []).filter(a => a.status === 'today').slice(0, rewardQueuePageAmount(rewardQueueSettings[type])); }
+function rewardQueueNextList(type) { return (rewardQueueAssignments[type] || []).filter(a => a.status === 'wait').slice(0, 4); }
+function rewardQueueAdminList(type) {
+    const done = (rewardQueueAssignments[type] || []).filter(a => a.status === 'received').slice(-3);
+    return [...rewardQueueTodayList(type), ...rewardQueueNextList(type), ...done];
+}
+function renderRewardQueueTab() {
+    calculateRewardQueues();
+    renderRewardQueueAdminBoard();
+    renderRewardQueueMemberTabs();
+    renderRewardQueueMemberBoard();
+    applyRolePermissions();
+}
+function renderRewardQueueAdminBoard() {
+    const box = safeEl('reward-queue-admin-board');
+    if (!box) return;
+    box.innerHTML = rewardQueueTypes().filter(type => rewardQueueSettings[type]?.enabled !== false).map(type => {
+        const cfg = rewardQueueSettings[type];
+        const list = rewardQueueAdminList(type);
+        return `<div class="bg-[#111520] border border-[#1f2838] rounded-2xl p-3 flex flex-col min-h-[310px] max-h-[calc((100vh-290px)/2)]">
+            <div class="flex items-center justify-between border-b border-[#1f2838] pb-2 mb-2">
+                <h3 class="font-black text-[#d4af37] text-sm">${cfg.icon} ${escapeHtml(cfg.name)}</h3>
+                <div class="flex gap-1">
+                    <button onclick="openRewardQueuePreview('${type}')" class="admin-only bg-[#141a24] text-cyan-300 border border-cyan-900/50 px-2 py-1 rounded text-[10px] font-bold">Preview</button>
+                    <button onclick="resetRewardQueue('${type}')" class="admin-only bg-red-900/20 text-red-300 border border-red-800/40 px-2 py-1 rounded text-[10px] font-bold">Reset</button>
+                </div>
+            </div>
+            <div class="space-y-1.5 overflow-y-auto pr-1">
+                ${list.map(a => `<div class="rq-row ${rewardQueueClass(a.status)} rounded-lg p-2 flex items-center justify-between gap-2" draggable="true" ondragstart="rewardQueueDragStart(event,'${type}','${escapeInlineJs(a.playerId)}')" ondragover="rewardQueueDragOver(event)" ondrop="rewardQueueDropOn(event,'${type}','${escapeInlineJs(a.playerId)}')">
+                    <div class="min-w-0">
+                        <div class="font-black text-white truncate text-sm">${escapeHtml(a.player.name)}</div>
+                        <div class="text-[11px] text-gray-400">${a.status === 'wait' ? 'คิวถัดไป' : a.status === 'received' ? 'ไปท้ายคิวแล้ว' : escapeHtml(a.label)}</div>
+                    </div>
+                    <div class="flex items-center gap-1.5 shrink-0">${rewardQueueBadge(a)}
+                        <button onclick="openRewardQueueAction('${type}','${escapeInlineJs(a.playerId)}')" class="admin-only bg-[#141a24] text-[#d4af37] border border-[#2d374a] w-7 h-7 rounded-lg"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                    </div>
+                </div>`).join('') || '<div class="text-xs text-gray-500 text-center py-8">ไม่มีรายการ</div>'}
+            </div>
+        </div>`;
+    }).join('');
+}
+function renderRewardQueueMemberTabs() {
+    const box = safeEl('reward-queue-member-tabs');
+    if (!box) return;
+    const enabledTypes = rewardQueueTypes().filter(type => rewardQueueSettings[type]?.enabled !== false);
+    if (!enabledTypes.includes(activeRewardQueueType)) activeRewardQueueType = enabledTypes[0] || 'cardBook';
+    box.innerHTML = enabledTypes.map(type => {
+        const cfg = rewardQueueSettings[type];
+        const cls = activeRewardQueueType === type ? 'rq-active-tab' : 'bg-[#141a24] text-[#d4af37] border border-[#2d374a]';
+        return `<button onclick="setActiveRewardQueueType('${type}')" class="${cls} px-3 py-2 rounded-lg text-xs font-black">${cfg.icon} ${escapeHtml(cfg.name)}</button>`;
+    }).join('');
+}
+function renderRewardQueueMemberBoard() {
+    const box = safeEl('reward-queue-member-board');
+    if (!box) return;
+    const cfg = rewardQueueSettings[activeRewardQueueType];
+    const list = rewardQueueAssignments[activeRewardQueueType] || [];
+    box.innerHTML = list.map((a, i) => `<div class="rq-row ${rewardQueueClass(a.status)} rounded-lg p-2.5 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-2 min-w-0">
+            <div class="w-7 h-7 rounded-full bg-[#181f2d] border border-[#2a3446] flex items-center justify-center text-[11px] font-black text-gray-300">${i+1}</div>
+            <div class="min-w-0">
+                <div class="font-black text-white truncate text-sm">${escapeHtml(a.player.name)}</div>
+                <div class="text-[11px] text-gray-400 truncate">${a.status === 'today' ? escapeHtml(a.label) : escapeHtml(cfg?.name || '')}</div>
+            </div>
+        </div>
+        <div class="text-right shrink-0">${rewardQueueBadge(a)}</div>
+    </div>`).join('');
+}
+function setActiveRewardQueueType(type) { activeRewardQueueType = type; renderRewardQueueMemberTabs(); renderRewardQueueMemberBoard(); }
+function openRewardQueueSettings() {
+    const grid = safeEl('reward-queue-settings-grid');
+    if (!grid) return;
+    grid.innerHTML = rewardQueueTypes().map(type => {
+        const cfg = rewardQueueSettings[type];
+        return `<div class="bg-[#0c0e14] border border-[#1f2838] rounded-xl p-4 space-y-3">
+            <label class="flex items-center justify-between gap-3">
+                <span class="font-black text-[#d4af37]">${cfg.icon} ${escapeHtml(cfg.name)}</span>
+                <span class="text-xs text-gray-300 font-bold"><input id="rq-set-${type}-enabled" type="checkbox" ${cfg.enabled !== false ? 'checked' : ''} class="accent-[#d4af37] mr-1"> มี</span>
+            </label>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+                <label><span class="text-gray-400 font-bold block mb-1">หน้าเริ่ม</span><input id="rq-set-${type}-start" type="number" value="${Number(cfg.startPage || 1)}" class="w-full bg-[#111622] border border-[#2a3446] rounded-lg px-3 py-2"></label>
+                <label><span class="text-gray-400 font-bold block mb-1">หน้าสิ้นสุด</span><input id="rq-set-${type}-end" type="number" value="${Number(cfg.endPage || cfg.startPage || 1)}" class="w-full bg-[#111622] border border-[#2a3446] rounded-lg px-3 py-2"></label>
+            </div>
+            <div class="text-[11px] text-gray-500">${cfg.mode === 'page' ? 'ขนนก: แสดงเลขหน้าอย่างเดียว' : 'สมุด/กล่อง: 4 ชิ้นต่อหน้า เลข 1-4 รีเซ็ตทุกหน้า'}</div>
+        </div>`;
+    }).join('');
+    safeEl('reward-queue-settings-modal')?.classList.remove('hidden');
+}
+function closeRewardQueueSettings() { safeEl('reward-queue-settings-modal')?.classList.add('hidden'); }
+function saveRewardQueueSettings() {
+    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
+    pushRewardQueueUndo('settings');
+    rewardQueueTypes().forEach(type => {
+        const cfg = rewardQueueSettings[type];
+        cfg.enabled = !!safeEl(`rq-set-${type}-enabled`)?.checked;
+        const start = Math.max(1, Number(safeEl(`rq-set-${type}-start`)?.value || 1));
+        const end = Math.max(start, Number(safeEl(`rq-set-${type}-end`)?.value || start));
+        cfg.startPage = start;
+        cfg.endPage = end;
+        cfg.perPage = 4;
+    });
+    closeRewardQueueSettings();
+    saveToLocalStorage();
+    saveRewardQueueToFirebaseSafe(false);
+    renderAll();
+}
+function openRewardQueueAction(type, playerId) {
+    activeRewardQueueAction = { type, playerId: String(playerId) };
+    const p = getRewardQueuePlayer(playerId);
+    safeEl('reward-queue-action-title').innerText = p ? p.name : 'จัดการคิว';
+    safeEl('reward-queue-action-sub').innerText = rewardQueueSettings[type]?.name || '';
+    const sel = safeEl('reward-queue-swap-target');
+    if (sel) sel.innerHTML = (rewardQueues[type] || []).filter(id => String(id) !== String(playerId)).map(id => `<option value="${escapeHtml(id)}">${escapeHtml(getRewardQueuePlayer(id)?.name || id)}</option>`).join('');
+    safeEl('reward-queue-action-modal')?.classList.remove('hidden');
+    applyRolePermissions();
+}
+function closeRewardQueueAction() { safeEl('reward-queue-action-modal')?.classList.add('hidden'); activeRewardQueueAction = null; }
+function markRewardQueueReceived() {
+    if (!activeRewardQueueAction || !checkAdminAccess()) return;
+    pushRewardQueueUndo('received');
+    const { type, playerId } = activeRewardQueueAction;
+    const q = rewardQueues[type] || [];
+    const idx = q.indexOf(playerId);
+    if (idx >= 0) { q.splice(idx, 1); q.push(playerId); }
+    rewardQueueAssignments[type] = (rewardQueueAssignments[type] || []).map(a => String(a.playerId) === String(playerId) ? { ...a, manualStatus: 'received', status: 'received', label: 'ได้รับแล้ว' } : a);
+    const p = getRewardQueuePlayer(playerId);
+    rewardQueueHistory.unshift({ id: 'rqh_' + Date.now(), playerId, playerName: p?.name || playerId, rewardType: type, rewardName: rewardQueueSettings[type]?.name || type, at: new Date().toISOString() });
+    closeRewardQueueAction();
+    saveToLocalStorage();
+    saveRewardQueueToFirebaseSafe(false);
+    renderAll();
+}
+function undoRewardQueueReceivedForPlayer() {
+    if (!activeRewardQueueAction || !checkAdminAccess()) return;
+    pushRewardQueueUndo('undo received');
+    const { type, playerId } = activeRewardQueueAction;
+    rewardQueueAssignments[type] = (rewardQueueAssignments[type] || []).map(a => String(a.playerId) === String(playerId) ? { ...a, manualStatus: null } : a);
+    rewardQueueHistory = rewardQueueHistory.filter(h => !(String(h.playerId) === String(playerId) && h.rewardType === type));
+    closeRewardQueueAction();
+    saveToLocalStorage();
+    saveRewardQueueToFirebaseSafe(false);
+    renderAll();
+}
+function skipRewardQueuePlayer() {
+    if (!activeRewardQueueAction || !checkAdminAccess()) return;
+    pushRewardQueueUndo('skip');
+    const { type, playerId } = activeRewardQueueAction;
+    const q = rewardQueues[type] || [];
+    const idx = q.indexOf(playerId);
+    if (idx >= 0) { q.splice(idx, 1); q.push(playerId); }
+    rewardQueueAssignments[type] = (rewardQueueAssignments[type] || []).map(a => String(a.playerId) === String(playerId) ? { ...a, manualStatus: 'skipped', status: 'skipped', label: 'ข้ามคิว' } : a);
+    closeRewardQueueAction();
+    saveToLocalStorage();
+    saveRewardQueueToFirebaseSafe(false);
+    renderAll();
+}
+function moveRewardQueue(delta) {
+    if (!activeRewardQueueAction || !checkAdminAccess()) return;
+    pushRewardQueueUndo('move');
+    const { type, playerId } = activeRewardQueueAction;
+    const q = rewardQueues[type] || [];
+    const i = q.indexOf(playerId), j = i + delta;
+    if (i >= 0 && j >= 0 && j < q.length) [q[i], q[j]] = [q[j], q[i]];
+    closeRewardQueueAction();
+    saveToLocalStorage();
+    saveRewardQueueToFirebaseSafe(false);
+    renderAll();
+}
+function swapRewardQueue() {
+    if (!activeRewardQueueAction || !checkAdminAccess()) return;
+    pushRewardQueueUndo('swap');
+    const target = safeEl('reward-queue-swap-target')?.value;
+    const { type, playerId } = activeRewardQueueAction;
+    const q = rewardQueues[type] || [];
+    const a = q.indexOf(playerId), b = q.indexOf(target);
+    if (a >= 0 && b >= 0) [q[a], q[b]] = [q[b], q[a]];
+    closeRewardQueueAction();
+    saveToLocalStorage();
+    saveRewardQueueToFirebaseSafe(false);
+    renderAll();
+}
+function rewardQueueDragStart(e, type, playerId) { rewardQueueDragData = { type, playerId: String(playerId) }; e.currentTarget.classList.add('rq-dragging'); }
+function rewardQueueDragOver(e) { e.preventDefault(); }
+function rewardQueueDropOn(e, type, targetId) {
+    e.preventDefault();
+    if (!rewardQueueDragData || rewardQueueDragData.type !== type || rewardQueueDragData.playerId === String(targetId)) return;
+    pushRewardQueueUndo('drag');
+    const q = rewardQueues[type] || [];
+    const from = q.indexOf(rewardQueueDragData.playerId), to = q.indexOf(String(targetId));
+    if (from >= 0 && to >= 0) { const [m] = q.splice(from, 1); q.splice(to, 0, m); }
+    rewardQueueDragData = null;
+    saveToLocalStorage();
+    saveRewardQueueToFirebaseSafe(false);
+    renderAll();
+}
+function rewardQueuePreviewAfter(types) {
+    const out = {};
+    types.forEach(type => {
+        const ids = rewardQueueTodayList(type).map(a => String(a.playerId));
+        out[type] = (rewardQueues[type] || []).filter(id => !ids.includes(String(id))).concat(ids);
+    });
+    return out;
+}
+function openRewardQueuePreview(type = null) {
+    calculateRewardQueues();
+    const types = type ? [type] : rewardQueueTypes().filter(t => rewardQueueSettings[t]?.enabled !== false);
+    const preview = rewardQueuePreviewAfter(types);
+    const body = safeEl('reward-queue-preview-body');
+    if (body) body.innerHTML = types.map(t => {
+        const cfg = rewardQueueSettings[t];
+        return `<div class="bg-[#0c0e14] border border-[#1f2838] rounded-xl p-4">
+            <h4 class="font-black text-[#d4af37] mb-3">${cfg.icon} ${escapeHtml(cfg.name)}</h4>
+            <div class="grid grid-cols-2 gap-3 text-xs">
+                <div><div class="text-gray-400 font-bold mb-2">ก่อน</div>${(rewardQueues[t] || []).slice(0,10).map((id,i)=>`<div class="py-1 border-b border-[#1f2838]">${i+1}. ${escapeHtml(getRewardQueuePlayer(id)?.name || id)}</div>`).join('')}</div>
+                <div><div class="text-gray-400 font-bold mb-2">หลัง</div>${(preview[t] || []).slice(0,10).map((id,i)=>`<div class="py-1 border-b border-[#1f2838]">${i+1}. ${escapeHtml(getRewardQueuePlayer(id)?.name || id)}</div>`).join('')}</div>
+            </div>
+        </div>`;
+    }).join('');
+    safeEl('reward-queue-preview-modal')?.classList.remove('hidden');
+}
+function closeRewardQueuePreview() { safeEl('reward-queue-preview-modal')?.classList.add('hidden'); }
+function saveRewardQueueTodayRound() {
+    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
+    pushRewardQueueUndo('save today');
+    rewardQueueTypes().filter(type => rewardQueueSettings[type]?.enabled !== false).forEach(type => {
+        const ids = rewardQueueTodayList(type).map(a => String(a.playerId));
+        rewardQueues[type] = (rewardQueues[type] || []).filter(id => !ids.includes(String(id))).concat(ids);
+        ids.forEach(id => {
+            const p = getRewardQueuePlayer(id);
+            rewardQueueHistory.unshift({ id: 'rqh_' + Date.now() + '_' + id, playerId: id, playerName: p?.name || id, rewardType: type, rewardName: rewardQueueSettings[type]?.name || type, at: new Date().toISOString() });
+        });
+    });
+    rewardQueueAssignments = {};
+    logActivity('REWARD QUEUE SAVE ROUND', 'บันทึกรอบคิวรับรางวัลวันนี้');
+    saveToLocalStorage();
+    saveRewardQueueToFirebaseSafe(false);
+    renderAll();
+}
+function resetRewardQueue(type) {
+    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
+    if (!confirm('ยืนยันรีเซ็ตคิว ' + (rewardQueueSettings[type]?.name || type) + ' ?')) return;
+    pushRewardQueueUndo('reset ' + type);
+    rewardQueues[type] = players.map(p => String(p.id));
+    rewardQueueAssignments[type] = [];
+    saveToLocalStorage();
+    saveRewardQueueToFirebaseSafe(false);
+    renderAll();
+}
+function copyRewardQueueSummary() {
+    calculateRewardQueues();
+    const lines = [];
+    rewardQueueTypes().filter(type => rewardQueueSettings[type]?.enabled !== false).forEach(type => {
+        const cfg = rewardQueueSettings[type];
+        lines.push(`${cfg.icon} ${cfg.name}`);
+        rewardQueueTodayList(type).forEach(a => lines.push(`- ${a.player.name}: ${a.label}`));
+        lines.push('');
+    });
+    copyTextToClipboard(lines.join('\n'));
+    alert('Copy สรุปคิวรับรางวัลแล้ว');
+}
+async function saveRewardQueueToFirebaseSafe(showAlert = false) {
+    if (!window.bellonaDB) return;
+    try {
+        await queueFirebaseWrite(async () => {
+            const { doc, setDoc } = await import('https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js');
+            await setDoc(doc(window.bellonaDB, 'rewardQueueStates', 'main'), {
+                rewardQueueSettings,
+                rewardQueues,
+                rewardQueueAssignments,
+                rewardQueueHistory: rewardQueueHistory.slice(0, 100),
+                updatedAt: new Date().toISOString()
+            }, { merge: true });
+        });
+        if (showAlert) alert('บันทึก Reward Queue เข้า Firebase แล้ว');
+    } catch (err) {
+        console.warn('saveRewardQueueToFirebaseSafe error:', err.message);
+    }
+}
+async function importRewardQueueFromFirebaseSafe() {
+    if (!window.bellonaDB) return;
+    try {
+        const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js');
+        const snap = await getDoc(doc(window.bellonaDB, 'rewardQueueStates', 'main'));
+        if (snap.exists()) {
+            const data = snap.data();
+            rewardQueueSettings = data.rewardQueueSettings ? mergeRewardQueueSettings(data.rewardQueueSettings) : rewardQueueSettings;
+            rewardQueues = data.rewardQueues || rewardQueues;
+            rewardQueueAssignments = data.rewardQueueAssignments || {};
+            rewardQueueHistory = Array.isArray(data.rewardQueueHistory) ? data.rewardQueueHistory : [];
+            saveToLocalStorage();
+        }
+    } catch (err) { console.warn('importRewardQueueFromFirebaseSafe error:', err.message); }
+}
+
 function copyRewardAllNames() {
     const names = players.filter(p => p.status === 'มา').map(p => p.name).filter(Boolean).join('\n');
     if (!names) return alert('ไม่มีรายชื่อมาวอร์');
@@ -2394,7 +3064,7 @@ function copyRewardAllNames() {
 }
 
 function switchTab(t) {
-    ['members','party','tactical','rewards','stats'].forEach(tab => safeEl(`tab-content-${tab}`)?.classList.add('hidden'));
+    ['members','party','tactical','rewards','auction','stats'].forEach(tab => safeEl(`tab-content-${tab}`)?.classList.add('hidden'));
     safeEl(`tab-content-${t}`)?.classList.remove('hidden');
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     safeEl(`tab-btn-${t}`)?.classList.add('active');
@@ -2662,7 +3332,7 @@ function resetMarkersToDefault() {
 function getCurrentActiveTab() {
     const activeBtn = document.querySelector('.tab-btn.active');
     if (activeBtn && activeBtn.id) return activeBtn.id.replace('tab-btn-', '');
-    const visible = ['members','party','tactical','rewards','stats'].find(tab => !safeEl(`tab-content-${tab}`)?.classList.contains('hidden'));
+    const visible = ['members','party','tactical','rewards','auction','stats'].find(tab => !safeEl(`tab-content-${tab}`)?.classList.contains('hidden'));
     return visible || 'members';
 }
 
@@ -2684,6 +3354,7 @@ function renderAll() {
     if (activeTab === 'members') renderMemberManagerTab();
     if (activeTab === 'party') renderParties();
     if (activeTab === 'rewards') renderRewardsTab();
+    if (activeTab === 'auction') renderRewardQueueTab();
     if (activeTab === 'stats') renderStatsTab();
     if (activeTab === 'tactical') {
         renderMarkers();
