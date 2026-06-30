@@ -517,8 +517,8 @@
         <button onclick="switchTab('members')" id="tab-btn-members" class="tab-btn active px-6 py-4 text-sm font-bold flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-user-gear text-[#d4af37]"></i> จัดการสมาชิก & เช็คชื่อกิลด์</button>
         <button onclick="switchTab('party')" id="tab-btn-party" class="tab-btn px-6 py-4 text-sm font-bold flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-users"></i> จัดปาร์ตี้กิลด์วอ</button>
         <button onclick="switchTab('tactical')" id="tab-btn-tactical" class="tab-btn px-6 py-4 text-sm font-bold flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-map-location-dot"></i> วางแผนกลยุทธ</button>
+        <button onclick="switchTab('auction')" id="tab-btn-auction" class="tab-btn px-6 py-4 text-sm font-bold flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-trophy text-cyan-400"></i> GVG Rewards</button>
         <button onclick="switchTab('rewards')" id="tab-btn-rewards" class="tab-btn px-6 py-4 text-sm font-bold flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-gift text-amber-400"></i> สุ่มของรางวัล</button>
-        <button onclick="switchTab('auction')" id="tab-btn-auction" class="tab-btn px-6 py-4 text-sm font-bold flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-list-ol text-cyan-400"></i> คิวรับรางวัล</button>
         <button onclick="switchTab('stats')" id="tab-btn-stats" class="tab-btn px-6 py-4 text-sm font-bold flex items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-chart-line text-emerald-400"></i> สถิติ</button>
     </nav>
 
@@ -840,8 +840,8 @@
             <div id="tab-content-auction" class="hidden space-y-4">
                 <div class="bg-[#111520] border border-[#1f2838] rounded-xl p-4 flex flex-wrap items-center justify-between gap-3 shadow-xl">
                     <div>
-                        <h2 class="text-base font-black text-[#d4af37]"><i class="fa-solid fa-list-ol"></i> คิวรับรางวัล BELLONA</h2>
-                        <p class="text-xs text-gray-400 mt-1">คิวแยก 4 รางวัล · ดึงเฉพาะคนมาวอร์ · สมุด/กล่องเลข 1-4 ต่อหน้า · ขนนกแสดงเลขหน้า</p>
+                        <h2 class="text-base font-black text-[#d4af37]"><i class="fa-solid fa-trophy"></i> GVG Rewards</h2>
+                        <p class="text-xs text-gray-400 mt-1">ระบบจัดคิวรับรางวัลหลังจบ GVG · คิวแยก 4 รางวัล · ดึงเฉพาะคนมาวอร์ · ขนนกแสดงเลขหน้า</p>
                     </div>
                     <div class="flex flex-wrap gap-2 text-xs">
                         <button onclick="openRewardQueueSettings()" class="admin-only bg-[#d4af37] text-black font-black px-3 py-2 rounded-lg"><i class="fa-solid fa-gear"></i> ตั้งค่ารางวัล</button>
@@ -1004,7 +1004,7 @@
         </div>
     </div>
 
-    <div class="bellona-version-pill">BELLONA ROOC · v1.1.0 Production</div>
+    <div class="bellona-version-pill">BELLONA ROOC · v1.1.2 Hotfix</div>
 
 
 
@@ -1143,10 +1143,10 @@ let isLocalPartyMutationInProgress = false;
 let isLocalRewardMutationInProgress = false;
 
 let rewardQueueSettings = {
-    cardBook: { enabled: true, icon: '📘', name: 'สมุดการ์ด', unit: 'เล่ม', startPage: 1, endPage: 2, perPage: 4, mode: 'slot' },
-    goldBox: { enabled: true, icon: '📦', name: 'กล่องเศษการ์ด', unit: 'กล่อง', startPage: 3, endPage: 4, perPage: 4, mode: 'slot' },
-    whiteFeather: { enabled: true, icon: '🪶', name: 'ขนนกขาว', unit: 'หน้า', startPage: 5, endPage: 9, perPage: 4, mode: 'page' },
-    redFeather: { enabled: true, icon: '🔴', name: 'ขนนกแดง', unit: 'หน้า', startPage: 10, endPage: 14, perPage: 4, mode: 'page' }
+    cardBook: { enabled: true, icon: '📘', name: 'สมุดการ์ด', unit: 'เล่ม', amount: 8, startPage: 1, endPage: 2, perPage: 4, mode: 'slot' },
+    goldBox: { enabled: true, icon: '📦', name: 'กล่องเศษการ์ด', unit: 'กล่อง', amount: 8, startPage: 3, endPage: 4, perPage: 4, mode: 'slot' },
+    whiteFeather: { enabled: true, icon: '🪶', name: 'ขนนกขาว', unit: 'หน้า', amount: 5, startPage: 5, endPage: 9, perPage: 4, mode: 'page' },
+    redFeather: { enabled: true, icon: '🔴', name: 'ขนนกแดง', unit: 'หน้า', amount: 5, startPage: 10, endPage: 14, perPage: 4, mode: 'page' }
 };
 let rewardQueues = { cardBook: [], goldBox: [], whiteFeather: [], redFeather: [] };
 let rewardQueueAssignments = {};
@@ -2770,6 +2770,9 @@ function mergeRewardQueueSettings(saved) {
     return base;
 }
 function rewardQueuePageAmount(cfg) {
+    // v112: จำนวนรางวัลเป็นตัวกำหนดหลัก ส่วนช่วงหน้าใช้สำหรับแสดงผลหน้าเริ่ม-สิ้นสุด
+    const amount = Number(cfg.amount);
+    if (Number.isFinite(amount) && amount >= 0) return Math.floor(amount);
     const start = Math.max(1, Number(cfg.startPage || 1));
     const end = Math.max(start, Number(cfg.endPage || start));
     return cfg.mode === 'page' ? (end - start + 1) : (end - start + 1) * Number(cfg.perPage || 4);
@@ -2867,7 +2870,10 @@ function renderRewardQueueAdminBoard() {
         const list = rewardQueueAdminList(type);
         return `<div class="bg-[#111520] border border-[#1f2838] rounded-2xl p-3 flex flex-col min-h-[310px] max-h-[calc((100vh-290px)/2)]">
             <div class="flex items-center justify-between border-b border-[#1f2838] pb-2 mb-2">
-                <h3 class="font-black text-[#d4af37] text-sm">${cfg.icon} ${escapeHtml(cfg.name)}</h3>
+                <div class="min-w-0">
+                    <h3 class="font-black text-[#d4af37] text-sm truncate">${cfg.icon} ${escapeHtml(cfg.name)}</h3>
+                    <div class="text-[10px] text-gray-500">${rewardQueuePageAmount(cfg)} ${escapeHtml(cfg.unit)} · หน้า ${Number(cfg.startPage || 1)}-${Number(cfg.endPage || cfg.startPage || 1)}</div>
+                </div>
                 <div class="flex gap-1">
                     <button onclick="openRewardQueuePreview('${type}')" class="admin-only bg-[#141a24] text-cyan-300 border border-cyan-900/50 px-2 py-1 rounded text-[10px] font-bold">Preview</button>
                     <button onclick="resetRewardQueue('${type}')" class="admin-only bg-red-900/20 text-red-300 border border-red-800/40 px-2 py-1 rounded text-[10px] font-bold">Reset</button>
@@ -2925,11 +2931,12 @@ function openRewardQueueSettings() {
                 <span class="font-black text-[#d4af37]">${cfg.icon} ${escapeHtml(cfg.name)}</span>
                 <span class="text-xs text-gray-300 font-bold"><input id="rq-set-${type}-enabled" type="checkbox" ${cfg.enabled !== false ? 'checked' : ''} class="accent-[#d4af37] mr-1"> มี</span>
             </label>
-            <div class="grid grid-cols-2 gap-2 text-xs">
-                <label><span class="text-gray-400 font-bold block mb-1">หน้าเริ่ม</span><input id="rq-set-${type}-start" type="number" value="${Number(cfg.startPage || 1)}" class="w-full bg-[#111622] border border-[#2a3446] rounded-lg px-3 py-2"></label>
+            <div class="grid grid-cols-3 gap-2 text-xs">
+                <label><span class="text-gray-400 font-bold block mb-1">จำนวน</span><input id="rq-set-${type}-amount" type="number" value="${Number(cfg.amount ?? rewardQueuePageAmount(cfg))}" class="w-full bg-[#111622] border border-[#2a3446] rounded-lg px-3 py-2"></label>
+                <label><span class="text-gray-400 font-bold block mb-1">เริ่มหน้า</span><input id="rq-set-${type}-start" type="number" value="${Number(cfg.startPage || 1)}" class="w-full bg-[#111622] border border-[#2a3446] rounded-lg px-3 py-2"></label>
                 <label><span class="text-gray-400 font-bold block mb-1">หน้าสิ้นสุด</span><input id="rq-set-${type}-end" type="number" value="${Number(cfg.endPage || cfg.startPage || 1)}" class="w-full bg-[#111622] border border-[#2a3446] rounded-lg px-3 py-2"></label>
             </div>
-            <div class="text-[11px] text-gray-500">${cfg.mode === 'page' ? 'ขนนก: แสดงเลขหน้าอย่างเดียว' : 'สมุด/กล่อง: 4 ชิ้นต่อหน้า เลข 1-4 รีเซ็ตทุกหน้า'}</div>
+            <div class="text-[11px] text-gray-500">${cfg.mode === 'page' ? 'ขนนก: จำนวน = จำนวนหน้า เช่น 5 หน้า และแสดงเลขหน้าอย่างเดียว' : 'สมุด/กล่อง: จำนวนรางวัลกำหนดจำนวนคน หน้าใช้บอกช่วง เช่น 8 ชิ้น หน้า 1-2'}</div>
         </div>`;
     }).join('');
     safeEl('reward-queue-settings-modal')?.classList.remove('hidden');
@@ -2941,8 +2948,10 @@ function saveRewardQueueSettings() {
     rewardQueueTypes().forEach(type => {
         const cfg = rewardQueueSettings[type];
         cfg.enabled = !!safeEl(`rq-set-${type}-enabled`)?.checked;
+        const amount = Math.max(0, Math.floor(Number(safeEl(`rq-set-${type}-amount`)?.value || 0)));
         const start = Math.max(1, Number(safeEl(`rq-set-${type}-start`)?.value || 1));
         const end = Math.max(start, Number(safeEl(`rq-set-${type}-end`)?.value || start));
+        cfg.amount = amount;
         cfg.startPage = start;
         cfg.endPage = end;
         cfg.perPage = 4;
@@ -3171,7 +3180,7 @@ function switchTab(t) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     safeEl(`tab-btn-${t}`)?.classList.add('active');
     const sidebar = safeEl('player-sidebar');
-    if (sidebar) sidebar.classList.toggle('sidebar-hidden', t !== 'party');
+    if (sidebar) sidebar.classList.toggle('sidebar-hidden', !(t === 'party' || t === 'members'));
     if (t === 'tactical') setTimeout(resizeCanvas, 50);
     renderAll();
 }
