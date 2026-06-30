@@ -407,6 +407,30 @@
         .rq-modal-backdrop { background:rgba(0,0,0,.84); backdrop-filter:blur(8px); }
         .rq-dragging { opacity:.45; outline:2px dashed #d4af37; }
 
+
+
+        /* v111 HOTFIX: ซ่อนแถบรายชื่อซ้ายในทุกแท็บ ยกเว้นหน้าจัดปาร์ตี้ */
+        #player-sidebar.sidebar-hidden {
+            display: none !important;
+        }
+        .login-password-wrap { position: relative; }
+        .login-eye-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            width: 34px;
+            height: 34px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background: rgba(15, 23, 42, .5);
+            border: 1px solid rgba(148, 163, 184, .16);
+        }
+        .login-eye-btn:hover { color: #d4af37; border-color: rgba(212,175,55,.35); }
+
     </style>
 </head>
 <body class="min-h-screen flex flex-col selection:bg-[#d4af37] selection:text-black">
@@ -425,7 +449,10 @@
                 </div>
                 <div>
                     <label class="block text-gray-400 mb-1.5 font-semibold">รหัสผ่านลับ (Password)</label>
-                    <input type="password" id="login-password" placeholder="ระบุรหัสผ่านแก้ไข..." class="w-full bg-[#181f2d] text-gray-100 px-4 py-3 rounded-lg border border-[#2b364a] focus:outline-none focus:border-[#d4af37] text-base">
+                    <div class="login-password-wrap">
+                    <input type="password" id="login-password" placeholder="ระบุรหัสผ่านแก้ไข..." class="w-full bg-[#181f2d] text-gray-100 pl-4 pr-12 py-3 rounded-lg border border-[#2b364a] focus:outline-none focus:border-[#d4af37] text-base">
+                    <button type="button" onclick="toggleLoginPasswordVisibility()" class="login-eye-btn" title="แสดง/ซ่อนรหัสผ่าน"><i id="login-password-eye-icon" class="fa-solid fa-eye"></i></button>
+                </div>
                 </div>
             </div>
             <div class="space-y-3 pt-2">
@@ -498,7 +525,7 @@
     <!-- ร่างกายหลักของระบบ -->
     <main class="flex-grow flex flex-col lg:flex-row overflow-hidden relative">
         <!-- แผงรายชื่อด้านซ้าย -->
-        <section class="w-full lg:w-[260px] bg-[#0c0e14] border-r border-[#1f2838] flex flex-col shrink-0">
+        <section id="player-sidebar" class="w-full lg:w-[260px] bg-[#0c0e14] border-r border-[#1f2838] flex flex-col shrink-0">
             <div class="p-4 border-b border-[#1f2838] space-y-3">
                 <div class="flex items-center justify-between">
                     <span class="text-sm font-bold text-gray-300 uppercase tracking-wider flex items-center gap-2"><i class="fa-solid fa-user-clock text-[#d4af37]"></i> รายชื่อสมาชิกกิลด์</span>
@@ -919,6 +946,47 @@
 
 
 
+
+
+    <!-- 🛠️ Admin Tools Modal -->
+    <div id="admin-tools-modal" class="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-[149] hidden">
+        <div class="bg-[#111520] border border-[#1f2838] rounded-xl p-6 w-[760px] max-w-[94%] max-h-[82vh] shadow-2xl flex flex-col">
+            <div class="flex items-center justify-between gap-3 border-b border-[#1f2838] pb-3 mb-4">
+                <div>
+                    <h3 class="text-base font-bold text-[#d4af37]"><i class="fa-solid fa-screwdriver-wrench"></i> Admin Tools</h3>
+                    <div class="text-[11px] text-gray-500 mt-1">เครื่องมือผู้ดูแลระบบ ใช้ด้วยความระมัดระวัง และควร Export Backup ก่อนทุกครั้ง</div>
+                </div>
+                <button onclick="closeAdminToolsModal()" class="bg-slate-800 text-white px-3 py-1.5 rounded-lg text-xs font-bold">ปิด</button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm overflow-y-auto pr-1">
+                <button onclick="exportBellonaBackup()" class="bg-[#101826] text-emerald-300 border border-emerald-900/60 px-4 py-4 rounded-xl font-bold text-left">
+                    <i class="fa-solid fa-file-export"></i> Export Backup
+                    <div class="text-[11px] text-gray-500 mt-1">สำรองข้อมูลทั้งหมดเป็นไฟล์ JSON</div>
+                </button>
+                <button onclick="triggerBellonaBackupImport()" class="bg-[#101826] text-amber-300 border border-amber-900/60 px-4 py-4 rounded-xl font-bold text-left">
+                    <i class="fa-solid fa-file-import"></i> Import Backup
+                    <div class="text-[11px] text-gray-500 mt-1">นำข้อมูลสำรองกลับเข้าเว็บ</div>
+                </button>
+                <button onclick="resetWarHistoryKeepMembers()" class="bg-red-950/30 text-red-300 border border-red-900/50 px-4 py-4 rounded-xl font-bold text-left">
+                    <i class="fa-solid fa-clock-rotate-left"></i> รีเซ็ตประวัติวอร์
+                    <div class="text-[11px] text-gray-500 mt-1">ล้าง attendanceLogs และรีเซ็ต มา/ลา/ขาด แต่ไม่ลบสมาชิก</div>
+                </button>
+                <button onclick="triggerClearPartiesConfirmation()" class="bg-red-950/20 text-red-300 border border-red-900/40 px-4 py-4 rounded-xl font-bold text-left">
+                    <i class="fa-solid fa-users-slash"></i> ล้างปาร์ตี้ทั้งหมด
+                    <div class="text-[11px] text-gray-500 mt-1">ปลดสมาชิกออกจากทุกช่องปาร์ตี้</div>
+                </button>
+                <button onclick="clearRewardWheelHistory()" class="bg-orange-950/20 text-orange-300 border border-orange-900/40 px-4 py-4 rounded-xl font-bold text-left">
+                    <i class="fa-solid fa-eraser"></i> ล้างรายชื่อสุ่มวงล้อ
+                    <div class="text-[11px] text-gray-500 mt-1">ทำให้คนที่เคยถูกสุ่มสามารถกลับมาถูกสุ่มใหม่ได้</div>
+                </button>
+                <button onclick="copyRewardQueueSummary()" class="bg-cyan-950/20 text-cyan-300 border border-cyan-900/40 px-4 py-4 rounded-xl font-bold text-left">
+                    <i class="fa-regular fa-copy"></i> Copy สรุปคิวรับรางวัล
+                    <div class="text-[11px] text-gray-500 mt-1">คัดลอกคิวรับรางวัลวันนี้สำหรับส่ง Discord/Line</div>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- 📜 Activity Log Modal -->
     <div id="activity-log-modal" class="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-[148] hidden">
         <div class="bg-[#111520] border border-[#1f2838] rounded-xl p-6 w-[760px] max-w-[94%] max-h-[82vh] shadow-2xl flex flex-col">
@@ -1087,6 +1155,8 @@ let rewardQueueUndoStack = [];
 let activeRewardQueueType = 'cardBook';
 let activeRewardQueueAction = null;
 let rewardQueueDragData = null;
+let rewardQueueDirty = false;
+let unsubRewardQueueRealtime = null;
 
 function safeEl(id) { return document.getElementById(id); }
 function escapeHtml(value) {
@@ -1664,6 +1734,7 @@ window.onload = function() {
     setTimeout(() => {
         if (typeof window.startPlayersRealtimeSync === 'function') window.startPlayersRealtimeSync(false);
         if (typeof window.importRewardQueueFromFirebaseSafe === 'function') window.importRewardQueueFromFirebaseSafe().then(() => renderAll());
+        if (typeof window.startRewardQueueRealtimeSync === 'function') window.startRewardQueueRealtimeSync();
     }, 1800);
 };
 
@@ -1702,6 +1773,16 @@ async function attemptAdminLogin() {
     } catch (err) {
         alert('Login API Error: ตรวจสอบว่าเพิ่มไฟล์ /api/login.js และตั้งค่า Environment Variables ใน Vercel แล้ว');
     }
+}
+
+
+function toggleLoginPasswordVisibility() {
+    const input = safeEl('login-password');
+    const icon = safeEl('login-password-eye-icon');
+    if (!input) return;
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    if (icon) icon.className = show ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
 }
 
 function bypassAsGuest() {
@@ -2708,6 +2789,8 @@ function pushRewardQueueUndo(label) {
     rewardQueueUndoStack.push({ label, state: rewardQueueSnapshot() });
     rewardQueueUndoStack = rewardQueueUndoStack.slice(-20);
 }
+function markRewardQueueDirty() { rewardQueueDirty = true; }
+
 function undoRewardQueueLastAction() {
     const last = rewardQueueUndoStack.pop();
     if (!last) return alert('ยังไม่มีรายการให้ Undo');
@@ -2716,8 +2799,8 @@ function undoRewardQueueLastAction() {
     rewardQueues = data.rewardQueues || rewardQueues;
     rewardQueueAssignments = data.rewardQueueAssignments || {};
     rewardQueueHistory = Array.isArray(data.rewardQueueHistory) ? data.rewardQueueHistory : [];
+    rewardQueueDirty = true;
     saveToLocalStorage();
-    saveRewardQueueToFirebaseSafe(false);
     renderAll();
 }
 function calculateRewardQueueType(type) {
@@ -2865,8 +2948,8 @@ function saveRewardQueueSettings() {
         cfg.perPage = 4;
     });
     closeRewardQueueSettings();
+    rewardQueueDirty = true;
     saveToLocalStorage();
-    saveRewardQueueToFirebaseSafe(false);
     renderAll();
 }
 function openRewardQueueAction(type, playerId) {
@@ -2891,8 +2974,8 @@ function markRewardQueueReceived() {
     const p = getRewardQueuePlayer(playerId);
     rewardQueueHistory.unshift({ id: 'rqh_' + Date.now(), playerId, playerName: p?.name || playerId, rewardType: type, rewardName: rewardQueueSettings[type]?.name || type, at: new Date().toISOString() });
     closeRewardQueueAction();
+    rewardQueueDirty = true;
     saveToLocalStorage();
-    saveRewardQueueToFirebaseSafe(false);
     renderAll();
 }
 function undoRewardQueueReceivedForPlayer() {
@@ -2902,8 +2985,8 @@ function undoRewardQueueReceivedForPlayer() {
     rewardQueueAssignments[type] = (rewardQueueAssignments[type] || []).map(a => String(a.playerId) === String(playerId) ? { ...a, manualStatus: null } : a);
     rewardQueueHistory = rewardQueueHistory.filter(h => !(String(h.playerId) === String(playerId) && h.rewardType === type));
     closeRewardQueueAction();
+    rewardQueueDirty = true;
     saveToLocalStorage();
-    saveRewardQueueToFirebaseSafe(false);
     renderAll();
 }
 function skipRewardQueuePlayer() {
@@ -2915,8 +2998,8 @@ function skipRewardQueuePlayer() {
     if (idx >= 0) { q.splice(idx, 1); q.push(playerId); }
     rewardQueueAssignments[type] = (rewardQueueAssignments[type] || []).map(a => String(a.playerId) === String(playerId) ? { ...a, manualStatus: 'skipped', status: 'skipped', label: 'ข้ามคิว' } : a);
     closeRewardQueueAction();
+    rewardQueueDirty = true;
     saveToLocalStorage();
-    saveRewardQueueToFirebaseSafe(false);
     renderAll();
 }
 function moveRewardQueue(delta) {
@@ -2927,8 +3010,8 @@ function moveRewardQueue(delta) {
     const i = q.indexOf(playerId), j = i + delta;
     if (i >= 0 && j >= 0 && j < q.length) [q[i], q[j]] = [q[j], q[i]];
     closeRewardQueueAction();
+    rewardQueueDirty = true;
     saveToLocalStorage();
-    saveRewardQueueToFirebaseSafe(false);
     renderAll();
 }
 function swapRewardQueue() {
@@ -2940,8 +3023,8 @@ function swapRewardQueue() {
     const a = q.indexOf(playerId), b = q.indexOf(target);
     if (a >= 0 && b >= 0) [q[a], q[b]] = [q[b], q[a]];
     closeRewardQueueAction();
+    rewardQueueDirty = true;
     saveToLocalStorage();
-    saveRewardQueueToFirebaseSafe(false);
     renderAll();
 }
 function rewardQueueDragStart(e, type, playerId) { rewardQueueDragData = { type, playerId: String(playerId) }; e.currentTarget.classList.add('rq-dragging'); }
@@ -2954,8 +3037,8 @@ function rewardQueueDropOn(e, type, targetId) {
     const from = q.indexOf(rewardQueueDragData.playerId), to = q.indexOf(String(targetId));
     if (from >= 0 && to >= 0) { const [m] = q.splice(from, 1); q.splice(to, 0, m); }
     rewardQueueDragData = null;
+    rewardQueueDirty = true;
     saveToLocalStorage();
-    saveRewardQueueToFirebaseSafe(false);
     renderAll();
 }
 function rewardQueuePreviewAfter(types) {
@@ -2997,8 +3080,9 @@ function saveRewardQueueTodayRound() {
     });
     rewardQueueAssignments = {};
     logActivity('REWARD QUEUE SAVE ROUND', 'บันทึกรอบคิวรับรางวัลวันนี้');
+    rewardQueueDirty = false;
     saveToLocalStorage();
-    saveRewardQueueToFirebaseSafe(false);
+    saveRewardQueueToFirebaseSafe(true);
     renderAll();
 }
 function resetRewardQueue(type) {
@@ -3007,8 +3091,8 @@ function resetRewardQueue(type) {
     pushRewardQueueUndo('reset ' + type);
     rewardQueues[type] = players.map(p => String(p.id));
     rewardQueueAssignments[type] = [];
+    rewardQueueDirty = true;
     saveToLocalStorage();
-    saveRewardQueueToFirebaseSafe(false);
     renderAll();
 }
 function copyRewardQueueSummary() {
@@ -3036,13 +3120,14 @@ async function saveRewardQueueToFirebaseSafe(showAlert = false) {
                 updatedAt: new Date().toISOString()
             }, { merge: true });
         });
+        rewardQueueDirty = false;
         if (showAlert) alert('บันทึก Reward Queue เข้า Firebase แล้ว');
     } catch (err) {
         console.warn('saveRewardQueueToFirebaseSafe error:', err.message);
     }
 }
 async function importRewardQueueFromFirebaseSafe() {
-    if (!window.bellonaDB) return;
+    if (!window.bellonaDB || rewardQueueDirty) return;
     try {
         const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js');
         const snap = await getDoc(doc(window.bellonaDB, 'rewardQueueStates', 'main'));
@@ -3057,6 +3142,23 @@ async function importRewardQueueFromFirebaseSafe() {
     } catch (err) { console.warn('importRewardQueueFromFirebaseSafe error:', err.message); }
 }
 
+
+function startRewardQueueRealtimeSync() {
+    if (!window.bellonaDB || unsubRewardQueueRealtime) return;
+    import('https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js').then(({ doc, onSnapshot }) => {
+        unsubRewardQueueRealtime = onSnapshot(doc(window.bellonaDB, 'rewardQueueStates', 'main'), snap => {
+            if (!snap.exists() || rewardQueueDirty) return;
+            const data = snap.data() || {};
+            rewardQueueSettings = data.rewardQueueSettings ? mergeRewardQueueSettings(data.rewardQueueSettings) : rewardQueueSettings;
+            rewardQueues = data.rewardQueues || rewardQueues;
+            rewardQueueAssignments = data.rewardQueueAssignments || {};
+            rewardQueueHistory = Array.isArray(data.rewardQueueHistory) ? data.rewardQueueHistory : [];
+            saveToLocalStorage();
+            if (typeof scheduleRenderAll === 'function') scheduleRenderAll(); else renderAll();
+        }, err => console.warn('RewardQueue realtime error:', err.message));
+    }).catch(err => console.warn('RewardQueue realtime import error:', err.message));
+}
+
 function copyRewardAllNames() {
     const names = players.filter(p => p.status === 'มา').map(p => p.name).filter(Boolean).join('\n');
     if (!names) return alert('ไม่มีรายชื่อมาวอร์');
@@ -3068,6 +3170,8 @@ function switchTab(t) {
     safeEl(`tab-content-${t}`)?.classList.remove('hidden');
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     safeEl(`tab-btn-${t}`)?.classList.add('active');
+    const sidebar = safeEl('player-sidebar');
+    if (sidebar) sidebar.classList.toggle('sidebar-hidden', t !== 'party');
     if (t === 'tactical') setTimeout(resizeCanvas, 50);
     renderAll();
 }
