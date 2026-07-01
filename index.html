@@ -2976,6 +2976,9 @@ function undoRewardQueueLastAction() {
 function rewardQueueManualStatus(type, id) {
     return (rewardQueueAssignments[type] || []).find(a => String(a.playerId) === String(id))?.manualStatus || null;
 }
+function hasRewardQueueHistory(type, id) {
+    return (rewardQueueHistory || []).some(h => h.rewardType === type && String(h.playerId) === String(id));
+}
 function calculateRewardQueueType(type) {
     const cfg = rewardQueueSettings[type];
     if (!cfg || cfg.enabled === false) { rewardQueueAssignments[type] = []; return; }
@@ -2988,8 +2991,9 @@ function calculateRewardQueueType(type) {
         const p = getRewardQueuePlayer(id);
         if (!p) return;
         const manual = rewardQueueManualStatus(type, id);
-        if (manual === 'received') {
-            result.push({ playerId: String(id), player: p, status: 'received', manualStatus: manual, label: 'ได้รับแล้ว' });
+        const alreadyReceived = hasRewardQueueHistory(type, id);
+        if (manual === 'received' || alreadyReceived) {
+            result.push({ playerId: String(id), player: p, status: 'received', manualStatus: manual || 'history', label: 'ได้รับแล้ว' });
             return;
         }
         if (manual === 'skipped') {
@@ -3005,7 +3009,7 @@ function calculateRewardQueueType(type) {
             return;
         }
         if (p.status !== 'มา') {
-            result.push({ playerId: String(id), player: p, status: 'unknown', label: 'ยังไม่เช็คชื่อ' });
+            result.push({ playerId: String(id), player: p, status: 'unknown', label: 'รอเช็คชื่อ' });
             return;
         }
         if (eligibleCount < amount) {
@@ -3035,8 +3039,14 @@ function rewardQueueBadge(a) {
 }
 function rewardQueueTodayList(type) { return (rewardQueueAssignments[type] || []).filter(a => a.status === 'today').slice(0, rewardQueuePageAmount(rewardQueueSettings[type])); }
 function rewardQueueNextList(type) { return (rewardQueueAssignments[type] || []).filter(a => a.status === 'wait').slice(0, 4); }
+function rewardQueuePendingList(type) { return (rewardQueueAssignments[type] || []).filter(a => a.status === 'unknown' || a.status === 'leave' || a.status === 'absent' || a.status === 'skipped').slice(0, rewardQueuePageAmount(rewardQueueSettings[type]) + 4); }
 function rewardQueueReceivedList(type) { return (rewardQueueAssignments[type] || []).filter(a => a.status === 'received').slice(-3); }
-function rewardQueueAdminList(type) { return [...rewardQueueTodayList(type), ...rewardQueueNextList(type), ...rewardQueueReceivedList(type)]; }
+function rewardQueueAdminList(type) {
+    const today = rewardQueueTodayList(type);
+    const next = rewardQueueNextList(type);
+    const pending = (today.length || next.length) ? [] : rewardQueuePendingList(type);
+    return [...today, ...next, ...pending, ...rewardQueueReceivedList(type)];
+}
 function rewardQueueProgress(type) {
     const total = Math.max(1, players.length || 1);
     const unique = new Set((rewardQueueHistory || []).filter(h => h.rewardType === type).map(h => String(h.playerId))).size;
@@ -3111,7 +3121,7 @@ function renderRewardQueueMemberBoard() {
                 <div class="text-[11px] text-gray-400 truncate">${a.status === 'today' ? escapeHtml(a.label) : escapeHtml(cfg?.name || '')}</div>
             </div>
         </div>
-        <div class="text-right shrink-0">${rewardQueueBadge(a)}</div>
+        <div class="text-right shrink-0 flex items-center gap-1.5">${rewardQueueBadge(a)}<button onclick="openRewardQueueAction('${activeRewardQueueType}','${escapeInlineJs(a.playerId)}')" class="admin-only bg-[#141a24] text-[#d4af37] border border-[#2d374a] w-7 h-7 rounded-lg" title="จัดการคิว"><i class="fa-solid fa-ellipsis-vertical"></i></button></div>
     </div>`).join('');
 }
 function setActiveRewardQueueType(type) { activeRewardQueueType = type; renderRewardQueueMemberTabs(); renderRewardQueueMemberBoard(); }
@@ -3170,6 +3180,9 @@ function markRewardQueueReceived() {
     if (!activeRewardQueueAction || !checkAdminAccess()) return;
     pushRewardQueueUndo('received');
     const { type, playerId } = activeRewardQueueAction;
+    const q = rewardQueues[type] || [];
+    const idx = q.indexOf(String(playerId));
+    if (idx >= 0) { q.splice(idx, 1); q.push(String(playerId)); }
     rewardQueueAssignments[type] = (rewardQueueAssignments[type] || []).map(a => String(a.playerId) === String(playerId) ? { ...a, manualStatus: 'received', status: 'received', label: 'ได้รับแล้ว' } : a);
     closeRewardQueueAction();
     rewardQueueDirty = true;
@@ -3190,6 +3203,9 @@ function skipRewardQueuePlayer() {
     if (!activeRewardQueueAction || !checkAdminAccess()) return;
     pushRewardQueueUndo('skip');
     const { type, playerId } = activeRewardQueueAction;
+    const q = rewardQueues[type] || [];
+    const idx = q.indexOf(String(playerId));
+    if (idx >= 0) { q.splice(idx, 1); q.push(String(playerId)); }
     rewardQueueAssignments[type] = (rewardQueueAssignments[type] || []).map(a => String(a.playerId) === String(playerId) ? { ...a, manualStatus: 'skipped', status: 'skipped', label: 'ข้ามคิว' } : a);
     closeRewardQueueAction();
     rewardQueueDirty = true;
