@@ -415,6 +415,49 @@
 
 
 
+
+
+        /* v113.1 PARTY POWER SUMMARY */
+        .party-power-summary {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            font-size: 10px;
+            line-height: 1.2;
+        }
+        .party-power-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            border-radius: 999px;
+            padding: 3px 7px;
+            background: rgba(15, 23, 42, .78);
+            border: 1px solid rgba(212, 175, 55, .22);
+            color: #facc15;
+            font-weight: 900;
+            white-space: nowrap;
+        }
+        .party-count-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            border-radius: 999px;
+            padding: 3px 7px;
+            background: rgba(15, 23, 42, .78);
+            border: 1px solid rgba(148, 163, 184, .18);
+            color: #cbd5e1;
+            font-weight: 900;
+            white-space: nowrap;
+        }
+        .party-count-pill.party-full { border-color: rgba(34, 197, 94, .35); color: #86efac; }
+        .party-count-pill.party-partial { border-color: rgba(245, 158, 11, .35); color: #fbbf24; }
+        .capture-export-mode .party-power-summary { font-size: 10px !important; }
+        .capture-export-mode .party-power-pill,
+        .capture-export-mode .party-count-pill { padding: 2px 6px !important; }
+
+
         /* v111 HOTFIX: ซ่อนแถบรายชื่อซ้ายในทุกแท็บ ยกเว้นหน้าจัดปาร์ตี้ */
         #player-sidebar.sidebar-hidden {
             display: none !important;
@@ -1207,6 +1250,22 @@ function normalizePowerLabel(value) {
     const raw = String(value ?? '').trim().toUpperCase();
     if (!raw) return '';
     return raw.replace(/\s+/g, '');
+}
+
+
+
+function formatCompactPower(value) {
+    const num = Number(value || 0);
+    if (!Number.isFinite(num) || num <= 0) return '-';
+    if (num >= 1000000000) return (num / 1000000000).toFixed(num >= 10000000000 ? 1 : 2).replace(/\.0+$/, '') + 'B';
+    if (num >= 1000000) return (num / 1000000).toFixed(num >= 10000000 ? 1 : 2).replace(/\.0+$/, '') + 'M';
+    if (num >= 1000) return (num / 1000).toFixed(num >= 100000 ? 0 : 1).replace(/\.0+$/, '') + 'K';
+    return String(Math.round(num));
+}
+
+function getPlayerPowerValue(player) {
+    if (!player) return 0;
+    return Number(player.powerValue || parsePowerValue(player.power || '') || 0);
 }
 
 function normalizePlayer(raw) {
@@ -2131,7 +2190,13 @@ function createPartyCardHTML(index, partyId, prefix) {
         </div>`;
     }
     const titleClass = isSub ? 'party-title-sub' : 'party-title-main';
-    card.innerHTML = `<div class="flex justify-between pb-1.5 border-b border-[#1f2838]"><span class="${titleClass} font-extrabold">${prefix} ${index}</span><span id="${partyId}-counter" class="text-[11px] font-bold text-gray-300">0/5 คน</span></div><div class="space-y-1.5">${slots}</div>`;
+    card.innerHTML = `<div class="flex justify-between items-start gap-2 pb-1.5 border-b border-[#1f2838]">
+        <span class="${titleClass} font-extrabold">${prefix} ${index}</span>
+        <div class="party-power-summary">
+            <span id="${partyId}-counter" class="party-count-pill party-partial"><i class="fa-solid fa-users"></i> 0/5</span>
+            <span id="${partyId}-power" class="party-power-pill"><i class="fa-solid fa-bolt"></i> -</span>
+        </div>
+    </div><div class="space-y-1.5">${slots}</div>`;
     return card;
 }
 
@@ -2179,8 +2244,8 @@ function hardClearPartySlotsDom() {
     for (let i = 1; i <= 8; i++) {
         const mainId = `party-${i}`;
         const subId = `subparty-${i}`;
-        if (safeEl(`${mainId}-counter`)) safeEl(`${mainId}-counter`).innerText = '0/5 คน';
-        if (safeEl(`${subId}-counter`)) safeEl(`${subId}-counter`).innerText = '0/5 คน';
+        updatePartySummaryDisplay(mainId, 0, 0);
+        updatePartySummaryDisplay(subId, 0, 0);
     }
     renderHeaderCounts();
 }
@@ -2197,16 +2262,33 @@ function forceRenderPartyAndCurrentTab() {
     applyRolePermissions();
 }
 
+
+function updatePartySummaryDisplay(partyId, count, totalPower) {
+    const counterEl = safeEl(`${partyId}-counter`);
+    const powerEl = safeEl(`${partyId}-power`);
+    if (counterEl) {
+        counterEl.innerHTML = `<i class="fa-solid fa-users"></i> ${count}/5`;
+        counterEl.classList.toggle('party-full', Number(count) >= 5);
+        counterEl.classList.toggle('party-partial', Number(count) < 5);
+    }
+    if (powerEl) {
+        powerEl.innerHTML = `<i class="fa-solid fa-bolt"></i> ${formatCompactPower(totalPower)}`;
+        powerEl.title = `Power รวม: ${formatCompactPower(totalPower)}`;
+    }
+}
+
 function renderParties() {
     document.querySelectorAll('[id^="slot-"][id$="-content"]').forEach(slot => {
         slot.innerHTML = '<span class="party-slot-empty text-gray-600 text-[11px]">ว่างเปล่า</span>';
     });
     const counters = {};
+    const powerTotals = {};
     const assigned = players.filter(p => p.partyId !== null && p.partyId !== undefined);
     assigned.forEach(p => {
         const slot = safeEl(`slot-${p.partyId}-${p.slotIndex}-content`);
         if (!slot) return;
         counters[p.partyId] = (counters[p.partyId] || 0) + 1;
+        powerTotals[p.partyId] = (powerTotals[p.partyId] || 0) + getPlayerPowerValue(p);
         slot.innerHTML = `<div class="party-player-row">
             <div class="party-player-info">${getJobIcon(p.job)}<div class="party-player-name text-white font-extrabold text-[15px] truncate">${escapeHtml(p.name)}</div></div>
             <button onclick="event.stopPropagation(); releasePlayer('${escapeInlineJs(p.id)}')" class="party-remove-btn admin-only text-red-400 text-lg px-1 shrink-0">✕</button>
@@ -2215,8 +2297,8 @@ function renderParties() {
     for (let i=1; i<=8; i++) {
         const mainId = `party-${i}`;
         const subId = `subparty-${i}`;
-        if (safeEl(`${mainId}-counter`)) safeEl(`${mainId}-counter`).innerText = `${counters[mainId] || 0}/5 คน`;
-        if (safeEl(`${subId}-counter`)) safeEl(`${subId}-counter`).innerText = `${counters[subId] || 0}/5 คน`;
+        updatePartySummaryDisplay(mainId, counters[mainId] || 0, powerTotals[mainId] || 0);
+        updatePartySummaryDisplay(subId, counters[subId] || 0, powerTotals[subId] || 0);
     }
     renderHeaderCounts();
 }
