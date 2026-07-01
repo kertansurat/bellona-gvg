@@ -408,6 +408,12 @@
         .rq-dragging { opacity:.45; outline:2px dashed #d4af37; }
 
 
+        /* v113 PRODUCTION FINAL: Reward Queue Fair Logic + compact progress */
+        .rq-progress-wrap { height: 6px; background: #090b10; border-radius: 999px; overflow: hidden; border: 1px solid rgba(31,40,56,.8); }
+        .rq-progress-bar { height: 100%; background: linear-gradient(90deg, #d4af37, #fde68a); border-radius: 999px; transition: width .2s ease; }
+        .rq-mini-progress { font-size: 10px; color: #94a3b8; font-weight: 800; }
+
+
 
         /* v111 HOTFIX: ซ่อนแถบรายชื่อซ้ายในทุกแท็บ ยกเว้นหน้าจัดปาร์ตี้ */
         #player-sidebar.sidebar-hidden {
@@ -967,6 +973,10 @@
                     <i class="fa-solid fa-file-import"></i> Import Backup
                     <div class="text-[11px] text-gray-500 mt-1">นำข้อมูลสำรองกลับเข้าเว็บ</div>
                 </button>
+                <button onclick="startNewWarRoundKeepStats()" class="bg-emerald-950/25 text-emerald-300 border border-emerald-900/50 px-4 py-4 rounded-xl font-bold text-left">
+                    <i class="fa-solid fa-flag-checkered"></i> เริ่มวอร์ใหม่
+                    <div class="text-[11px] text-gray-500 mt-1">ล้างเฉพาะสถานะเช็คชื่อวันนี้ ไม่ลบสถิติ ไม่ลบคิวรางวัล</div>
+                </button>
                 <button onclick="resetWarHistoryKeepMembers()" class="bg-red-950/30 text-red-300 border border-red-900/50 px-4 py-4 rounded-xl font-bold text-left">
                     <i class="fa-solid fa-clock-rotate-left"></i> รีเซ็ตประวัติวอร์
                     <div class="text-[11px] text-gray-500 mt-1">ล้าง attendanceLogs และรีเซ็ต มา/ลา/ขาด แต่ไม่ลบสมาชิก</div>
@@ -1004,7 +1014,7 @@
         </div>
     </div>
 
-    <div class="bellona-version-pill">BELLONA ROOC · v1.1.2 Hotfix</div>
+    <div class="bellona-version-pill">BELLONA ROOC · v113 Production Final</div>
 
 
 
@@ -1014,7 +1024,7 @@
             <div class="flex justify-between items-start border-b border-[#1f2838] pb-3 mb-4">
                 <div>
                     <h3 class="text-base font-black text-[#d4af37]"><i class="fa-solid fa-gear"></i> ตั้งค่ารางวัลวอร์วันนี้</h3>
-                    <p class="text-xs text-gray-400 mt-1">ติ๊กว่ามี/ไม่มีรางวัล และระบุช่วงหน้า ระบบคำนวณจำนวนให้อัตโนมัติ</p>
+                    <p class="text-xs text-gray-400 mt-1">ติ๊กว่ามี/ไม่มีรางวัล ระบุจำนวน และช่วงหน้า ระบบคำนวณคิวให้อัตโนมัติ</p>
                 </div>
                 <button onclick="closeRewardQueueSettings()" class="bg-[#141a24] text-[#d4af37] border border-[#2d374a] px-3 py-1.5 rounded-lg text-xs font-bold">ปิด</button>
             </div>
@@ -1036,7 +1046,7 @@
             <div class="space-y-2 text-sm">
                 <button onclick="markRewardQueueReceived()" class="admin-only w-full text-left bg-green-950/30 text-green-300 border border-green-800/50 px-4 py-3 rounded-lg font-bold"><i class="fa-solid fa-check"></i> รับของแล้ว / ไปท้ายคิว</button>
                 <button onclick="undoRewardQueueReceivedForPlayer()" class="admin-only w-full text-left bg-cyan-950/30 text-cyan-300 border border-cyan-800/50 px-4 py-3 rounded-lg font-bold"><i class="fa-solid fa-rotate-left"></i> ยกเลิกรับแล้ว</button>
-                <button onclick="skipRewardQueuePlayer()" class="admin-only w-full text-left bg-orange-950/30 text-orange-300 border border-orange-800/50 px-4 py-3 rounded-lg font-bold"><i class="fa-solid fa-forward"></i> ข้ามคิว / ไปท้ายคิว</button>
+                <button onclick="skipRewardQueuePlayer()" class="admin-only w-full text-left bg-orange-950/30 text-orange-300 border border-orange-800/50 px-4 py-3 rounded-lg font-bold"><i class="fa-solid fa-forward"></i> ข้ามคิว / ไปท้ายกลุ่มยังไม่ได้รับ</button>
                 <div class="grid grid-cols-2 gap-2">
                     <button onclick="moveRewardQueue(-1)" class="admin-only bg-[#141a24] text-[#d4af37] border border-[#2d374a] px-4 py-3 rounded-lg font-bold"><i class="fa-solid fa-arrow-up"></i> เลื่อนขึ้น</button>
                     <button onclick="moveRewardQueue(1)" class="admin-only bg-[#141a24] text-[#d4af37] border border-[#2d374a] px-4 py-3 rounded-lg font-bold"><i class="fa-solid fa-arrow-down"></i> เลื่อนลง</button>
@@ -1059,7 +1069,7 @@
             <div class="flex justify-between items-start border-b border-[#1f2838] pb-3 mb-4">
                 <div>
                     <h3 class="text-base font-black text-[#d4af37]"><i class="fa-solid fa-eye"></i> Preview บันทึกรอบวันนี้</h3>
-                    <p class="text-xs text-gray-400 mt-1">แสดงคิวก่อนและหลังบันทึก โดยคนที่รับของแล้วจะไปท้ายคิวของรางวัลนั้น</p>
+                    <p class="text-xs text-gray-400 mt-1">แสดงคิวก่อนและหลังบันทึก ตาม Fair Queue: รับแล้วไปท้ายคิว / ลา-ขาดไปท้ายกลุ่มที่ยังไม่ได้รับ</p>
                 </div>
                 <button onclick="closeRewardQueuePreview()" class="bg-[#141a24] text-[#d4af37] border border-[#2d374a] px-3 py-1.5 rounded-lg text-xs font-bold">ปิด</button>
             </div>
@@ -1563,6 +1573,42 @@ function resetAttendanceFieldsForPlayer(player) {
     player.rewardClaimed = false;
     player.rewardName = '';
     return player;
+}
+
+function resetCurrentWarStatusForPlayer(player) {
+    player.status = 'ยังไม่เช็คชื่อ';
+    player.lastAttendanceWarId = '';
+    player.lastAttendanceStatus = '';
+    player.lastAttendanceUpdatedAt = '';
+    player.rewardClaimed = false;
+    player.rewardName = '';
+    return player;
+}
+
+async function startNewWarRoundKeepStats() {
+    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
+    const ok = window.confirm(
+        'เริ่มวอร์ใหม่?\n\n' +
+        '- ล้างเฉพาะสถานะเช็คชื่อปัจจุบัน\n' +
+        '- ไม่ลบสถิติ มา/ลา/ขาด สะสม\n' +
+        '- ไม่ลบคิวรับรางวัล\n' +
+        '- ไม่ลบปาร์ตี้ สมาชิก อาชีพ และ Power\n\n' +
+        'ใช้ปุ่มนี้ก่อนเริ่มเช็คชื่อวอร์รอบใหม่'
+    );
+    if (!ok) return;
+    players = players.map(p => resetCurrentWarStatusForPlayer(p));
+    saveToLocalStorage();
+    renderAll();
+    try {
+        if (window.bellonaDB) {
+            await saveSpecificPlayersToFirebaseSafe(players.map(p => p.id), false);
+        }
+        logActivity('NEW WAR ROUND', 'เริ่มวอร์ใหม่และรีเซ็ตสถานะเช็คชื่อปัจจุบัน');
+        alert('เริ่มวอร์ใหม่เรียบร้อยแล้ว');
+    } catch (err) {
+        console.warn('startNewWarRoundKeepStats error:', err);
+        alert('รีเซ็ตในเว็บแล้ว แต่บันทึก Firebase ไม่สำเร็จ: ' + (err.message || err));
+    }
 }
 
 async function resetWarHistoryKeepMembers() {
@@ -2762,7 +2808,14 @@ function closeRewardEligiblePopup() {
 
 
 
-/* ================= REWARD QUEUE SYSTEM v1.1.0 DEMO-PRODUCTION CORE ================= */
+/* ================= REWARD QUEUE SYSTEM v113 PRODUCTION FINAL =================
+   Fair Queue Logic:
+   - คิวแยก 4 รางวัล
+   - คนมาวอร์และได้รับของ: ไปท้ายคิว
+   - คนลา/ขาดที่อยู่ในช่วงคิวของรอบนี้: ไปท้าย "กลุ่มคนที่ยังไม่ได้รับ" ก่อนกลุ่มรับแล้ว
+   - คนยังไม่ถึงคิว: คงตำแหน่งเดิม
+   - Realtime read + Manual save เมื่อกด "บันทึกรอบวันนี้"
+============================================================================ */
 function rewardQueueTypes() { return Object.keys(rewardQueueSettings || {}); }
 function mergeRewardQueueSettings(saved) {
     const base = JSON.parse(JSON.stringify(rewardQueueSettings));
@@ -2770,12 +2823,11 @@ function mergeRewardQueueSettings(saved) {
     return base;
 }
 function rewardQueuePageAmount(cfg) {
-    // v112: จำนวนรางวัลเป็นตัวกำหนดหลัก ส่วนช่วงหน้าใช้สำหรับแสดงผลหน้าเริ่ม-สิ้นสุด
-    const amount = Number(cfg.amount);
+    const amount = Number(cfg?.amount);
     if (Number.isFinite(amount) && amount >= 0) return Math.floor(amount);
-    const start = Math.max(1, Number(cfg.startPage || 1));
-    const end = Math.max(start, Number(cfg.endPage || start));
-    return cfg.mode === 'page' ? (end - start + 1) : (end - start + 1) * Number(cfg.perPage || 4);
+    const start = Math.max(1, Number(cfg?.startPage || 1));
+    const end = Math.max(start, Number(cfg?.endPage || start));
+    return cfg?.mode === 'page' ? (end - start + 1) : (end - start + 1) * Number(cfg?.perPage || 4);
 }
 function ensureRewardQueues() {
     const activeIds = players.map(p => String(p.id));
@@ -2793,7 +2845,6 @@ function pushRewardQueueUndo(label) {
     rewardQueueUndoStack = rewardQueueUndoStack.slice(-20);
 }
 function markRewardQueueDirty() { rewardQueueDirty = true; }
-
 function undoRewardQueueLastAction() {
     const last = rewardQueueUndoStack.pop();
     if (!last) return alert('ยังไม่มีรายการให้ Undo');
@@ -2806,35 +2857,52 @@ function undoRewardQueueLastAction() {
     saveToLocalStorage();
     renderAll();
 }
+function rewardQueueManualStatus(type, id) {
+    return (rewardQueueAssignments[type] || []).find(a => String(a.playerId) === String(id))?.manualStatus || null;
+}
 function calculateRewardQueueType(type) {
     const cfg = rewardQueueSettings[type];
     if (!cfg || cfg.enabled === false) { rewardQueueAssignments[type] = []; return; }
     const q = rewardQueues[type] || [];
-    const old = rewardQueueAssignments[type] || [];
     const amount = rewardQueuePageAmount(cfg);
     const result = [];
-    let count = 0;
+    let eligibleCount = 0;
     let waitCount = 0;
     q.forEach(id => {
         const p = getRewardQueuePlayer(id);
         if (!p) return;
-        const manual = old.find(a => String(a.playerId) === String(id))?.manualStatus || null;
-        if (manual === 'received') { result.push({ playerId: String(id), player: p, status: 'received', manualStatus: manual, label: 'ได้รับแล้ว' }); return; }
-        if (manual === 'skipped') { result.push({ playerId: String(id), player: p, status: 'skipped', manualStatus: manual, label: 'ข้ามคิว' }); return; }
-        if (p.status === 'ลา') { result.push({ playerId: String(id), player: p, status: 'leave', label: 'ลาวอร์' }); return; }
-        if (p.status === 'ขาด') { result.push({ playerId: String(id), player: p, status: 'absent', label: 'ขาดวอร์' }); return; }
-        if (p.status !== 'มา') { result.push({ playerId: String(id), player: p, status: 'unknown', label: 'ยังไม่เช็คชื่อ' }); return; }
-        if (count < amount) {
+        const manual = rewardQueueManualStatus(type, id);
+        if (manual === 'received') {
+            result.push({ playerId: String(id), player: p, status: 'received', manualStatus: manual, label: 'ได้รับแล้ว' });
+            return;
+        }
+        if (manual === 'skipped') {
+            result.push({ playerId: String(id), player: p, status: 'skipped', manualStatus: manual, label: 'ข้ามคิว' });
+            return;
+        }
+        if (p.status === 'ลา') {
+            result.push({ playerId: String(id), player: p, status: 'leave', label: 'ลาวอร์' });
+            return;
+        }
+        if (p.status === 'ขาด') {
+            result.push({ playerId: String(id), player: p, status: 'absent', label: 'ขาดวอร์' });
+            return;
+        }
+        if (p.status !== 'มา') {
+            result.push({ playerId: String(id), player: p, status: 'unknown', label: 'ยังไม่เช็คชื่อ' });
+            return;
+        }
+        if (eligibleCount < amount) {
             if (cfg.mode === 'slot') {
                 const perPage = Number(cfg.perPage || 4);
-                const page = Number(cfg.startPage || 1) + Math.floor(count / perPage);
-                const slot = (count % perPage) + 1;
+                const page = Number(cfg.startPage || 1) + Math.floor(eligibleCount / perPage);
+                const slot = (eligibleCount % perPage) + 1;
                 result.push({ playerId: String(id), player: p, status: 'today', page, slot, label: `หน้า ${page} · ${cfg.unit || 'ชิ้น'} ${slot}` });
             } else {
-                const page = Number(cfg.startPage || 1) + count;
+                const page = Number(cfg.startPage || 1) + eligibleCount;
                 result.push({ playerId: String(id), player: p, status: 'today', page, label: `หน้า ${page}` });
             }
-            count++;
+            eligibleCount++;
         } else {
             waitCount++;
             result.push({ playerId: String(id), player: p, status: 'wait', wait: waitCount, label: `อีก ${waitCount} คิว` });
@@ -2851,9 +2919,13 @@ function rewardQueueBadge(a) {
 }
 function rewardQueueTodayList(type) { return (rewardQueueAssignments[type] || []).filter(a => a.status === 'today').slice(0, rewardQueuePageAmount(rewardQueueSettings[type])); }
 function rewardQueueNextList(type) { return (rewardQueueAssignments[type] || []).filter(a => a.status === 'wait').slice(0, 4); }
-function rewardQueueAdminList(type) {
-    const done = (rewardQueueAssignments[type] || []).filter(a => a.status === 'received').slice(-3);
-    return [...rewardQueueTodayList(type), ...rewardQueueNextList(type), ...done];
+function rewardQueueReceivedList(type) { return (rewardQueueAssignments[type] || []).filter(a => a.status === 'received').slice(-3); }
+function rewardQueueAdminList(type) { return [...rewardQueueTodayList(type), ...rewardQueueNextList(type), ...rewardQueueReceivedList(type)]; }
+function rewardQueueProgress(type) {
+    const total = Math.max(1, players.length || 1);
+    const unique = new Set((rewardQueueHistory || []).filter(h => h.rewardType === type).map(h => String(h.playerId))).size;
+    const done = Math.min(unique, total);
+    return { done, total, pct: Math.round((done / total) * 100) };
 }
 function renderRewardQueueTab() {
     calculateRewardQueues();
@@ -2861,6 +2933,10 @@ function renderRewardQueueTab() {
     renderRewardQueueMemberTabs();
     renderRewardQueueMemberBoard();
     applyRolePermissions();
+}
+function renderRewardQueueProgressHtml(type) {
+    const p = rewardQueueProgress(type);
+    return `<div class="mt-1"><div class="rq-progress-wrap"><div class="rq-progress-bar" style="width:${p.pct}%"></div></div><div class="rq-mini-progress mt-1">${p.done} / ${p.total} คน ได้รับแล้ว</div></div>`;
 }
 function renderRewardQueueAdminBoard() {
     const box = safeEl('reward-queue-admin-board');
@@ -2870,11 +2946,12 @@ function renderRewardQueueAdminBoard() {
         const list = rewardQueueAdminList(type);
         return `<div class="bg-[#111520] border border-[#1f2838] rounded-2xl p-3 flex flex-col min-h-[310px] max-h-[calc((100vh-290px)/2)]">
             <div class="flex items-center justify-between border-b border-[#1f2838] pb-2 mb-2">
-                <div class="min-w-0">
+                <div class="min-w-0 flex-1 pr-2">
                     <h3 class="font-black text-[#d4af37] text-sm truncate">${cfg.icon} ${escapeHtml(cfg.name)}</h3>
                     <div class="text-[10px] text-gray-500">${rewardQueuePageAmount(cfg)} ${escapeHtml(cfg.unit)} · หน้า ${Number(cfg.startPage || 1)}-${Number(cfg.endPage || cfg.startPage || 1)}</div>
+                    ${renderRewardQueueProgressHtml(type)}
                 </div>
-                <div class="flex gap-1">
+                <div class="flex gap-1 shrink-0">
                     <button onclick="openRewardQueuePreview('${type}')" class="admin-only bg-[#141a24] text-cyan-300 border border-cyan-900/50 px-2 py-1 rounded text-[10px] font-bold">Preview</button>
                     <button onclick="resetRewardQueue('${type}')" class="admin-only bg-red-900/20 text-red-300 border border-red-800/40 px-2 py-1 rounded text-[10px] font-bold">Reset</button>
                 </div>
@@ -2883,7 +2960,7 @@ function renderRewardQueueAdminBoard() {
                 ${list.map(a => `<div class="rq-row ${rewardQueueClass(a.status)} rounded-lg p-2 flex items-center justify-between gap-2" draggable="true" ondragstart="rewardQueueDragStart(event,'${type}','${escapeInlineJs(a.playerId)}')" ondragover="rewardQueueDragOver(event)" ondrop="rewardQueueDropOn(event,'${type}','${escapeInlineJs(a.playerId)}')">
                     <div class="min-w-0">
                         <div class="font-black text-white truncate text-sm">${escapeHtml(a.player.name)}</div>
-                        <div class="text-[11px] text-gray-400">${a.status === 'wait' ? 'คิวถัดไป' : a.status === 'received' ? 'ไปท้ายคิวแล้ว' : escapeHtml(a.label)}</div>
+                        <div class="text-[11px] text-gray-400">${a.status === 'wait' ? escapeHtml(a.label) : a.status === 'received' ? 'ไปท้ายคิวแล้ว' : escapeHtml(a.label)}</div>
                     </div>
                     <div class="flex items-center gap-1.5 shrink-0">${rewardQueueBadge(a)}
                         <button onclick="openRewardQueueAction('${type}','${escapeInlineJs(a.playerId)}')" class="admin-only bg-[#141a24] text-[#d4af37] border border-[#2d374a] w-7 h-7 rounded-lg"><i class="fa-solid fa-ellipsis-vertical"></i></button>
@@ -2909,7 +2986,8 @@ function renderRewardQueueMemberBoard() {
     if (!box) return;
     const cfg = rewardQueueSettings[activeRewardQueueType];
     const list = rewardQueueAssignments[activeRewardQueueType] || [];
-    box.innerHTML = list.map((a, i) => `<div class="rq-row ${rewardQueueClass(a.status)} rounded-lg p-2.5 flex items-center justify-between gap-3">
+    const progress = renderRewardQueueProgressHtml(activeRewardQueueType);
+    box.innerHTML = `<div class="bg-[#0c0e14] border border-[#1f2838] rounded-lg p-2 mb-2">${progress}</div>` + list.map((a, i) => `<div class="rq-row ${rewardQueueClass(a.status)} rounded-lg p-2.5 flex items-center justify-between gap-3">
         <div class="flex items-center gap-2 min-w-0">
             <div class="w-7 h-7 rounded-full bg-[#181f2d] border border-[#2a3446] flex items-center justify-center text-[11px] font-black text-gray-300">${i+1}</div>
             <div class="min-w-0">
@@ -2927,19 +3005,20 @@ function openRewardQueueSettings() {
     grid.innerHTML = rewardQueueTypes().map(type => {
         const cfg = rewardQueueSettings[type];
         return `<div class="bg-[#0c0e14] border border-[#1f2838] rounded-xl p-4 space-y-3">
-            <label class="flex items-center justify-between gap-3">
-                <span class="font-black text-[#d4af37]">${cfg.icon} ${escapeHtml(cfg.name)}</span>
-                <span class="text-xs text-gray-300 font-bold"><input id="rq-set-${type}-enabled" type="checkbox" ${cfg.enabled !== false ? 'checked' : ''} class="accent-[#d4af37] mr-1"> มี</span>
-            </label>
+            <div class="flex items-center justify-between gap-3">
+                <h4 class="font-black text-[#d4af37]">${cfg.icon} ${escapeHtml(cfg.name)}</h4>
+                <label class="flex items-center gap-2 text-xs font-bold text-gray-300"><input id="rq-set-${type}-enabled" type="checkbox" ${cfg.enabled !== false ? 'checked' : ''} class="accent-[#d4af37]"> มี</label>
+            </div>
             <div class="grid grid-cols-3 gap-2 text-xs">
-                <label><span class="text-gray-400 font-bold block mb-1">จำนวน</span><input id="rq-set-${type}-amount" type="number" value="${Number(cfg.amount ?? rewardQueuePageAmount(cfg))}" class="w-full bg-[#111622] border border-[#2a3446] rounded-lg px-3 py-2"></label>
+                <label><span class="text-gray-400 font-bold block mb-1">จำนวน</span><input id="rq-set-${type}-amount" type="number" value="${Number(cfg.amount || 0)}" class="w-full bg-[#111622] border border-[#2a3446] rounded-lg px-3 py-2"></label>
                 <label><span class="text-gray-400 font-bold block mb-1">เริ่มหน้า</span><input id="rq-set-${type}-start" type="number" value="${Number(cfg.startPage || 1)}" class="w-full bg-[#111622] border border-[#2a3446] rounded-lg px-3 py-2"></label>
                 <label><span class="text-gray-400 font-bold block mb-1">หน้าสิ้นสุด</span><input id="rq-set-${type}-end" type="number" value="${Number(cfg.endPage || cfg.startPage || 1)}" class="w-full bg-[#111622] border border-[#2a3446] rounded-lg px-3 py-2"></label>
             </div>
-            <div class="text-[11px] text-gray-500">${cfg.mode === 'page' ? 'ขนนก: จำนวน = จำนวนหน้า เช่น 5 หน้า และแสดงเลขหน้าอย่างเดียว' : 'สมุด/กล่อง: จำนวนรางวัลกำหนดจำนวนคน หน้าใช้บอกช่วง เช่น 8 ชิ้น หน้า 1-2'}</div>
+            <div class="text-[11px] text-gray-500">${cfg.mode === 'page' ? 'ขนนก: แสดงเลขหน้าอย่างเดียว' : 'สมุด/กล่อง: เลข 1-4 รีเซ็ตทุกหน้า'}</div>
         </div>`;
     }).join('');
     safeEl('reward-queue-settings-modal')?.classList.remove('hidden');
+    applyRolePermissions();
 }
 function closeRewardQueueSettings() { safeEl('reward-queue-settings-modal')?.classList.add('hidden'); }
 function saveRewardQueueSettings() {
@@ -2948,10 +3027,9 @@ function saveRewardQueueSettings() {
     rewardQueueTypes().forEach(type => {
         const cfg = rewardQueueSettings[type];
         cfg.enabled = !!safeEl(`rq-set-${type}-enabled`)?.checked;
-        const amount = Math.max(0, Math.floor(Number(safeEl(`rq-set-${type}-amount`)?.value || 0)));
+        cfg.amount = Math.max(0, Number(safeEl(`rq-set-${type}-amount`)?.value || 0));
         const start = Math.max(1, Number(safeEl(`rq-set-${type}-start`)?.value || 1));
         const end = Math.max(start, Number(safeEl(`rq-set-${type}-end`)?.value || start));
-        cfg.amount = amount;
         cfg.startPage = start;
         cfg.endPage = end;
         cfg.perPage = 4;
@@ -2976,12 +3054,7 @@ function markRewardQueueReceived() {
     if (!activeRewardQueueAction || !checkAdminAccess()) return;
     pushRewardQueueUndo('received');
     const { type, playerId } = activeRewardQueueAction;
-    const q = rewardQueues[type] || [];
-    const idx = q.indexOf(playerId);
-    if (idx >= 0) { q.splice(idx, 1); q.push(playerId); }
     rewardQueueAssignments[type] = (rewardQueueAssignments[type] || []).map(a => String(a.playerId) === String(playerId) ? { ...a, manualStatus: 'received', status: 'received', label: 'ได้รับแล้ว' } : a);
-    const p = getRewardQueuePlayer(playerId);
-    rewardQueueHistory.unshift({ id: 'rqh_' + Date.now(), playerId, playerName: p?.name || playerId, rewardType: type, rewardName: rewardQueueSettings[type]?.name || type, at: new Date().toISOString() });
     closeRewardQueueAction();
     rewardQueueDirty = true;
     saveToLocalStorage();
@@ -2992,7 +3065,6 @@ function undoRewardQueueReceivedForPlayer() {
     pushRewardQueueUndo('undo received');
     const { type, playerId } = activeRewardQueueAction;
     rewardQueueAssignments[type] = (rewardQueueAssignments[type] || []).map(a => String(a.playerId) === String(playerId) ? { ...a, manualStatus: null } : a);
-    rewardQueueHistory = rewardQueueHistory.filter(h => !(String(h.playerId) === String(playerId) && h.rewardType === type));
     closeRewardQueueAction();
     rewardQueueDirty = true;
     saveToLocalStorage();
@@ -3002,9 +3074,6 @@ function skipRewardQueuePlayer() {
     if (!activeRewardQueueAction || !checkAdminAccess()) return;
     pushRewardQueueUndo('skip');
     const { type, playerId } = activeRewardQueueAction;
-    const q = rewardQueues[type] || [];
-    const idx = q.indexOf(playerId);
-    if (idx >= 0) { q.splice(idx, 1); q.push(playerId); }
     rewardQueueAssignments[type] = (rewardQueueAssignments[type] || []).map(a => String(a.playerId) === String(playerId) ? { ...a, manualStatus: 'skipped', status: 'skipped', label: 'ข้ามคิว' } : a);
     closeRewardQueueAction();
     rewardQueueDirty = true;
@@ -3050,12 +3119,40 @@ function rewardQueueDropOn(e, type, targetId) {
     saveToLocalStorage();
     renderAll();
 }
+function rewardQueueCommitPlan(type) {
+    calculateRewardQueueType(type);
+    const cfg = rewardQueueSettings[type];
+    if (!cfg || cfg.enabled === false) return { awardedIds: [], skippedIds: [], nextQueue: rewardQueues[type] || [], assignments: [] };
+    const q = (rewardQueues[type] || []).map(String);
+    const assignments = rewardQueueAssignments[type] || [];
+    const amount = rewardQueuePageAmount(cfg);
+    const awardedSet = new Set();
+    const skippedSet = new Set();
+    let eligibleAwardedOrPlanned = 0;
+
+    for (const id of q) {
+        const a = assignments.find(x => String(x.playerId) === String(id));
+        if (!a) continue;
+        if (a.manualStatus === 'received' || a.status === 'today') {
+            if (eligibleAwardedOrPlanned < amount || a.manualStatus === 'received') {
+                awardedSet.add(id);
+                if (a.status === 'today') eligibleAwardedOrPlanned++;
+            }
+        } else if ((a.status === 'leave' || a.status === 'absent' || a.manualStatus === 'skipped') && eligibleAwardedOrPlanned < amount) {
+            skippedSet.add(id);
+        } else if (a.status === 'wait') {
+            // คนยังไม่ถึงคิวไม่ขยับ
+        }
+    }
+
+    const awardedIds = q.filter(id => awardedSet.has(id));
+    const skippedIds = q.filter(id => skippedSet.has(id) && !awardedSet.has(id));
+    const remainingIds = q.filter(id => !awardedSet.has(id) && !skippedSet.has(id));
+    return { awardedIds, skippedIds, nextQueue: [...remainingIds, ...skippedIds, ...awardedIds], assignments };
+}
 function rewardQueuePreviewAfter(types) {
     const out = {};
-    types.forEach(type => {
-        const ids = rewardQueueTodayList(type).map(a => String(a.playerId));
-        out[type] = (rewardQueues[type] || []).filter(id => !ids.includes(String(id))).concat(ids);
-    });
+    types.forEach(type => { out[type] = rewardQueueCommitPlan(type).nextQueue; });
     return out;
 }
 function openRewardQueuePreview(type = null) {
@@ -3079,19 +3176,31 @@ function closeRewardQueuePreview() { safeEl('reward-queue-preview-modal')?.class
 function saveRewardQueueTodayRound() {
     if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
     pushRewardQueueUndo('save today');
+    calculateRewardQueues();
+    const roundId = getCurrentWarId() + '_' + new Date().getTime();
+    const roundRewards = {};
     rewardQueueTypes().filter(type => rewardQueueSettings[type]?.enabled !== false).forEach(type => {
-        const ids = rewardQueueTodayList(type).map(a => String(a.playerId));
-        rewardQueues[type] = (rewardQueues[type] || []).filter(id => !ids.includes(String(id))).concat(ids);
-        ids.forEach(id => {
-            const p = getRewardQueuePlayer(id);
-            rewardQueueHistory.unshift({ id: 'rqh_' + Date.now() + '_' + id, playerId: id, playerName: p?.name || id, rewardType: type, rewardName: rewardQueueSettings[type]?.name || type, at: new Date().toISOString() });
+        const plan = rewardQueueCommitPlan(type);
+        const cfg = rewardQueueSettings[type];
+        const awardedRows = plan.assignments.filter(a => plan.awardedIds.includes(String(a.playerId)));
+        const skippedRows = plan.assignments.filter(a => plan.skippedIds.includes(String(a.playerId)));
+        roundRewards[type] = {
+            settings: { ...cfg },
+            awarded: awardedRows.map(a => ({ playerId: String(a.playerId), playerName: a.player?.name || '', label: a.label || '', status: a.status || '' })),
+            skipped: skippedRows.map(a => ({ playerId: String(a.playerId), playerName: a.player?.name || '', status: a.status || a.manualStatus || '', label: a.label || '' })),
+            beforeQueue: [...(rewardQueues[type] || [])],
+            afterQueue: [...plan.nextQueue]
+        };
+        rewardQueues[type] = plan.nextQueue;
+        awardedRows.forEach(a => {
+            rewardQueueHistory.unshift({ id: 'rqh_' + Date.now() + '_' + type + '_' + a.playerId, roundId, playerId: String(a.playerId), playerName: a.player?.name || String(a.playerId), rewardType: type, rewardName: cfg?.name || type, label: a.label || '', at: new Date().toISOString() });
         });
     });
     rewardQueueAssignments = {};
     logActivity('REWARD QUEUE SAVE ROUND', 'บันทึกรอบคิวรับรางวัลวันนี้');
     rewardQueueDirty = false;
     saveToLocalStorage();
-    saveRewardQueueToFirebaseSafe(true);
+    saveRewardQueueToFirebaseSafe(true, { roundId, rewards: roundRewards });
     renderAll();
 }
 function resetRewardQueue(type) {
@@ -3100,6 +3209,7 @@ function resetRewardQueue(type) {
     pushRewardQueueUndo('reset ' + type);
     rewardQueues[type] = players.map(p => String(p.id));
     rewardQueueAssignments[type] = [];
+    rewardQueueHistory = rewardQueueHistory.filter(h => h.rewardType !== type);
     rewardQueueDirty = true;
     saveToLocalStorage();
     renderAll();
@@ -3116,30 +3226,49 @@ function copyRewardQueueSummary() {
     copyTextToClipboard(lines.join('\n'));
     alert('Copy สรุปคิวรับรางวัลแล้ว');
 }
-async function saveRewardQueueToFirebaseSafe(showAlert = false) {
+async function saveRewardQueueToFirebaseSafe(showAlert = false, roundSnapshot = null) {
     if (!window.bellonaDB) return;
     try {
         await queueFirebaseWrite(async () => {
             const { doc, setDoc } = await import('https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js');
+            await setDoc(doc(window.bellonaDB, 'rewardQueue', 'main'), {
+                rewardQueueSettings,
+                rewardQueues,
+                rewardQueueAssignments,
+                rewardQueueHistory: rewardQueueHistory.slice(0, 300),
+                updatedAt: new Date().toISOString()
+            }, { merge: true });
             await setDoc(doc(window.bellonaDB, 'rewardQueueStates', 'main'), {
                 rewardQueueSettings,
                 rewardQueues,
                 rewardQueueAssignments,
-                rewardQueueHistory: rewardQueueHistory.slice(0, 100),
+                rewardQueueHistory: rewardQueueHistory.slice(0, 300),
                 updatedAt: new Date().toISOString()
             }, { merge: true });
+            if (roundSnapshot && roundSnapshot.roundId) {
+                await setDoc(doc(window.bellonaDB, 'rewardRounds', String(roundSnapshot.roundId)), {
+                    id: String(roundSnapshot.roundId),
+                    warId: getCurrentWarId(),
+                    warDate: getCurrentWarLabel(),
+                    rewards: roundSnapshot.rewards || {},
+                    createdAt: new Date().toISOString(),
+                    source: 'web-admin'
+                }, { merge: true });
+            }
         });
         rewardQueueDirty = false;
-        if (showAlert) alert('บันทึก Reward Queue เข้า Firebase แล้ว');
+        if (showAlert) alert('บันทึก GVG Rewards เข้า Firebase แล้ว');
     } catch (err) {
         console.warn('saveRewardQueueToFirebaseSafe error:', err.message);
+        alert('บันทึก GVG Rewards ไม่สำเร็จ: ' + (err.message || err));
     }
 }
 async function importRewardQueueFromFirebaseSafe() {
     if (!window.bellonaDB || rewardQueueDirty) return;
     try {
         const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js');
-        const snap = await getDoc(doc(window.bellonaDB, 'rewardQueueStates', 'main'));
+        let snap = await getDoc(doc(window.bellonaDB, 'rewardQueue', 'main'));
+        if (!snap.exists()) snap = await getDoc(doc(window.bellonaDB, 'rewardQueueStates', 'main'));
         if (snap.exists()) {
             const data = snap.data();
             rewardQueueSettings = data.rewardQueueSettings ? mergeRewardQueueSettings(data.rewardQueueSettings) : rewardQueueSettings;
@@ -3150,12 +3279,10 @@ async function importRewardQueueFromFirebaseSafe() {
         }
     } catch (err) { console.warn('importRewardQueueFromFirebaseSafe error:', err.message); }
 }
-
-
 function startRewardQueueRealtimeSync() {
     if (!window.bellonaDB || unsubRewardQueueRealtime) return;
     import('https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js').then(({ doc, onSnapshot }) => {
-        unsubRewardQueueRealtime = onSnapshot(doc(window.bellonaDB, 'rewardQueueStates', 'main'), snap => {
+        unsubRewardQueueRealtime = onSnapshot(doc(window.bellonaDB, 'rewardQueue', 'main'), snap => {
             if (!snap.exists() || rewardQueueDirty) return;
             const data = snap.data() || {};
             rewardQueueSettings = data.rewardQueueSettings ? mergeRewardQueueSettings(data.rewardQueueSettings) : rewardQueueSettings;
