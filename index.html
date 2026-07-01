@@ -916,6 +916,7 @@
                     <div class="flex flex-wrap gap-2 text-xs">
                         <button onclick="openRewardQueueSettings()" class="admin-only bg-[#d4af37] text-black font-black px-3 py-2 rounded-lg"><i class="fa-solid fa-gear"></i> ตั้งค่ารางวัล</button>
                         <button onclick="copyRewardQueueSummary()" class="bg-[#141a24] text-[#d4af37] border border-[#2d374a] px-3 py-2 rounded-lg font-bold"><i class="fa-regular fa-copy"></i> Copy สรุป</button>
+                        <button onclick="openRewardQueueReport()" class="bg-[#141a24] text-emerald-300 border border-emerald-900/50 px-3 py-2 rounded-lg font-bold"><i class="fa-solid fa-clipboard-list"></i> รายงานรอบนี้</button>
                         <button onclick="openRewardQueuePreview()" class="admin-only bg-[#141a24] text-cyan-300 border border-cyan-900/50 px-3 py-2 rounded-lg font-bold"><i class="fa-solid fa-eye"></i> Preview</button>
                         <button onclick="undoRewardQueueLastAction()" class="admin-only bg-[#141a24] text-amber-300 border border-amber-900/50 px-3 py-2 rounded-lg font-bold"><i class="fa-solid fa-rotate-left"></i> Undo</button>
                         <button onclick="saveRewardQueueTodayRound()" class="admin-only bg-green-950/40 text-green-300 border border-green-800/50 px-3 py-2 rounded-lg font-bold"><i class="fa-solid fa-check-double"></i> บันทึกรอบวันนี้</button>
@@ -2992,36 +2993,31 @@ function calculateRewardQueueType(type) {
         if (!p) return;
         const manual = rewardQueueManualStatus(type, id);
         const alreadyReceived = hasRewardQueueHistory(type, id);
-        if (manual === 'received' || alreadyReceived) {
-            result.push({ playerId: String(id), player: p, status: 'received', manualStatus: manual || 'history', label: 'ได้รับแล้ว' });
+        if (alreadyReceived && manual !== 'received') {
+            result.push({ playerId: String(id), player: p, status: 'received', manualStatus: 'history', label: 'ได้รับแล้ว' });
             return;
         }
         if (manual === 'skipped') {
             result.push({ playerId: String(id), player: p, status: 'skipped', manualStatus: manual, label: 'ข้ามคิว' });
             return;
         }
-        if (p.status === 'ลา') {
-            result.push({ playerId: String(id), player: p, status: 'leave', label: 'ลาวอร์' });
-            return;
-        }
-        if (p.status === 'ขาด') {
-            result.push({ playerId: String(id), player: p, status: 'absent', label: 'ขาดวอร์' });
-            return;
-        }
-        if (p.status !== 'มา') {
-            result.push({ playerId: String(id), player: p, status: 'unknown', label: 'รอเช็คชื่อ' });
-            return;
-        }
+        if (p.status === 'ลา') { result.push({ playerId: String(id), player: p, status: 'leave', label: 'ลาวอร์' }); return; }
+        if (p.status === 'ขาด') { result.push({ playerId: String(id), player: p, status: 'absent', label: 'ขาดวอร์' }); return; }
+        if (p.status !== 'มา') { result.push({ playerId: String(id), player: p, status: 'unknown', label: 'รอเช็คชื่อ' }); return; }
+
         if (eligibleCount < amount) {
+            let row;
             if (cfg.mode === 'slot') {
                 const perPage = Number(cfg.perPage || 4);
                 const page = Number(cfg.startPage || 1) + Math.floor(eligibleCount / perPage);
                 const slot = (eligibleCount % perPage) + 1;
-                result.push({ playerId: String(id), player: p, status: 'today', page, slot, label: `หน้า ${page} · ${cfg.unit || 'ชิ้น'} ${slot}` });
+                row = { playerId: String(id), player: p, status: 'today', page, slot, label: `หน้า ${page} · ${cfg.unit || 'ชิ้น'} ${slot}` };
             } else {
                 const page = Number(cfg.startPage || 1) + eligibleCount;
-                result.push({ playerId: String(id), player: p, status: 'today', page, label: `หน้า ${page}` });
+                row = { playerId: String(id), player: p, status: 'today', page, label: `หน้า ${page}` };
             }
+            if (manual === 'received') row = { ...row, status: 'received', manualStatus: 'received', label: row.label || 'ได้รับแล้ว' };
+            result.push(row);
             eligibleCount++;
         } else {
             waitCount++;
@@ -3033,19 +3029,18 @@ function calculateRewardQueueType(type) {
 function calculateRewardQueues() { ensureRewardQueues(); rewardQueueTypes().forEach(calculateRewardQueueType); }
 function rewardQueueClass(st) { return st === 'today' ? 'today' : st === 'wait' ? 'next' : st === 'received' ? 'done' : (st === 'skipped' || st === 'leave' || st === 'absent' || st === 'unknown') ? 'skip' : ''; }
 function rewardQueueBadge(a) {
-    const map = { today:['🟢','ถึงคิว','text-green-300'], wait:['🟡',a.label,'text-amber-300'], received:['🔵','รับแล้ว','text-cyan-300'], skipped:['🟠','ข้าม','text-orange-300'], leave:['🔴','ลา','text-red-300'], absent:['⚫','ขาด','text-gray-300'], unknown:['⚪','ยังไม่เช็คชื่อ','text-gray-400'] };
+    const map = { today:['🟡','รอรับ','text-amber-300'], wait:['🟡',a.label,'text-amber-300'], received:['🔵','รับแล้ว','text-cyan-300'], skipped:['🟠','ข้าม','text-orange-300'], leave:['🔴','ลา','text-red-300'], absent:['⚫','ขาด','text-gray-300'], unknown:['⚪','ยังไม่เช็คชื่อ','text-gray-400'] };
     const b = map[a.status] || ['⚪', a.label, 'text-gray-300'];
     return `<span class="${b[2]} font-black text-[11px]">${b[0]} ${b[1]}</span>`;
 }
 function rewardQueueTodayList(type) { return (rewardQueueAssignments[type] || []).filter(a => a.status === 'today').slice(0, rewardQueuePageAmount(rewardQueueSettings[type])); }
-function rewardQueueNextList(type) { return (rewardQueueAssignments[type] || []).filter(a => a.status === 'wait').slice(0, 4); }
-function rewardQueuePendingList(type) { return (rewardQueueAssignments[type] || []).filter(a => a.status === 'unknown' || a.status === 'leave' || a.status === 'absent' || a.status === 'skipped').slice(0, rewardQueuePageAmount(rewardQueueSettings[type]) + 4); }
-function rewardQueueReceivedList(type) { return (rewardQueueAssignments[type] || []).filter(a => a.status === 'received').slice(-3); }
+function rewardQueueCurrentAwardList(type) { return (rewardQueueAssignments[type] || []).filter(a => a.status === 'today' || a.manualStatus === 'received').slice(0, rewardQueuePageAmount(rewardQueueSettings[type])); }
+function rewardQueuePendingList(type) { return (rewardQueueAssignments[type] || []).filter(a => a.status === 'unknown' || a.status === 'leave' || a.status === 'absent' || a.status === 'skipped').slice(0, rewardQueuePageAmount(rewardQueueSettings[type])); }
+function rewardQueueReceivedList(type) { return (rewardQueueAssignments[type] || []).filter(a => a.status === 'received').slice(-4); }
 function rewardQueueAdminList(type) {
-    const today = rewardQueueTodayList(type);
-    const next = rewardQueueNextList(type);
-    const pending = (today.length || next.length) ? [] : rewardQueuePendingList(type);
-    return [...today, ...next, ...pending, ...rewardQueueReceivedList(type)];
+    const current = rewardQueueCurrentAwardList(type);
+    const pending = current.length ? [] : rewardQueuePendingList(type);
+    return [...current, ...pending, ...rewardQueueReceivedList(type)];
 }
 function rewardQueueProgress(type) {
     const total = Math.max(1, players.length || 1);
@@ -3078,6 +3073,8 @@ function renderRewardQueueAdminBoard() {
                     ${renderRewardQueueProgressHtml(type)}
                 </div>
                 <div class="flex gap-1 shrink-0">
+                    <button onclick="markRewardQueueAllReceived('${type}')" class="admin-only bg-green-900/30 text-green-300 border border-green-800/40 px-2 py-1 rounded text-[10px] font-bold">รับแล้วทั้งหมด</button>
+                    <button onclick="unmarkRewardQueueAllReceived('${type}')" class="admin-only bg-[#141a24] text-amber-300 border border-amber-900/50 px-2 py-1 rounded text-[10px] font-bold">ยกเลิกทั้งหมด</button>
                     <button onclick="openRewardQueuePreview('${type}')" class="admin-only bg-[#141a24] text-cyan-300 border border-cyan-900/50 px-2 py-1 rounded text-[10px] font-bold">Preview</button>
                     <button onclick="resetRewardQueue('${type}')" class="admin-only bg-red-900/20 text-red-300 border border-red-800/40 px-2 py-1 rounded text-[10px] font-bold">Reset</button>
                 </div>
@@ -3111,7 +3108,12 @@ function renderRewardQueueMemberBoard() {
     const box = safeEl('reward-queue-member-board');
     if (!box) return;
     const cfg = rewardQueueSettings[activeRewardQueueType];
-    const list = rewardQueueAssignments[activeRewardQueueType] || [];
+    const rawList = rewardQueueAssignments[activeRewardQueueType] || [];
+    const list = [...rawList].sort((a, b) => {
+        const ar = a.status === 'received' ? 1 : 0;
+        const br = b.status === 'received' ? 1 : 0;
+        return ar - br;
+    });
     const progress = renderRewardQueueProgressHtml(activeRewardQueueType);
     box.innerHTML = `<div class="bg-[#0c0e14] border border-[#1f2838] rounded-lg p-2 mb-2">${progress}</div>` + list.map((a, i) => `<div class="rq-row ${rewardQueueClass(a.status)} rounded-lg p-2.5 flex items-center justify-between gap-3">
         <div class="flex items-center gap-2 min-w-0">
@@ -3180,10 +3182,7 @@ function markRewardQueueReceived() {
     if (!activeRewardQueueAction || !checkAdminAccess()) return;
     pushRewardQueueUndo('received');
     const { type, playerId } = activeRewardQueueAction;
-    const q = rewardQueues[type] || [];
-    const idx = q.indexOf(String(playerId));
-    if (idx >= 0) { q.splice(idx, 1); q.push(String(playerId)); }
-    rewardQueueAssignments[type] = (rewardQueueAssignments[type] || []).map(a => String(a.playerId) === String(playerId) ? { ...a, manualStatus: 'received', status: 'received', label: 'ได้รับแล้ว' } : a);
+    rewardQueueAssignments[type] = (rewardQueueAssignments[type] || []).map(a => String(a.playerId) === String(playerId) ? { ...a, manualStatus: 'received', status: 'received', label: a.label || 'ได้รับแล้ว' } : a);
     closeRewardQueueAction();
     rewardQueueDirty = true;
     saveToLocalStorage();
@@ -3203,9 +3202,6 @@ function skipRewardQueuePlayer() {
     if (!activeRewardQueueAction || !checkAdminAccess()) return;
     pushRewardQueueUndo('skip');
     const { type, playerId } = activeRewardQueueAction;
-    const q = rewardQueues[type] || [];
-    const idx = q.indexOf(String(playerId));
-    if (idx >= 0) { q.splice(idx, 1); q.push(String(playerId)); }
     rewardQueueAssignments[type] = (rewardQueueAssignments[type] || []).map(a => String(a.playerId) === String(playerId) ? { ...a, manualStatus: 'skipped', status: 'skipped', label: 'ข้ามคิว' } : a);
     closeRewardQueueAction();
     rewardQueueDirty = true;
@@ -3251,36 +3247,49 @@ function rewardQueueDropOn(e, type, targetId) {
     saveToLocalStorage();
     renderAll();
 }
-function rewardQueueCommitPlan(type) {
+
+function markRewardQueueAllReceived(type) {
+    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
+    pushRewardQueueUndo('mark all received ' + type);
     calculateRewardQueueType(type);
+    const currentIds = rewardQueueCurrentAwardList(type).filter(a => a.status === 'today').map(a => String(a.playerId));
+    if (!currentIds.length) return alert('ไม่มีรายชื่อรอรับในรางวัลนี้');
+    const currentSet = new Set(currentIds);
+    rewardQueueAssignments[type] = (rewardQueueAssignments[type] || []).map(a => currentSet.has(String(a.playerId)) ? { ...a, manualStatus: 'received', status: 'received', label: a.label || 'ได้รับแล้ว' } : a);
+    rewardQueueDirty = true;
+    saveToLocalStorage();
+    renderAll();
+}
+function unmarkRewardQueueAllReceived(type) {
+    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
+    pushRewardQueueUndo('unmark all received ' + type);
+    rewardQueueAssignments[type] = (rewardQueueAssignments[type] || []).map(a => a.manualStatus === 'received' ? { ...a, manualStatus: null } : a);
+    rewardQueueDirty = true;
+    saveToLocalStorage();
+    renderAll();
+}
+
+function rewardQueueCommitPlan(type) {
     const cfg = rewardQueueSettings[type];
-    if (!cfg || cfg.enabled === false) return { awardedIds: [], skippedIds: [], nextQueue: rewardQueues[type] || [], assignments: [] };
+    if (!cfg || cfg.enabled === false) return { awardedIds: [], skippedIds: [], unresolvedRows: [], nextQueue: rewardQueues[type] || [], assignments: [] };
+    calculateRewardQueueType(type);
     const q = (rewardQueues[type] || []).map(String);
     const assignments = rewardQueueAssignments[type] || [];
-    const amount = rewardQueuePageAmount(cfg);
     const awardedSet = new Set();
     const skippedSet = new Set();
-    let eligibleAwardedOrPlanned = 0;
+    const unresolvedRows = [];
 
-    for (const id of q) {
-        const a = assignments.find(x => String(x.playerId) === String(id));
-        if (!a) continue;
-        if (a.manualStatus === 'received' || a.status === 'today') {
-            if (eligibleAwardedOrPlanned < amount || a.manualStatus === 'received') {
-                awardedSet.add(id);
-                if (a.status === 'today') eligibleAwardedOrPlanned++;
-            }
-        } else if ((a.status === 'leave' || a.status === 'absent' || a.manualStatus === 'skipped') && eligibleAwardedOrPlanned < amount) {
-            skippedSet.add(id);
-        } else if (a.status === 'wait') {
-            // คนยังไม่ถึงคิวไม่ขยับ
-        }
-    }
+    assignments.forEach(a => {
+        const id = String(a.playerId);
+        if (a.manualStatus === 'received') awardedSet.add(id);
+        else if (a.manualStatus === 'skipped' || a.status === 'leave' || a.status === 'absent') skippedSet.add(id);
+        else if (a.status === 'today') unresolvedRows.push(a);
+    });
 
     const awardedIds = q.filter(id => awardedSet.has(id));
     const skippedIds = q.filter(id => skippedSet.has(id) && !awardedSet.has(id));
     const remainingIds = q.filter(id => !awardedSet.has(id) && !skippedSet.has(id));
-    return { awardedIds, skippedIds, nextQueue: [...remainingIds, ...skippedIds, ...awardedIds], assignments };
+    return { awardedIds, skippedIds, unresolvedRows, nextQueue: [...remainingIds, ...skippedIds, ...awardedIds], assignments };
 }
 function rewardQueuePreviewAfter(types) {
     const out = {};
@@ -3307,12 +3316,24 @@ function openRewardQueuePreview(type = null) {
 function closeRewardQueuePreview() { safeEl('reward-queue-preview-modal')?.classList.add('hidden'); }
 function saveRewardQueueTodayRound() {
     if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
-    pushRewardQueueUndo('save today');
     calculateRewardQueues();
+    const enabledTypes = rewardQueueTypes().filter(type => rewardQueueSettings[type]?.enabled !== false);
+    const plans = {};
+    const unresolved = [];
+    enabledTypes.forEach(type => {
+        const plan = rewardQueueCommitPlan(type);
+        plans[type] = plan;
+        plan.unresolvedRows.forEach(a => unresolved.push(`${rewardQueueSettings[type]?.name || type}: ${a.player?.name || a.playerId}`));
+    });
+    if (unresolved.length) {
+        alert('ยังมีรายชื่อที่ยังเป็นสถานะ “รอรับ”\nกรุณากด “รับแล้ว”, “ข้ามคิว” หรือ “รับแล้วทั้งหมด” ก่อนบันทึก\n\n' + unresolved.slice(0, 20).join('\n'));
+        return;
+    }
+    pushRewardQueueUndo('save today');
     const roundId = getCurrentWarId() + '_' + new Date().getTime();
     const roundRewards = {};
-    rewardQueueTypes().filter(type => rewardQueueSettings[type]?.enabled !== false).forEach(type => {
-        const plan = rewardQueueCommitPlan(type);
+    enabledTypes.forEach(type => {
+        const plan = plans[type];
         const cfg = rewardQueueSettings[type];
         const awardedRows = plan.assignments.filter(a => plan.awardedIds.includes(String(a.playerId)));
         const skippedRows = plan.assignments.filter(a => plan.skippedIds.includes(String(a.playerId)));
@@ -3358,6 +3379,26 @@ function copyRewardQueueSummary() {
     copyTextToClipboard(lines.join('\n'));
     alert('Copy สรุปคิวรับรางวัลแล้ว');
 }
+
+function buildRewardQueueReportText() {
+    calculateRewardQueues();
+    const lines = ['📋 รายงาน GVG Rewards รอบนี้', ''];
+    rewardQueueTypes().filter(type => rewardQueueSettings[type]?.enabled !== false).forEach(type => {
+        const cfg = rewardQueueSettings[type];
+        const rows = (rewardQueueAssignments[type] || []).filter(a => a.manualStatus === 'received' || a.status === 'received');
+        lines.push(`${cfg.icon} ${cfg.name}`);
+        if (!rows.length) lines.push('- ยังไม่มีรายชื่อรับแล้ว');
+        rows.forEach(a => lines.push(`- ${a.player?.name || a.playerId}: ${a.label || 'ได้รับแล้ว'}`));
+        lines.push('');
+    });
+    return lines.join('\n');
+}
+function openRewardQueueReport() {
+    const text = buildRewardQueueReportText();
+    copyTextToClipboard(text);
+    alert(text + '\n\nคัดลอกรายงานแล้ว');
+}
+
 async function saveRewardQueueToFirebaseSafe(showAlert = false, roundSnapshot = null) {
     if (!window.bellonaDB) return;
     try {
