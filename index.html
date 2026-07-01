@@ -1186,9 +1186,8 @@ const LEGACY_STORAGE_KEY = 'bellona_gvg_v13_final';
 const ADMIN_LOGIN_USER_HASH = 'cf2de8a9c92433954ccf446b112f5330e0a937e7743f05c04720f166e628930a';
 const ADMIN_LOGIN_PASS_HASH = '0f8eb4b72b6e0c9e88b388eb967b49e067ef1004bf07bffc22c3acb13b43580a';
 
-window.alert = function(msg) {
-    console.log(msg);
-};
+// v114.1 STABILITY: ใช้ native alert/popup จริง ไม่ส่งข้อความไป Console เฉย ๆ
+// ห้าม override window.alert เพราะจะทำให้ Popup ยืนยัน/เตือนใน GVG Rewards ไม่แสดง
 
 const defaultJobsList = [
     'Lord Knight','Paladin','High Priest','High Wizard','Sniper','Assassin Cross','Champion',
@@ -1204,11 +1203,13 @@ let globalMaps = [
     {
         id: 'vigrid',
         name: 'Vigrid',
-        image: 'https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/maps/vigrid.png'
+        file: 'vigrid.png',
+        image: './assets/maps/vigrid.png'
     },
     {
         id: 'valeofclash',
         name: 'Vale of Clash',
+        file: 'valeofclash.png',
         image: './assets/maps/valeofclash.png'
     }
 ];
@@ -1217,11 +1218,13 @@ const BELLONA_DEFAULT_MAPS = [
     {
         id: 'vigrid',
         name: 'Vigrid',
-        image: 'https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/maps/vigrid.png'
+        file: 'vigrid.png',
+        image: './assets/maps/vigrid.png'
     },
     {
         id: 'valeofclash',
         name: 'Vale of Clash',
+        file: 'valeofclash.png',
         image: './assets/maps/valeofclash.png'
     }
 ];
@@ -1240,19 +1243,33 @@ function ensureDefaultMapsAvailable() {
     });
 }
 
-function isAbsoluteMapPath(path) {
-    return /^https?:\/\//i.test(String(path || '')) || String(path || '').startsWith('./') || String(path || '').startsWith('/');
+function isExternalOrRootMapPath(path) {
+    const value = String(path || '').trim();
+    return /^https?:\/\//i.test(value) || value.startsWith('./') || value.startsWith('/') || value.startsWith('data:') || value.includes('/');
+}
+
+function buildMapImagePath(rawMap) {
+    const explicitImage = String(rawMap.image || rawMap.path || '').trim();
+    const fileOnly = String(rawMap.file || '').trim();
+    const raw = explicitImage || fileOnly;
+    if (!raw) return '';
+    // v114.1 STABILITY: รองรับทั้ง 3 แบบ
+    // 1) file: "vigrid.png" => ./assets/maps/vigrid.png
+    // 2) image: "assets/maps/vigrid.png" => ./assets/maps/vigrid.png
+    // 3) image: "https://..." => ใช้ URL เดิม
+    if (isExternalOrRootMapPath(raw)) return raw.startsWith('assets/') ? `./${raw}` : raw;
+    return `./assets/maps/${raw}`;
 }
 
 function normalizeMapDefinition(rawMap, index = 0) {
     if (!rawMap || typeof rawMap !== 'object') return null;
     const rawFile = String(rawMap.image || rawMap.path || rawMap.file || '').trim();
-    const idSource = String(rawMap.id || rawMap.name || rawFile || `map-${index + 1}`).trim();
+    const idSource = String(rawMap.id || rawMap.name || rawMap.file || rawFile || `map-${index + 1}`).trim();
     const id = idSource.toLowerCase().replace(/\.[a-z0-9]+$/i, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || `map-${index + 1}`;
     const name = String(rawMap.name || idSource).replace(/\.[a-z0-9]+$/i, '').trim() || id;
-    if (!rawFile) return null;
-    const image = isAbsoluteMapPath(rawFile) ? rawFile : `./assets/maps/${rawFile}`;
-    return { id, name, image };
+    const image = buildMapImagePath(rawMap);
+    if (!image) return null;
+    return { id, name, file: rawMap.file || '', image };
 }
 
 function mergeMapsFromDefinitions(mapDefinitions) {
@@ -3444,8 +3461,15 @@ function saveRewardQueueTodayRound() {
         plan.unresolvedRows.forEach(a => unresolved.push(`${rewardQueueSettings[type]?.name || type}: ${a.player?.name || a.playerId}`));
     });
     if (unresolved.length) {
-        alert('ยังมีรายชื่อที่ยังเป็นสถานะ “รอรับ”\nกรุณากด “รับแล้ว”, “ข้ามคิว” หรือ “รับแล้วทั้งหมด” ก่อนบันทึก\n\n' + unresolved.slice(0, 20).join('\n'));
-        return;
+        const ok = confirm('ยังมีรายชื่อที่ยังเป็นสถานะ “รอรับ”\n\n' + unresolved.slice(0, 20).join('\n') + '\n\nกด OK = ถือว่ารายชื่อเหล่านี้ “ข้ามคิว” แล้วบันทึกต่อ\nกด Cancel = กลับไปจัดการก่อน');
+        if (!ok) return;
+        // v114.1 STABILITY: ถ้า Admin ยืนยัน ให้เปลี่ยนคนรอรับทั้งหมดเป็นข้ามคิวก่อนบันทึก
+        enabledTypes.forEach(type => {
+            const unresolvedIds = new Set((plans[type]?.unresolvedRows || []).map(a => String(a.playerId)));
+            if (!unresolvedIds.size) return;
+            rewardQueueAssignments[type] = (rewardQueueAssignments[type] || []).map(a => unresolvedIds.has(String(a.playerId)) ? { ...a, manualStatus: 'skipped', status: 'skipped', label: 'ข้ามคิว' } : a);
+        });
+        enabledTypes.forEach(type => { plans[type] = rewardQueueCommitPlan(type); });
     }
     pushRewardQueueUndo('save today');
     const roundId = getCurrentWarId() + '_' + new Date().getTime();
@@ -3683,7 +3707,26 @@ function displayGlobalMap(id) {
     if (!map) return changeBattleMap('default');
     const bgImg = safeEl('battle-map-bg');
     const placeholder = safeEl('battle-map-placeholder');
-    if (bgImg) { bgImg.crossOrigin = 'anonymous'; bgImg.src = map.image; bgImg.classList.remove('hidden'); }
+    if (bgImg) {
+        bgImg.crossOrigin = 'anonymous';
+        bgImg.onerror = function() {
+            console.warn('BELLONA Map Engine: map image failed:', map.image);
+            // fallback กรณีกรอก image เป็น assets/maps/name.png แต่ path แปลกจาก browser cache
+            if (map.file && bgImg.src.indexOf('/assets/maps/' + map.file) === -1) {
+                bgImg.src = './assets/maps/' + map.file;
+                return;
+            }
+            bgImg.classList.add('hidden');
+            if (placeholder) placeholder.classList.remove('hidden');
+        };
+        bgImg.onload = function() {
+            bgImg.classList.remove('hidden');
+            if (placeholder) placeholder.classList.add('hidden');
+            setTimeout(resizeCanvas, 50);
+        };
+        bgImg.src = map.image;
+        bgImg.classList.remove('hidden');
+    }
     if (placeholder) placeholder.classList.add('hidden');
     selectedGlobalMapId = map.id; selectedMap = map.id;
     if (safeEl('map-selector')) safeEl('map-selector').value = map.id;
