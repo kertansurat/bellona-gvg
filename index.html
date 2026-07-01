@@ -1079,7 +1079,7 @@
         </div>
     </div>
 
-    <div class="bellona-version-pill">BELLONA ROOC · v113 Production Final</div>
+    <div class="bellona-version-pill">BELLONA ROOC · v114 Map Engine</div>
 
 
 
@@ -1196,11 +1196,106 @@ const defaultJobsList = [
 ];
 
 let availableJobsList = [...defaultJobsList];
-let globalMaps = [{
-    id: 'vigrid',
-    name: 'Vigrid',
-    image: 'https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/maps/vigrid.png'
-}];
+/* v114 MAP ENGINE
+   - ค่าเริ่มต้นยังอยู่ในโค้ดเพื่อกันกรณี maps.json โหลดไม่ได้
+   - ถ้ามีไฟล์ ./maps.json ระบบจะโหลดรายการแผนที่จากไฟล์นั้นอัตโนมัติ
+   - เพิ่มแผนที่ใหม่ในอนาคต: วางรูปไว้ assets/maps/ แล้วเพิ่มรายการใน maps.json โดยไม่ต้องแก้ index.html */
+let globalMaps = [
+    {
+        id: 'vigrid',
+        name: 'Vigrid',
+        image: 'https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/maps/vigrid.png'
+    },
+    {
+        id: 'valeofclash',
+        name: 'Vale of Clash',
+        image: './assets/maps/valeofclash.png'
+    }
+];
+
+const BELLONA_DEFAULT_MAPS = [
+    {
+        id: 'vigrid',
+        name: 'Vigrid',
+        image: 'https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/maps/vigrid.png'
+    },
+    {
+        id: 'valeofclash',
+        name: 'Vale of Clash',
+        image: './assets/maps/valeofclash.png'
+    }
+];
+let bellonaMapsJsonLoaded = false;
+
+function ensureDefaultMapsAvailable() {
+    if (!Array.isArray(globalMaps)) globalMaps = [];
+    BELLONA_DEFAULT_MAPS.forEach(defaultMap => {
+        const existing = globalMaps.find(m => m && m.id === defaultMap.id);
+        if (existing) {
+            existing.name = existing.name || defaultMap.name;
+            existing.image = existing.image || defaultMap.image;
+        } else {
+            globalMaps.push({ ...defaultMap });
+        }
+    });
+}
+
+function isAbsoluteMapPath(path) {
+    return /^https?:\/\//i.test(String(path || '')) || String(path || '').startsWith('./') || String(path || '').startsWith('/');
+}
+
+function normalizeMapDefinition(rawMap, index = 0) {
+    if (!rawMap || typeof rawMap !== 'object') return null;
+    const rawFile = String(rawMap.image || rawMap.path || rawMap.file || '').trim();
+    const idSource = String(rawMap.id || rawMap.name || rawFile || `map-${index + 1}`).trim();
+    const id = idSource.toLowerCase().replace(/\.[a-z0-9]+$/i, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || `map-${index + 1}`;
+    const name = String(rawMap.name || idSource).replace(/\.[a-z0-9]+$/i, '').trim() || id;
+    if (!rawFile) return null;
+    const image = isAbsoluteMapPath(rawFile) ? rawFile : `./assets/maps/${rawFile}`;
+    return { id, name, image };
+}
+
+function mergeMapsFromDefinitions(mapDefinitions) {
+    if (!Array.isArray(mapDefinitions)) return false;
+    const normalized = mapDefinitions.map(normalizeMapDefinition).filter(Boolean);
+    if (!normalized.length) return false;
+    normalized.forEach(newMap => {
+        const existing = globalMaps.find(m => m && m.id === newMap.id);
+        if (existing) {
+            existing.name = newMap.name;
+            existing.image = newMap.image;
+        } else {
+            globalMaps.push(newMap);
+        }
+    });
+    bellonaMapsJsonLoaded = true;
+    ensureDefaultMapsAvailable();
+    return true;
+}
+
+async function loadBellonaMapsJson() {
+    const candidates = ['./maps.json', './assets/maps/maps.json'];
+    for (const url of candidates) {
+        try {
+            const res = await fetch(`${url}?v=${Date.now()}`, { cache: 'no-store' });
+            if (!res.ok) continue;
+            const data = await res.json();
+            const maps = Array.isArray(data) ? data : (Array.isArray(data.maps) ? data.maps : []);
+            if (mergeMapsFromDefinitions(maps)) {
+                console.log(`BELLONA Map Engine: loaded ${maps.length} map definitions from ${url}`);
+                saveToLocalStorage();
+                updateMapDropdownOptions();
+                if (selectedGlobalMapId && selectedGlobalMapId !== 'default') displayGlobalMap(selectedGlobalMapId);
+                return true;
+            }
+        } catch (err) {
+            console.warn(`BELLONA Map Engine: cannot load ${url}`, err.message);
+        }
+    }
+    ensureDefaultMapsAvailable();
+    updateMapDropdownOptions();
+    return false;
+}
 let selectedGlobalMapId = 'vigrid';
 let selectedMap = 'vigrid';
 let googleSheetUrl = '';
@@ -1838,6 +1933,7 @@ function importBellonaBackupFile(event) {
             googleSheetUrl = data.googleSheetUrl || '';
             availableJobsList = Array.isArray(data.availableJobsList) && data.availableJobsList.length ? data.availableJobsList : [...defaultJobsList];
             globalMaps = Array.isArray(data.globalMaps) && data.globalMaps.length ? data.globalMaps : globalMaps;
+            ensureDefaultMapsAvailable();
             selectedGlobalMapId = data.selectedGlobalMapId || 'vigrid';
             selectedMap = data.selectedMap || selectedGlobalMapId || 'vigrid';
             markers = Array.isArray(data.markers) ? data.markers : [];
@@ -1871,6 +1967,7 @@ window.onload = function() {
     loadFromLocalStorage();
     initPartiesGrid();
     initDrawingCanvas();
+    loadBellonaMapsJson();
     updateMapDropdownOptions();
     displayGlobalMap(selectedGlobalMapId || 'vigrid');
     updateAttendanceRoundDisplay();
@@ -1986,6 +2083,7 @@ function loadFromLocalStorage() {
         selectedMap = data.selectedMap || selectedGlobalMapId || 'vigrid';
         const logoData = localStorage.getItem('bellona_custom_logo_data');
         if (logoData) displayGuildLogo(logoData);
+        ensureDefaultMapsAvailable();
     } catch(e) {
         console.error('loadFromLocalStorage error:', e);
     }
@@ -3594,7 +3692,7 @@ function displayGlobalMap(id) {
 function deleteGlobalMap(id) {
     if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
     globalMaps = globalMaps.filter(m => m.id !== id);
-    if (globalMaps.length === 0) globalMaps.push({ id:'vigrid', name:'Vigrid', image:'https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/maps/vigrid.png' });
+    ensureDefaultMapsAvailable();
     changeBattleMap(globalMaps[0].id);
 }
 function changeBattleMap(val) {
