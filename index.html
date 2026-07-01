@@ -3308,6 +3308,7 @@ function rewardQueueCommitPlan(type) {
     const awardedIds = q.filter(id => awardedSet.has(id));
     const skippedIds = q.filter(id => skippedSet.has(id) && !awardedSet.has(id));
     const remainingIds = q.filter(id => !awardedSet.has(id) && !skippedSet.has(id));
+    // v113.6 Final Workflow: remaining -> skipped/leave/absent -> received
     return { awardedIds, skippedIds, unresolvedRows, nextQueue: [...remainingIds, ...skippedIds, ...awardedIds], assignments };
 }
 function rewardQueuePreviewAfter(types) {
@@ -3363,17 +3364,21 @@ function saveRewardQueueTodayRound() {
             beforeQueue: [...(rewardQueues[type] || [])],
             afterQueue: [...plan.nextQueue]
         };
+        // v113.6: อัปเดตคิวถาวรในเครื่องทันที เพื่อให้ฝั่ง Admin ขยับทันทีหลังบันทึก
         rewardQueues[type] = plan.nextQueue;
         awardedRows.forEach(a => {
             rewardQueueHistory.unshift({ id: 'rqh_' + Date.now() + '_' + type + '_' + a.playerId, roundId, playerId: String(a.playerId), playerName: a.player?.name || String(a.playerId), rewardType: type, rewardName: cfg?.name || type, label: a.label || '', at: new Date().toISOString() });
         });
     });
+    // ล้างสถานะชั่วคราวของรอบนี้ แล้วคำนวณใหม่จากคิวถาวรที่ขยับแล้ว
     rewardQueueAssignments = {};
-    logActivity('REWARD QUEUE SAVE ROUND', 'บันทึกรอบคิวรับรางวัลวันนี้');
     rewardQueueDirty = false;
+    logActivity('REWARD QUEUE SAVE ROUND', 'บันทึกรอบคิวรับรางวัลวันนี้');
+    calculateRewardQueues();
     saveToLocalStorage();
-    saveRewardQueueToFirebaseSafe(true, { roundId, rewards: roundRewards });
     renderAll();
+    // เซฟ Firebase หลัง UI ขยับแล้ว ลดอาการเหมือนปุ่มไม่ทำงาน
+    saveRewardQueueToFirebaseSafe(true, { roundId, rewards: roundRewards });
 }
 function resetRewardQueue(type) {
     if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
