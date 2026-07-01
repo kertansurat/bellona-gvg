@@ -2,11 +2,16 @@
   {
     "id": "vigrid",
     "name": "Vigrid",
-    "image": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/maps/vigrid.png"
+    "image": "assets/maps/valeofclash.png"
   },
   {
     "id": "valeofclash",
     "name": "Vale of Clash",
-    "file": "valeofclash.png"
+    "file": "assets/maps/valeofclash.png"
+  },
+  {
+    "id": "stellarclash",
+    "name": "Stellar Clash",
+    "file": "assets/maps/stellarclash.png"
   }
 ]
