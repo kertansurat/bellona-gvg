@@ -480,6 +480,27 @@
         }
         .login-eye-btn:hover { color: #d4af37; border-color: rgba(212,175,55,.35); }
 
+
+
+        /* v113.2 ADMIN EDIT LOCK: ชื่อ/Power/อาชีพ แก้ได้เฉพาะ Admin */
+        .admin-readonly-field {
+            background: rgba(15, 23, 42, .45) !important;
+            border-color: rgba(71, 85, 105, .45) !important;
+            color: #94a3b8 !important;
+            cursor: not-allowed !important;
+            opacity: .86;
+        }
+        .admin-lock-note {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 4px;
+            color: #64748b;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: .02em;
+        }
+
     </style>
 </head>
 <body class="min-h-screen flex flex-col selection:bg-[#d4af37] selection:text-black">
@@ -2218,6 +2239,7 @@ function handleSlotClick(partyId, slotIndex) {
     selectedPlayerId = null;
 }
 async function assignPlayerToSlot(playerId, partyId, slotIndex) {
+    if (!checkAdminAccess()) return alert('เฉพาะ Admin เท่านั้น');
     const p = players.find(x => String(x.id) === String(playerId));
     if (!p) return;
     const occupant = players.find(x => x.partyId === partyId && Number(x.slotIndex) === Number(slotIndex) && String(x.id) !== String(playerId));
@@ -2600,6 +2622,8 @@ function handleInlineEditKey(event) {
 function renderMemberManagerTab() {
     const tbody = safeEl('member-manager-table-body');
     if (!tbody) return;
+    const isAdminMode = checkAdminAccess();
+    const editLockNote = isAdminMode ? '' : '<div class="admin-lock-note"><i class="fa-solid fa-lock"></i> Read Only</div>';
     tbody.innerHTML = players.map(p => {
         const statusBadge = p.status === 'มา'
             ? '<span class="text-green-400 font-bold">มาวอร์</span>'
@@ -2608,21 +2632,30 @@ function renderMemberManagerTab() {
                 : p.status === 'ขาด'
                     ? '<span class="text-red-400 font-bold">ขาด</span>'
                     : '<span class="text-gray-400">-</span>';
+        const nameInputAttrs = isAdminMode
+            ? `onkeydown="handleInlineEditKey(event)" onchange="updatePlayerName('${escapeInlineJs(p.id)}', this.value)"`
+            : 'disabled readonly';
+        const powerInputAttrs = isAdminMode
+            ? `onkeydown="handleInlineEditKey(event)" onchange="updatePlayerPower('${escapeInlineJs(p.id)}', this.value)"`
+            : 'disabled readonly';
+        const adminInputClass = isAdminMode ? '' : 'admin-readonly-field';
         return `<tr class="border-b border-[#1c2331] text-xs">
-            <td class="p-3 text-center"><input type="checkbox" value="${escapeHtml(p.id)}" class="member-select-chk accent-[#d4af37]"></td>
+            <td class="p-3 text-center"><input type="checkbox" value="${escapeHtml(p.id)}" class="member-select-chk accent-[#d4af37]" ${isAdminMode ? '' : 'disabled'}></td>
             <td class="p-3 font-bold text-white min-w-[260px]">
                 <div class="flex items-center gap-3">
                     <div class="shrink-0">${getJobIcon(p.job)}</div>
                     <div class="min-w-0 flex-1">
-                        <input value="${escapeHtml(p.name)}" onkeydown="handleInlineEditKey(event)" onchange="updatePlayerName('${escapeInlineJs(p.id)}', this.value)"
-                            class="member-edit-input w-full text-sm" title="แก้ไขชื่อตัวละคร">
+                        <input value="${escapeHtml(p.name)}" ${nameInputAttrs}
+                            class="member-edit-input ${adminInputClass} w-full text-sm" title="${isAdminMode ? 'แก้ไขชื่อตัวละคร' : 'เฉพาะ Admin เท่านั้น'}">
                         <div class="member-id-label">ID: ${escapeHtml(p.id)}</div>
+                        ${editLockNote}
                     </div>
                 </div>
             </td>
             <td class="p-3 text-center min-w-[110px]">
-                <input value="${escapeHtml(p.power || '')}" placeholder="300K" onkeydown="handleInlineEditKey(event)" onchange="updatePlayerPower('${escapeInlineJs(p.id)}', this.value)"
-                    class="member-edit-input member-power-input" title="ระบุ Power เช่น 300K หรือ 1.2M">
+                <input value="${escapeHtml(p.power || '')}" placeholder="300K" ${powerInputAttrs}
+                    class="member-edit-input ${adminInputClass} member-power-input" title="${isAdminMode ? 'ระบุ Power เช่น 300K หรือ 1.2M' : 'เฉพาะ Admin เท่านั้น'}">
+                ${isAdminMode ? '' : editLockNote}
             </td>
             <td class="p-3 min-w-[170px]">${renderPlayerJobSelector(p)}</td>
             <td class="p-3">${statusBadge}</td>
@@ -2637,6 +2670,7 @@ function renderMemberManagerTab() {
         </tr>`;
     }).join('');
 }
+
 
 
 
