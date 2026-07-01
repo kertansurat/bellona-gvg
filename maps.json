@@ -1,0 +1,12 @@
+[
+  {
+    "id": "vigrid",
+    "name": "Vigrid",
+    "image": "https://raw.githubusercontent.com/kertansurat/bellona-gvg/main/assets/maps/vigrid.png"
+  },
+  {
+    "id": "valeofclash",
+    "name": "Vale of Clash",
+    "file": "valeofclash.png"
+  }
+]
