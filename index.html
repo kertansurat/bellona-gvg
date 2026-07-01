@@ -1152,6 +1152,25 @@
     </div>
 
     
+
+    <!-- 📋 Reward Queue Report Modal -->
+    <div id="reward-queue-report-modal" class="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-[151] hidden">
+        <div class="bg-[#111520] border border-[#1f2838] rounded-xl p-6 w-[760px] max-w-[94%] max-h-[82vh] shadow-2xl flex flex-col">
+            <div class="flex items-center justify-between gap-3 border-b border-[#1f2838] pb-3 mb-4">
+                <div>
+                    <h3 class="text-base font-bold text-[#d4af37]"><i class="fa-solid fa-clipboard-list"></i> สรุปรายงาน GVG Rewards รอบนี้</h3>
+                    <div class="text-[11px] text-gray-500 mt-1">รายงานจากสถานะรับแล้ว / รอรับ / ข้าม ในรอบปัจจุบัน ใช้สำหรับส่ง Discord/Line</div>
+                </div>
+                <button onclick="closeRewardQueueReportModal()" class="bg-slate-800 text-white px-3 py-1.5 rounded-lg text-xs font-bold">ปิด</button>
+            </div>
+            <textarea id="reward-queue-report-text" readonly class="w-full flex-grow min-h-[360px] bg-[#0c0e14] border border-[#1f2838] rounded-lg p-4 text-sm text-gray-100 leading-7 focus:outline-none resize-none"></textarea>
+            <div class="flex justify-end gap-2 mt-4">
+                <button onclick="copyRewardQueueReportFromModal()" class="bg-[#d4af37] text-black font-extrabold px-4 py-2 rounded-lg text-xs"><i class="fa-regular fa-copy"></i> Copy รายงาน</button>
+                <button onclick="downloadRewardQueueReportTxt()" class="bg-[#141a24] text-cyan-300 border border-cyan-900/50 px-4 py-2 rounded-lg text-xs font-bold"><i class="fa-solid fa-download"></i> Download TXT</button>
+            </div>
+        </div>
+    </div>
+
 <script>
 /* =========================================================
    BELLONA ULTIMATE SUITE - CLEAN FUNCTION CORE
@@ -3382,21 +3401,65 @@ function copyRewardQueueSummary() {
 
 function buildRewardQueueReportText() {
     calculateRewardQueues();
-    const lines = ['📋 รายงาน GVG Rewards รอบนี้', ''];
+    const today = new Date().toLocaleDateString('th-TH');
+    const lines = [`📋 รายงาน GVG Rewards รอบนี้`, `วันที่: ${today}`, ''];
+
     rewardQueueTypes().filter(type => rewardQueueSettings[type]?.enabled !== false).forEach(type => {
         const cfg = rewardQueueSettings[type];
-        const rows = (rewardQueueAssignments[type] || []).filter(a => a.manualStatus === 'received' || a.status === 'received');
+        const rows = (rewardQueueAssignments[type] || []).filter(a => {
+            return a.status === 'today' || a.status === 'received' || a.manualStatus === 'received' || a.manualStatus === 'skipped' || a.status === 'skipped';
+        });
+
         lines.push(`${cfg.icon} ${cfg.name}`);
-        if (!rows.length) lines.push('- ยังไม่มีรายชื่อรับแล้ว');
-        rows.forEach(a => lines.push(`- ${a.player?.name || a.playerId}: ${a.label || 'ได้รับแล้ว'}`));
+        if (!rows.length) {
+            lines.push('- ยังไม่มีรายการในรอบนี้');
+        } else {
+            rows.forEach(a => {
+                const playerName = a.player?.name || a.playerName || a.playerId || '-';
+                const statusText = (a.manualStatus === 'received' || a.status === 'received') ? 'รับแล้ว' :
+                    (a.manualStatus === 'skipped' || a.status === 'skipped') ? 'ข้าม' : 'รอรับ';
+                lines.push(`- ${playerName}: ${a.label || ''} (${statusText})`.trim());
+            });
+        }
         lines.push('');
     });
+
     return lines.join('\n');
 }
+
 function openRewardQueueReport() {
-    const text = buildRewardQueueReportText();
+    const modal = document.getElementById('reward-queue-report-modal');
+    const textarea = document.getElementById('reward-queue-report-text');
+    if (!modal || !textarea) {
+        const text = buildRewardQueueReportText();
+        copyTextToClipboard(text);
+        alert('Copy รายงานรอบนี้แล้ว');
+        return;
+    }
+    textarea.value = buildRewardQueueReportText();
+    modal.classList.remove('hidden');
+}
+
+function closeRewardQueueReportModal() {
+    document.getElementById('reward-queue-report-modal')?.classList.add('hidden');
+}
+
+function copyRewardQueueReportFromModal() {
+    const text = document.getElementById('reward-queue-report-text')?.value || buildRewardQueueReportText();
     copyTextToClipboard(text);
-    alert(text + '\n\nคัดลอกรายงานแล้ว');
+    alert('Copy รายงานรอบนี้แล้ว');
+}
+
+function downloadRewardQueueReportTxt() {
+    const text = document.getElementById('reward-queue-report-text')?.value || buildRewardQueueReportText();
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `bellona-gvg-reward-report-${new Date().toISOString().slice(0,10)}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
 async function saveRewardQueueToFirebaseSafe(showAlert = false, roundSnapshot = null) {
